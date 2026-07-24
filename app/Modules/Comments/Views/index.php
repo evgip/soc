@@ -1,11 +1,25 @@
 <?php
-$currentUserId = $currentUserId ?? 0;
-$isAdmin = $isAdmin ?? false;
-$isModerator = $isModerator ?? false;
-$canDownvote = $canDownvote ?? false;
-$currentCommentVotes = $currentCommentVotes ?? [];
-$lastReadAt = $lastReadAt ?? null;
-$comments = $comments ?? [];
+declare(strict_types=1);
+
+/** 
+ * @var int $currentUserId
+ * @var bool $isAdmin
+ * @var bool $isModerator
+ * @var bool $canDownvote
+ * @var array $currentCommentVotes
+ * @var string|null $lastReadAt (timestamp для вычисления "новых")
+ * @var array $comments
+ */
+
+// Создаём единый контекст рендеринга ОДИН раз на всю страницу.
+// Это избавляет нас от передачи 6-7 переменных в каждый partial.
+$commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
+    currentUserId: $currentUserId,
+    isAdmin: $isAdmin,
+    isModerator: $isModerator,
+    canDownvote: $canDownvote,
+    // lastReadCommentId, commentsTree, renderTree не нужны в плоской ленте
+);
 ?>
 
 <div class="container">
@@ -18,7 +32,8 @@ $comments = $comments ?? [];
             <?php 
             $dividerShown = false;
             foreach ($comments as $comment): 
-                // Определяем новый комментарий по timestamp
+                // Логика определения "нового" комментария остаётся здесь,
+                // так как она специфична для плоской ленты (использует timestamp).
                 $isNew = $lastReadAt && strtotime($comment['created_at']) > strtotime($lastReadAt);
                 $commentId = (int)$comment['id'];
                 $currentVote = $currentCommentVotes[$commentId] ?? null;
@@ -35,70 +50,14 @@ $comments = $comments ?? [];
                 
                 <?php partial('Comments::_item', [
                     'comment' => $comment,
-                    'currentUserId' => $currentUserId,
-                    'isAdmin' => $isAdmin,
-                    'isModerator' => $isModerator,
-                    'isStoryAuthor' => false,
-                    'canDownvote' => $canDownvote,
+                    'context' => $commentContext,       // ✅ Единый объект вместо 6 переменных
                     'currentVote' => $currentVote,
-                    'showStoryContext' => true,
-                    'showCollapseToggle' => false,
-                    'lastReadAt' => $lastReadAt, // Передаём timestamp
-                    'isNew' => $isNew, // Передаём вычисленное значение
+                    'showStoryContext' => true,         // В плоской ленте показываем ссылку на историю
+                    'showCollapseToggle' => false,      // В плоской ленте нет вложенности
+                    'isNewParam' => $isNew,             // Передаём вычисленное значение в _item
                 ]); ?>
                 
             <?php endforeach; ?>
         </ol>
     <?php endif; ?>
 </div>
-
-<style>
-/* Плоская лента комментариев (без отступов) */
-.comments-flat {
-    list-style: none;
-    padding-left: 0;
-}
-
-.comments-flat .comment {
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-}
-
-/* Ссылка на историю в контексте */
-.story-context {
-    color: #666;
-    font-size: 0.9em;
-    font-style: italic;
-}
-
-/* Разделитель новых комментариев */
-.new-comments-divider {
-    list-style: none;
-    text-align: center;
-    margin: 20px 0;
-    position: relative;
-}
-
-.new-comments-divider hr {
-    border: 0;
-    border-top: 2px solid #007bff;
-    margin: 0;
-}
-
-.new-comments-divider span {
-    background: white;
-    padding: 0 15px;
-    color: #007bff;
-    font-weight: bold;
-    position: relative;
-    top: -10px;
-}
-
-/* Подсветка новых комментариев */
-.comment.is-new {
-    border-left: 3px solid #007bff;
-    background-color: #f8f9fa;
-}
-</style>

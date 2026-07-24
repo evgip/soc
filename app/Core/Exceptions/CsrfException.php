@@ -9,8 +9,7 @@ namespace App\Core\Exceptions;
  */
 class CsrfException extends HttpException
 {
-    protected string $message = 'CSRF token validation failed';
-    protected int $statusCode = 419;
+    protected array $context = [];
     
     /**
      * Конструктор
@@ -22,6 +21,17 @@ class CsrfException extends HttpException
         string $message = 'Срок действия формы истёк. Пожалуйста, обновите страницу и попробуйте снова.',
         array $context = []
     ) {
-        parent::__construct($message, 419, null, $context);
+        $this->context = $context;
+        
+        // В HttpException первым идет int $statusCode, вторым string $message
+        parent::__construct(419, $message, null, $context);
+    }
+
+    /**
+     * Получить контекст исключения (ожидается в Application.php)
+     */
+    public function getContext(): array
+    {
+        return $this->context;
     }
 }

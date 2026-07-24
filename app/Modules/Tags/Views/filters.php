@@ -21,7 +21,7 @@
             <?php foreach ($filters as $filter): ?>
                 <div class="filter-item">
 					 <a href="<?= route('tags.filter', ['tagslug' => $filter['slug']]) ?>" class="tag tag-<?= e($filter['slug']); ?>">
-                        #<?= e($filter['name']) ?>
+                        <?= e($filter['name']) ?>
                     </a>
                     
                     <?php if (!empty($filter['description'])): ?>
@@ -62,7 +62,7 @@
                 if (!$isFiltered): 
                 ?>
                     <option value="<?= e($tag['id']) ?>">
-                        #<?= e($tag['name']) ?> (<?= (int)($tag['stories_count'] ?? 0) ?>)
+                        <?= e($tag['name']) ?> (<?= (int)($tag['stories_count'] ?? 0) ?>)
                     </option>
                 <?php endif; ?>
             <?php endforeach; ?>

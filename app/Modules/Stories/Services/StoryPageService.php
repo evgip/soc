@@ -9,9 +9,11 @@ use App\Modules\Stories\Models\Story;
 use App\Modules\Stories\Models\ReadRibbon;
 use App\Modules\Tags\Models\Tag;
 use App\Modules\Votes\Models\Vote;
+use App\Modules\Votes\Services\VoteService; 
 use App\Modules\Suggestions\Services\SuggestionService;
 use App\Modules\Saved\Models\SavedStory;
 use App\Core\Exceptions\NotFoundException;
+use App\Modules\Stories\ViewModels\StoryShowViewModel;
 
 /**
  * Сервис для сборки данных страницы просмотра истории.
@@ -23,17 +25,20 @@ class StoryPageService
     private StoryFilterService $storyFilterService;
     private ReadRibbonService $readRibbonService;
     private SuggestionService $suggestionService;
+    private VoteService $voteService; 
 
     public function __construct(
         Container $container,
         StoryFilterService $storyFilterService,
         ReadRibbonService $readRibbonService,
-        SuggestionService $suggestionService
+        SuggestionService $suggestionService,
+        VoteService $voteService 
     ) {
         $this->container = $container;
         $this->storyFilterService = $storyFilterService;
         $this->readRibbonService = $readRibbonService;
         $this->suggestionService = $suggestionService;
+        $this->voteService = $voteService;
     }
 
     /**
@@ -41,10 +46,10 @@ class StoryPageService
      *
      * @param int $storyId ID истории
      * @param array $userContext Контекст пользователя (id, isLoggedIn, isAdmin, isModerator, isAuthor)
-     * @return array Массив данных для рендеринга страницы
+     * @return StoryShowViewModel Строго типизированный объект данных для рендеринга
      * @throws NotFoundException Если история не найдена
      */
-    public function buildShowPageData(int $storyId, array $userContext): array
+    public function buildShowPageData(int $storyId, array $userContext): StoryShowViewModel
     {
         // 1. Получаем историю
         $story = $this->storyFilterService->getStoryWithAuthor($storyId);
@@ -61,7 +66,7 @@ class StoryPageService
         $lastReadCommentId = $ribbonData[$storyId] ?? 0;
 
         // Обновляем счетчик новых комментариев
-        $newCount = $this->readRibbonService->handleStoryView($storyId);
+        $newCommentsCount = $this->readRibbonService->handleStoryView($storyId);
 
         // 4. Suggestions (предложения по улучшению)
         $activeSuggestions = $this->suggestionService->getActiveSuggestions('Story', $storyId);
@@ -80,6 +85,7 @@ class StoryPageService
         $userSuggestionsCount = 0;
         $isAuthor = false;
         $isStorySaved = false;
+        $canUserDownvote = false;
 
         if ($userContext['isLoggedIn']) {
             $userId = $userContext['id'];
@@ -88,20 +94,19 @@ class StoryPageService
             // Получаем голос пользователя за историю
             $currentStoryVote = $voteModel->getUserVote($userId, 'story', $storyId);
 
-            // Собираем ID всех комментариев для получения голосов
+            // Собираем ID всех комментариев для получения голосов (Batch-запрос)
             $allCommentIds = [];
-            foreach ($commentsTree as $parentId => $comments) {
+            foreach ($commentsTree as $comments) {
                 foreach ($comments as $comment) {
                     $allCommentIds[] = (int)$comment['id'];
                 }
             }
 
-            // Batch-запрос голосов за комментарии
             if (!empty($allCommentIds)) {
                 $currentCommentVotes = $voteModel->getUserVotesForComments($userId, $allCommentIds);
             }
 
-            // Проверяем, является ли пользователь автором истории
+            // Проверяем, является ли пользователь автором истории (используем callback из контекста)
             $isAuthor = $userContext['isAuthor']((int)$story['user_id']);
 
             // Получаем количество активных предложений от пользователя (если не модератор/админ)
@@ -112,29 +117,31 @@ class StoryPageService
             // Проверяем, сохранена ли история
             $savedModel = $this->container->get(SavedStory::class);
             $isStorySaved = $savedModel->isSaved($userId, $storyId);
+            
+            // Проверяем право на голосование вниз (теперь это делает сервис, а не контроллер)
+            $canUserDownvote = $this->voteService->canUserDownvote($userId);
         }
 
-        // 7. OpenGraph данные
-        $ogData = $this->storyFilterService->getStoryOpenGraphData($story);
-
-        return [
-            'story' => $story,
-            'commentsTree' => $commentsTree,
-            'newCount' => $newCount,
-            'lastReadCommentId' => $lastReadCommentId,
-            'activeSuggestions' => $activeSuggestions,
-            'changeLog' => $changeLog,
-            'allTags' => $allTags,
-            'currentTagIds' => $currentTagIds,
-            'currentUserId' => $userContext['id'],
-            'isAdmin' => $userContext['isAdmin'],
-            'isModerator' => $userContext['isModerator'],
-            'isAuthor' => $isAuthor,
-            'currentStoryVote' => $currentStoryVote,
-            'currentCommentVotes' => $currentCommentVotes,
-            'userSuggestionsCount' => $userSuggestionsCount,
-            'isStorySaved' => $isStorySaved,
-            'ogData' => $ogData,
-        ];
+        // 7. Возвращаем строго типизированный ViewModel вместо массива
+        return new StoryShowViewModel(
+            story: $story,
+            commentsTree: $commentsTree,
+            currentCommentVotes: $currentCommentVotes,
+            currentUserId: $userContext['id'],
+            isAdmin: $userContext['isAdmin'],
+            isModerator: $userContext['isModerator'],
+            isAuthor: $isAuthor,
+            canUserDownvote: $canUserDownvote,
+            currentStoryVote: $currentStoryVote,
+            isStorySaved: $isStorySaved,
+            userSuggestionsCount: $userSuggestionsCount,
+            maxSuggestionsAllowed: SuggestionService::MAX_USER_SUGGESTIONS,
+            activeSuggestions: $activeSuggestions,
+            changeLog: $changeLog,
+            allTags: $allTags,
+            currentTagIds: $currentTagIds,
+            newCommentsCount: $newCommentsCount,
+            lastReadCommentId: $lastReadCommentId,
+        );
     }
 }

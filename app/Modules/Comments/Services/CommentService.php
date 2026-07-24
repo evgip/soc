@@ -9,8 +9,9 @@ use App\Modules\Notifications\Services\NotificationService;
 use App\Core\Validator;
 use App\Core\Events\EventDispatcher;
 use App\Core\Security\UserContext;
-use App\Core\Exceptions\CommentValidationException;
-use App\Core\Exceptions\CommentPermissionException;
+
+use App\Modules\Comments\Exceptions\CommentValidationException;
+use App\Modules\Comments\Exceptions\CommentPermissionException;
 
 use App\Modules\Comments\Events\CommentCreated;
 use App\Modules\Comments\Events\CommentDeleted;

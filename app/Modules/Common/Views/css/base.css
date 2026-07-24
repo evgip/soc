@@ -668,6 +668,37 @@ li.comment > ol.comments {
     border-left: 1px dashed var(--color-fg-shape);
 }
 
+
+/* ============================================
+   ОГРАНИЧЕНИЕ ГЛУБИНЫ КОММЕНТАРИЕВ (Depth Capping)
+   Предотвращает "эффект туннеля" на глубоких уровнях вложенности
+   ============================================ */
+
+/* Для 6-го уровня вложенности и глубже мы фиксируем отступы, 
+   чтобы они оставались на одном уровне с 5-й веткой и не сдвигались дальше вправо */
+li.comment.depth-6 > ol.comments,
+li.comment.depth-7 > ol.comments,
+li.comment.depth-8 > ol.comments,
+li.comment.depth-9 > ol.comments,
+li.comment.depth-10 > ol.comments {
+    margin-left: 0.6em !important;
+    padding-left: 1em !important;
+    border-left: 1px dashed var(--color-fg-shape) !important;
+}
+
+/* Адаптивность: на мобильных устройствах делаем отступы еще компактнее, 
+   чтобы сэкономить драгоценное место на экране */
+@media only screen and (max-width: 480px) {
+    li.comment.depth-6 > ol.comments,
+    li.comment.depth-7 > ol.comments,
+    li.comment.depth-8 > ol.comments,
+    li.comment.depth-9 > ol.comments,
+    li.comment.depth-10 > ol.comments {
+        margin-left: 0.3em !important;
+        padding-left: 0.5em !important;
+    }
+}
+
 /* ---------- Уведомления (Flash messages) ---------- */
 .alert, .flash-error, .flash-success, .flash-notice {
     position: relative;

@@ -58,51 +58,53 @@ class Domain extends Model
     }
 
     /**
-     * Забанить домен
+     * Забанить домен (обновляет существующую запись или создает новую).
+     * Предотвращает ошибку 1062 Duplicate entry.
      */
     public function ban(string $domain, string $reason, int $bannedBy): bool
     {
         $domain = strtolower(trim($domain));
 
-        // Проверяем, не забанен ли уже
-        if ($this->isBanned($domain)) {
-            return false;
-        }
+        // 1. Надежный поиск записи через прямой SQL (в обход возможных багов Model::findBy)
+        $sql = "SELECT `id`, `status` FROM `{$this->table}` 
+                WHERE LOWER(`domain`) = :domain 
+                LIMIT 1";
+        
+        $existing = $this->db->fetchOne($sql, ['domain' => $domain]);
 
-        // Проверяем, существует ли запись (возможно, была ранее разбанена)
-        $existing = $this->findBy('domain', $domain);
-
-        if ($existing) {
-            // Восстанавливаем и обновляем
-            $this->update($existing['id'], [
-                'status'     => 'banned',
-                'ban_reason' => $reason,
-                'banned_by'  => $bannedBy,
-                'deleted_at' => null,
-            ]);
-            return true;
-        }
-
-        $this->create([
+        $banData = [
             'domain'     => $domain,
             'status'     => 'banned',
             'ban_reason' => $reason,
             'banned_by'  => $bannedBy,
-        ]);
-        return true;
+            'deleted_at' => null,
+        ];
+
+        if ($existing) {
+            // 2. Если запись найдена — обновляем её по найденному ID
+            // Это гарантирует UPDATE, а не INSERT
+            return $this->update($existing['id'], $banData);
+        }
+
+        // 3. Если записи действительно нет в базе — создаем новую
+        return $this->create($banData) > 0;
     }
 
     /**
-     * Разбанить домен (мягкое удаление)
+     * Разбанить домен (сбрасывает статус и очищает данные о бане).
      */
     public function unban(string $domain): bool
     {
         $domain = strtolower(trim($domain));
 
+        // Просто меняем статус на 'allowed' и очищаем причину бана.
+        // Мы НЕ трогаем deleted_at, чтобы домен оставался в истории базы данных,
+        // но перестал считаться заблокированным.
         $sql = "UPDATE `{$this->table}`
-                SET `status` = 'allowed', `deleted_at` = NOW()
-                WHERE LOWER(`domain`) = :domain
-                  AND `deleted_at` IS NULL";
+                SET `status` = 'allowed', 
+                    `ban_reason` = NULL, 
+                    `banned_by` = NULL
+                WHERE LOWER(`domain`) = :domain";
 
         return $this->db->execute($sql, ['domain' => $domain]) > 0;
     }

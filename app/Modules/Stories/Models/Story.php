@@ -286,16 +286,23 @@ class Story extends Model
 
     /**
      * Пересчитывает счётчик комментариев с нуля (для синхронизации).
+     * Полезно для админских скриптов или восстановления целостности данных.
      */
     public function recalculateCommentsCount(int $storyId): void
     {
-        $this->db->execute("
-            UPDATE stories s 
-            SET comments_count = (
-                SELECT COUNT(*) FROM comments c 
-                WHERE c.story_id = s.id AND c.deleted_at IS NULL
-            )
-            WHERE s.id = ?
+        // Шаг 1: Получаем актуальное количество не удаленных комментариев
+        // fetchColumn возвращает первую колонку первой строки результата (в данном случае число)
+        $count = (int) $this->db->fetchColumn("
+            SELECT COUNT(*) 
+            FROM comments 
+            WHERE story_id = ? AND deleted_at IS NULL
         ", [$storyId]);
+
+        // Шаг 2: Обновляем поле в таблице stories простым и быстрым запросом по первичному ключу
+        $this->db->execute("
+            UPDATE stories 
+            SET comments_count = ? 
+            WHERE id = ?
+        ", [$count, $storyId]);
     }
 }

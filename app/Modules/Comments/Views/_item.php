@@ -1,39 +1,34 @@
 <?php
-/**
- * Универсальный partial для отображения одного комментария
- * 
- * @var array $comment           - данные комментария
- * @var int   $currentUserId     - ID текущего пользователя
- * @var bool  $isAdmin           - является ли текущий пользователь админом
- * @var bool  $isModerator       - является ли текущий пользователь модератором
- * @var bool  $isStoryAuthor     - является ли текущий пользователь автором истории
- * @var bool  $canDownvote       - можно ли голосовать против
- * @var mixed $currentVote       - текущий голос пользователя за этот комментарий
- * @var bool  $showStoryContext  - показывать ли ссылку на историю (для глобальной ленты)
- * @var bool  $showCollapseToggle - показывать ли кнопку сворачивания
- * @var bool  $isNew             - является ли комментарий новым
+
+declare(strict_types=1);
+
+/** 
+ * @var array $comment 
+ * @var App\Modules\Comments\ViewModels\CommentRenderContext $context
+ * @var ?int $currentVote (Голос за этот конкретный комментарий)
+ * @var bool $showStoryContext
+ * @var bool $showCollapseToggle
  */
+
 $commentId = (int)$comment['id'];
 $isDeleted = !empty($comment['deleted_at']);
-$isOwner = ((int)$comment['user_id'] === $currentUserId);
+$isOwner = ((int)$comment['user_id'] === $context->currentUserId);
 
-// Опциональные параметры с дефолтами
 $showStoryContext = $showStoryContext ?? false;
 $showCollapseToggle = $showCollapseToggle ?? true;
+$depth = $depth ?? 1;
 
-// Логика: используем переданный $isNew или вычисляем по $lastReadAt
-if (!isset($isNew)) {
-    // Для страницы истории — используем lastReadCommentId
-    $lastReadCommentId = $lastReadCommentId ?? 0;
-    $isNew = $lastReadCommentId > 0 && $commentId > $lastReadCommentId;
-} else {
-    // Для глобальной ленты — $isNew уже вычислен в шаблоне
-    $isNew = (bool)$isNew;
+// Логика "нового" комментария
+$isNew = false;
+if ($context->lastReadCommentId !== null) {
+    $isNew = $context->lastReadCommentId > 0 && $commentId > $context->lastReadCommentId;
+} elseif (isset($isNewParam)) { // Если передан явно извне
+    $isNew = (bool)$isNewParam;
 }
 
 ?>
 
-<li class="comment comment-thread <?= $isDeleted ? 'deleted' : '' ?> <?= $isNew ? 'is-new' : '' ?>" 
+<li class="comment comment-thread depth-<?= $depth ?> <?= $isDeleted ? 'deleted' : '' ?> <?= $isNew ? 'is-new' : '' ?>" 
     data-comment-id="<?= $commentId ?>" 
     id="comment-block-<?= $commentId ?>">
 
@@ -45,9 +40,9 @@ if (!isset($isNew)) {
                 'id' => $commentId,
                 'score' => (int)$comment['score'],
                 'currentVoteState' => $currentVote ?? null,
-                'canDownvote' => $canDownvote ?? false,
-                'isLoggedIn' => $currentUserId > 0,
-                'contentOwnerId' => $isStoryAuthor ?? false,
+                'canDownvote' => $context->canDownvote,
+                'isLoggedIn' => $context->currentUserId > 0,
+                'contentOwnerId' => false, // Для комментариев владельца определяем внутри _voters или передаем отдельно если нужно
             ]); ?>
         </div>
     <?php else: ?>
@@ -56,10 +51,7 @@ if (!isset($isNew)) {
         </div>
     <?php endif; ?>
 
-    <!-- Обёртка для метаданных, текста и действий -->
     <div class="comment_body">
-
-        <!-- Метаданные комментария -->
         <div class="comment-header">
             <?php if ($showCollapseToggle): ?>
                 <span class="collapse-toggle" title="Свернуть ветку">[–]</span>
@@ -67,77 +59,69 @@ if (!isset($isNew)) {
             
             <?php partial('Comments::_comment_meta', [
                 'comment' => $comment,
-                'currentUserId' => $currentUserId,
-                'isAdmin' => $isAdmin,
-                'isModerator' => $isModerator ?? false,
+                'currentUserId' => $context->currentUserId,
+                'isAdmin' => $context->isAdmin,
+                'isModerator' => $context->isModerator,
             ]); ?>
             
             <?php if ($showStoryContext && !empty($comment['story_title'])): ?>
-				<div class="comment_meta">
-					<span class="divider">|</span>
-					<a href="<?= route('story.show', ['id' => $comment['story_id']]) ?>#comment-block-<?= $commentId ?>" 
-					   class="story-context">
-						на: <?= e($comment['story_title']) ?>
-					</a>
-				</div>
+                <div class="comment_meta">
+                    <span class="divider">|</span>
+                    <a href="<?= route('story.show', ['id' => $comment['story_id']]) ?>#comment-block-<?= $commentId ?>" 
+                       class="story-context">
+                        на: <?= e($comment['story_title']) ?>
+                    </a>
+                </div>
             <?php endif; ?>
         </div>
 
-        <!-- Тело комментария -->
         <?php if (!$isDeleted): ?>
             <div class="comment_text" id="comment-text-content-<?= $commentId ?>"
-                 data-raw="<?= e($comment['comment'], ENT_QUOTES, 'UTF-8') ?>">
-                <?= markdown_comment($comment['comment']) ?>
+                 data-raw="<?= e($comment['comment'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                <?= markdown_comment($comment['comment'] ?? '') ?>
             </div>
 
-            <!-- Действия -->
             <div class="comment_actions">
-				<?php if ($currentUserId > 0): ?>
-					<?php if ($showStoryContext): ?>
-						<!-- В плоской ленте: ведём на страницу истории -->
-						<a href="<?= route('story.show', ['id' => $comment['story_id']]) ?>#reply-to-<?= $commentId ?>" 
-						   class="comment-reply-link" 
-						   data-id="<?= $commentId ?>">Ответить</a>
-					<?php else: ?>
-						<!-- В истории: простой якорь -->
-						<a href="#reply-to-<?= $commentId ?>" 
-						   class="comment-reply-link" 
-						   data-id="<?= $commentId ?>">Ответить</a>
-					<?php endif; ?>
-				<?php endif; ?>
+                <?php if ($context->currentUserId > 0): ?>
+                    <?php if ($showStoryContext): ?>
+                        <a href="<?= route('story.show', ['id' => $comment['story_id']]) ?>#reply-to-<?= $commentId ?>" 
+                           class="comment-reply-link" data-id="<?= $commentId ?>">Ответить</a>
+                    <?php else: ?>
+                        <a href="#reply-to-<?= $commentId ?>" 
+                           class="comment-reply-link" data-id="<?= $commentId ?>">Ответить</a>
+                    <?php endif; ?>
+                <?php endif; ?>
 
-
- 
-
-                <?php if ($isOwner || $isAdmin || ($isModerator ?? false)): ?>
+                <?php if ($isOwner || $context->isAdmin || $context->isModerator): ?>
                     <span class="divider">|</span>
                     <a class="comment-edit-trigger" data-id="<?= $commentId ?>">Редактировать</a>
                     <span class="divider">|</span>
                     <form action="/comments/<?= $commentId ?>/delete" method="POST" 
-                          class="inline-form js-confirm-delete" 
-                          data-confirm-message="Удалить комментарий?">
+                          class="inline-form js-confirm-delete" data-confirm-message="Удалить комментарий?">
                         <?= csrf_field() ?>
                         <button type="submit">Удалить</button>
                     </form>
                 <?php endif; ?>
 
-                <?php if ($currentUserId > 0): ?>
+                <?php if ($context->currentUserId > 0): ?>
                     <span class="divider">|</span>
                     <a href="<?= route('flags.report', ['type' => 'comment', 'id' => $commentId]) ?>"
-                       class="flag-link"
-                       title="Пожаловаться на контент"
+                       class="flag-link" title="Пожаловаться на контент"
                        data-confirm="Вы уверены, что хотите подать жалобу?">
                         🚩
                     </a>
                 <?php endif; ?>
             </div>
+        <?php else: ?>
+            <div class="comment_text deleted-text">
+                <em>Комментарий удален</em>
+            </div>
         <?php endif; ?>
-
     </div>
 
-    <!-- Рекурсия ветки (только для show.php) -->
-    <?php if (!empty($renderTree) && !empty($commentsTree)): ?>
-        <?php $renderTree($commentId); ?>
+    <!-- Рекурсия ветки (работает только если переданы commentsTree и renderTree) -->
+    <?php if ($context->renderTree !== null && $context->commentsTree !== null): ?>
+        <?php ($context->renderTree)($commentId, $depth + 1); ?>
     <?php endif; ?>
 
 </li>

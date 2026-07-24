@@ -65,46 +65,23 @@ class StoriesController extends Controller
     // =========================================================================
     // ПРОСМОТР ОДНОЙ ИСТОРИИ
     // =========================================================================
-    public function show(string $id): void
-    {
-        $storyId = (int)$id;
-        $userContext = $this->getUserContext();
+   public function show(string $id): void
+   {
+       $userContext = $this->getUserContext();
+       $viewModel = $this->service(StoryPageService::class)->buildShowPageData((int)$id, $userContext);
 
-        // Используем StoryPageService для сборки всех данных страницы
-        $pageService = $this->service(StoryPageService::class);
-        $pageData = $pageService->buildShowPageData($storyId, $userContext);
+       $this->setOpenGraph([
+           'type' => 'article',
+           'title' => $viewModel->story['title'],
+           'description' => $viewModel->story['seo_description'] ?? '', 
+           'image' => $viewModel->story['og_image'] ?? '',
+       ]);
 
-        // Устанавливаем OpenGraph мета-теги
-        $this->setOpenGraph([
-            'type' => 'article',
-            'title' => $pageData['ogData']['title'],
-            'description' => $pageData['ogData']['description'],
-            'image' => $pageData['ogData']['image'],
-            'article:author' => $pageData['ogData']['author_url'],
-        ]);
-
-        // Рендерим шаблон
-        $this->render('show', [
-            'title' => $pageData['story']['title'],
-            'story' => $pageData['story'],
-            'commentsTree' => $pageData['commentsTree'],
-            'newCount' => $pageData['newCount'],
-            'lastReadCommentId' => $pageData['lastReadCommentId'],
-            'activeSuggestions' => $pageData['activeSuggestions'],
-            'changeLog' => $pageData['changeLog'],
-            'allTags' => $pageData['allTags'],
-            'currentTagIds' => $pageData['currentTagIds'],
-            'currentUserId' => $pageData['currentUserId'],
-            'isAdmin' => $pageData['isAdmin'],
-            'isModerator' => $pageData['isModerator'],
-            'isAuthor' => $pageData['isAuthor'],
-            'canUserDownvote' => $this->canUserDownvote($userContext['id']),
-            'currentStoryVote' => $pageData['currentStoryVote'],
-            'currentCommentVotes' => $pageData['currentCommentVotes'],
-            'userSuggestionsCount' => $pageData['userSuggestionsCount'],
-            'isStorySaved' => $pageData['isStorySaved'],
-        ]);
-    }
+       $this->render('show', [
+           'title' => $viewModel->story['title'],
+           'viewModel' => $viewModel,
+       ]);
+   }
 
     // =========================================================================
     // СОЗДАНИЕ ИСТОРИИ
