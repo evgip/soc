@@ -138,12 +138,12 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                     <?php if ($isStoryDeleted): ?>
                         <form action="/admin/stories/<?= (int)$viewModel->story['id'] ?>/restore" method="POST" class="inline-form">
                             <?= csrf_field() ?>
-                            <button type="submit" class="btn-link">восстановить</button>
+                            <button type="submit" class="is-link">восстановить</button>
                         </form>
                     <?php else: ?>
                         <form action="/admin/stories/<?= (int)$viewModel->story['id'] ?>/delete" method="POST" class="inline-form">
                             <?= csrf_field() ?>
-                            <button type="submit" class="btn-link red">удалить</button>
+                            <button type="submit" class="is-link red">удалить</button>
                         </form>
                     <?php endif; ?>
                 <?php endif; ?>

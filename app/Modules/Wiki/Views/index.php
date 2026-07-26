@@ -52,6 +52,6 @@ $otherPages = array_filter($pages, function($p) use ($primaryId) {
 <?php if (empty($pages)): ?>
     <div class="hint">
         <p>Для этого тега еще нет wiki страниц.</p>
-        <p><a href="<?= route('wiki.tag.create', ['tagslug' => $tag['slug']]) ?>" class="btn-nav-create">Создайте первую страницу!</a></p>
+        <p><a href="<?= route('wiki.tag.create', ['tagslug' => $tag['slug']]) ?>">Создайте первую страницу!</a></p>
     </div>
 <?php endif; ?>

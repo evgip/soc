@@ -88,7 +88,7 @@
 					<div class="byline">
 						<form action="/mod/suggestions/<?= (int)$suggestion['id'] ?>/approve" method="POST" class="inline-form">
 							<?= csrf_field() ?>
-							<button type="submit" class="btn-link green">
+							<button type="submit" class="is-link green">
 								✓ Одобрить
 							</button>
 						</form>
@@ -98,7 +98,7 @@
 						<form action="/mod/suggestions/<?= (int)$suggestion['id'] ?>/reject" method="POST" class="inline-form">
 							<?= csrf_field() ?>
 							<input type="hidden" name="reason" value="Отклонено модератором">
-							<button type="submit" class="btn-link red" onclick="return confirm('Отклонить это предложение?')">
+							<button type="submit" class="is-link red" onclick="return confirm('Отклонить это предложение?')">
 								✗ Отклонить
 							</button>
 						</form>

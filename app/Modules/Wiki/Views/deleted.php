@@ -31,7 +31,7 @@
                               class="inline-form js-confirm-delete"
                               data-confirm-message="Восстановить эту страницу?">
                             <?= $request->csrfField() ?>
-                            <button type="submit" class="btn-link">♻️ Восстановить</button>
+                            <button type="submit" class="is-link">♻️ Восстановить</button>
                         </form>
                     </div>
                 </div>

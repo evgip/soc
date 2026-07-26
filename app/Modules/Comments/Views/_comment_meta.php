@@ -32,7 +32,7 @@ $isModerator = $isModerator ?? false; // Получаем из переданн�
         <?php if ($isOwner || $isAdmin || $isModerator): ?>
             <form action="/comments/<?= (int)$comment['id'] ?>/restore" method="POST" class="inline-form">
                 <?= csrf_field() ?>
-                <button type="submit" class="btn-link">[Восстановить]</button>
+                <button type="submit" class="is-link">[Восстановить]</button>
             </form>
         <?php endif; ?>
     <?php endif; ?>

@@ -9,7 +9,7 @@
 <?= render_flashes() ?>
 
 <?php if (!$hasEnoughKarma): ?>
-    <div class="flash-error">
+    <div role="alert" class="alert is-danger">
         <strong>⚠️ Недостаточно кармы!</strong><br>
         Для создания приглашений необходимо минимум <strong><?= (int)$minKarma ?></strong> кармы.
     </div>

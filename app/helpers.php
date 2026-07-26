@@ -287,9 +287,9 @@ if (!function_exists('render_flashes')) {
 	function render_flashes(): void
 	{
 		$types = [
-			'success' => 'alert-success',
-			'error'   => 'alert-danger',
-			'notice'  => 'alert-notice'
+			'success' => 'is-success',
+			'error'   => 'is-danger',
+			'notice'  => 'is-notice'
 		];
 
 		if (session_status() === PHP_SESSION_NONE) {
@@ -301,7 +301,7 @@ if (!function_exists('render_flashes')) {
 				$message = htmlspecialchars($_SESSION['flash'][$key]);
 				unset($_SESSION['flash'][$key]); // Удаляем после получения
 
-				$title = $key === 'success' ? 'Успех' : ($key === 'error' ? 'Ошибка' : 'Информация');
+				$title = $key === 'is-success' ? 'Успех' : ($key === 'error' ? 'Ошибка' : 'Информация');
 
 				echo '<div class="alert ' . $class . '">';
 				echo '<strong>' . $title . '!</strong> ' . $message;

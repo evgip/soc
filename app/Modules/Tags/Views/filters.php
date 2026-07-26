@@ -13,19 +13,19 @@
 
     <h2>Активные фильтры</h2>
     <?php if (empty($filters)): ?>
-        <div class="alert alert-notice empty-state">
+        <div class="alert is-notice empty-state">
             <p>У вас пока нет активных фильтров.</p>
         </div>
     <?php else: ?>
         <div class="filters-list">
             <?php foreach ($filters as $filter): ?>
-                <div class="filter-item">
+                <div class="flex">
 					 <a href="<?= route('tags.filter', ['tagslug' => $filter['slug']]) ?>" class="tag tag-<?= e($filter['slug']); ?>">
                         <?= e($filter['name']) ?>
                     </a>
                     
                     <?php if (!empty($filter['description'])): ?>
-                        <span class="tag-description hint">
+                        <span class="tag-description hint mr5">
                             — <?= e($filter['description']) ?>
                         </span>
                     <?php endif; ?>
@@ -33,7 +33,7 @@
                     <form action="/filters/remove" method="POST">
                         <?= csrf_field() ?>
                         <input type="hidden" name="tag_id" value="<?= e($filter['tag_id']) ?>">
-                        <button type="submit" class="btn-remove-filter delete" 
+                        <button type="submit" class="is-link text-sm red" 
                                 onclick="return confirm('Удалить этот тег из фильтров?')">
                             удалить
                         </button>
@@ -44,10 +44,10 @@
     <?php endif; ?>
 
     <h2>Добавить фильтр</h2>
-    <form action="/filters/add" method="POST" class="form-field-group form-group">
+    <form action="/filters/add" method="POST" class="form-field-group flex">
         <?= csrf_field() ?>
         
-        <select name="tag_id" required>
+        <select class="mr5" name="tag_id" required>
             <option value="">Выберите тег для скрытия...</option>
             <?php foreach ($allTags as $tag): ?>
                 <?php 

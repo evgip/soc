@@ -17,7 +17,7 @@ $sortLinks = [
 <nav class="nav br-none">
     <?php foreach ($sortLinks as $key => $link): ?>
         <a href="<?= $link['url'] ?>"
-            class="<?= $currentSort === $key ? 'active' : '' ?>">
+            class="<?= $currentSort === $key ? 'is-active' : '' ?>">
             <?= $link['label'] ?>
         </a>
     <?php endforeach; ?>
@@ -86,7 +86,7 @@ $sortLinks = [
                         $targetUrl = $isExternal ? e($story['url']) : route('story.show', ['id' => $story['id']]);
                         ?>
 
-                        <a href="<?= $targetUrl ?>" <?= $isExternal ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
+                        <a class="title" href="<?= $targetUrl ?>" <?= $isExternal ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
                             <?= e($story['title']) ?>
                         </a>
 

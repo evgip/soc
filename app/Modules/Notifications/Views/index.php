@@ -12,12 +12,12 @@
     <div class="notifications-header">
         <h2>Уведомления</h2>
         <?php if ($totalUnread > 0): ?>
-            <button class="btn-link" id="mark-all-read-btn">Отметить все как прочитанные</button>
+            <button class="is-link" id="mark-all-read-btn">Отметить все как прочитанные</button>
         <?php endif; ?>
     </div>
 
     <!-- Панель фильтров -->
-    <nav class="nav">
+    <nav>
         <a href="/notifications?type=all"
             class="<?= $currentType === 'all' ? 'active' : '' ?>">
             Все

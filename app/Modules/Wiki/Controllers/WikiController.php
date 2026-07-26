@@ -58,8 +58,8 @@ class WikiController extends Controller
             'canSeeDeleted' => $canSeeDeleted,
             'request' => $this->request,
             'breadcrumbs' => $this->renderBreadcrumbs([
-                ['url' => '/', 'label' => 'Главная2'],
-                ['url' => "/t/{$tagslug}", 'label' => "#{$tagData['name']}", 'active_pattern' => "/t/{$tagslug}"],
+                ['url' => '/', 'label' => 'Главная'],
+                ['url' => "/t/{$tagslug}", 'label' => "{$tagData['name']}", 'active_pattern' => "/t/{$tagslug}"],
                 ['label' => 'Wiki'],
             ])
         ]);
@@ -104,7 +104,7 @@ class WikiController extends Controller
             'request' => $this->request,
             'breadcrumbs' => $this->renderBreadcrumbs([
                 ['url' => '/', 'label' => 'Главная'],
-                ['url' => "/t/{$tagslug}", 'label' => "#{$tagData['name']}", 'active_pattern' => "/t/{$tagslug}"],
+                ['url' => "/t/{$tagslug}", 'label' => "{$tagData['name']}", 'active_pattern' => "/t/{$tagslug}"],
                 ['url' => "/t/{$tagslug}/wiki", 'label' => 'Wiki', 'active_pattern' => "/t/{$tagslug}/wiki"],
                 ['label' => $page['title']],
             ])

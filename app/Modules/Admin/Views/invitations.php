@@ -6,7 +6,7 @@
 <div class="container mt-4">
     <h1>📨 Запросы приглашений</h1>
 
-    <nav class="nav">
+    <nav>
 
         <a class="nav-link <?= $currentStatus === 'pending' ? 'active' : '' ?>"
             href="?status=pending">

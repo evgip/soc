@@ -39,7 +39,7 @@ $mutedUsers = $mutedUsers ?? [];
                         <td>
                             <form action="/mute/toggle/<?= (int)$user['id'] ?>" method="POST" class="inline-form">
                                 <?= csrf_field() ?>
-                                <button type="submit" class="btn-link delete">
+                                <button type="submit" class="is-link red">
                                     🔊 Разблокировать
                                 </button>
                             </form>

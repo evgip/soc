@@ -63,7 +63,7 @@ class WikiCard
         if (!empty($page['deleted_at']) && $showDeletedMark && $request) {
             $html .= ' <span class="divider">|</span> ';
             $html .= sprintf(
-                '<form action="/t/%s/wiki/%d/restore" method="POST" class="inline-form js-confirm-delete" data-confirm-message="Восстановить эту страницу?">%s<button type="submit" class="btn-link">♻️ Восстановить</button></form>',
+                '<form action="/t/%s/wiki/%d/restore" method="POST" class="inline-form js-confirm-delete" data-confirm-message="Восстановить эту страницу?">%s<button type="submit" class="is-link">♻️ Восстановить</button></form>',
                 e($tag['slug']),
                 (int)$page['id'],
                 $request->csrfField()

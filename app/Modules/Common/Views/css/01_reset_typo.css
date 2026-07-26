@@ -1,0 +1,209 @@
+/* ============================================
+   W3A CSS Framework — Сброс, Типографика и Базовые Элементы
+   Всё, что работает без классов.
+   ============================================ */
+
+/* ---------- БАЗОВЫЙ СБРОС ---------- */
+html {
+  font-size: var(--font-size-default);
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+}
+
+body, textarea, input, button, select {
+  font-family: "helvetica neue", arial, sans-serif;
+  color: var(--color-fg);
+  line-height: 1.6em;
+}
+
+body {
+  background-color: var(--color-bg);
+  margin: 0 auto;
+  padding: 0 0.5em 2em 0.5em;
+  max-width: 60rem;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  color: var(--base-color);
+}
+
+/* ---------- ТИПОГРАФИКА ---------- */
+a {
+  color: var(--color-fg-link);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+h1, h2, h3, h4 { font-weight: bold; padding: 0; }
+h1 { font-size: 1.4em; }
+h2 { font-size: 1.2em; }
+h3 { font-size: 1.1em; }
+
+hr {
+  border: none;
+  height: 1px;
+  background-color: var(--color-fg-shape);
+  margin: 1em 0;
+}
+
+pre {
+  overflow-x: auto;
+  background-color: var(--color-box-bg-shaded);
+  padding: 0.5em;
+  border-radius: 3px;
+}
+
+code {
+  background-color: var(--color-box-bg-shaded);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+blockquote {
+  font-style: italic;
+  margin: 0.25em 0 0 0.5em;
+  padding: 0 0 0 1em;
+  border-left: 2px solid var(--color-fg-shape);
+}
+
+/* ---------- ФОРМЫ (базовые) ---------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+textarea,
+select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+input, button, select, textarea {
+  color: var(--color-fg);
+  font: inherit;
+  background-color: var(--color-box-bg);
+  padding: 6px 10px;
+  border: 1px solid var(--color-box-border);
+  border-radius: 3px;
+  transition: border-color var(--transition-fast), outline var(--transition-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: var(--input-outline-width) solid var(--color-box-border-focus);
+  border-color: transparent;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* ---------- КНОПКИ (базовые) ---------- */
+button,
+input[type="submit"],
+input[type="button"] {
+  width: auto;
+  background-color: var(--color-button-bg);
+  border: 1px solid var(--color-box-border);
+  border-bottom-color: var(--color-fg-shape);
+  color: var(--color-fg);
+  cursor: pointer;
+  padding: 6px 14px;
+  font-weight: 500;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background-color: var(--color-button-bg-shaded);
+}
+
+/* ---------- ТАБЛИЦЫ (базовые) ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+th, td {
+  padding: 0.75em;
+  text-align: left;
+  border-bottom: 1px solid var(--color-table-row-border);
+}
+
+thead th {
+  background-color: var(--color-table-header-bg);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-table-header-border);
+}
+
+tbody tr:hover {
+  background-color: var(--color-box-bg-shaded);
+}
+
+/* ---------- НАВИГАЦИЯ (базовая) ---------- */
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+  padding: 0.75em 0;
+  flex-wrap: wrap;
+}
+
+nav a {
+  color: var(--opacity-fg-67);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.25em 0;
+  transition: color var(--transition-fast);
+}
+
+nav a:hover {
+  color: var(--color-fg);
+}
+
+nav a.is-active {
+  color: var(--color-fg);
+  border-bottom: 2px solid var(--color-fg-accent);
+  padding-bottom: 0.15em;
+}
+
+/* ---------- ХЛЕБНЫЕ КРОШКИ (семантические) ---------- */
+nav[aria-label="Breadcrumb"] {
+  margin: 1em 0;
+  padding: 0;
+  border-bottom: none; /* Переопределяем базовый nav */
+}
+
+nav[aria-label="Breadcrumb"] ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+nav[aria-label="Breadcrumb"] li {
+  display: contents; /* Чтобы ::after работал между li */
+}
+
+nav[aria-label="Breadcrumb"] li:not(:last-child)::after {
+  content: "/";
+  margin-left: 0.5rem;
+  color: var(--opacity-fg-63);
+}
+
+nav[aria-label="Breadcrumb"] a {
+  color: var(--opacity-fg-59);
+  text-decoration: none;
+  font-weight: normal; /* Переопределяем nav a */
+}
+
+nav[aria-label="Breadcrumb"] a:hover {
+  color: var(--color-fg-link);
+  text-decoration: underline;
+}
+
+nav[aria-label="Breadcrumb"] [aria-current="page"] {
+  color: var(--color-fg);
+  font-weight: 600;
+}

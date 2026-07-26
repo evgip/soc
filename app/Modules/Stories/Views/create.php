@@ -5,7 +5,7 @@
 </p>
 
 <?php if (!empty($error)): ?>
-<div class="flash-error">
+<div role="alert" class="alert is-danger">
     <?= e($error) ?>
 </div>
 <?php endif; ?>

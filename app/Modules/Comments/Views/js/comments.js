@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				<div class="comment_actions">
 					<button type="submit">Сохранить</button>
 					<span class="divider">|</span>
-					<button type="button" class="comment-edit-cancel btn-link">Отмена</button>
+					<button type="button" class="comment-edit-cancel is-link">Отмена</button>
 				</div>
 			`;
 

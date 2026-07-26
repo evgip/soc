@@ -42,10 +42,9 @@ $canDelete = $canDelete ?? false;
                         <form action="/t/<?= e($tag['slug']) ?>/wiki/<?= (int)$page['id'] ?>/delete" 
                               method="POST" 
                               class="inline-form js-confirm-delete"
-                              data-confirm-message="Вы уверены, что хотите удалить эту страницу?"
-                              style="display: inline;">
+                              data-confirm-message="Вы уверены, что хотите удалить эту страницу?">
                             <?= csrf_field() ?>
-                            <button type="submit" class="btn-link delete">🗑️ Удалить</button>
+                            <button type="submit" class="is-link delete">🗑️ Удалить</button>
                         </form>
                     <?php endif; ?>
                 <?php endif; ?>

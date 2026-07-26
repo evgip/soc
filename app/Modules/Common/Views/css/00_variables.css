@@ -1,0 +1,141 @@
+/* ============================================
+   W3A CSS Framework — Переменные
+   ============================================ */
+
+/* СВЕТЛАЯ ТЕМА (по умолчанию) */
+:root {
+  --base-bg: 254 254 254;
+  --base-fg: 51 51 51;
+  --base-color: #000;
+
+  --opacity-fg: rgb(var(--base-fg) / 100%);
+  --opacity-fg-84: rgb(var(--base-fg) / 84%);
+  --opacity-fg-75: rgb(var(--base-fg) / 75%);
+  --opacity-fg-67: rgb(var(--base-fg) / 67%);
+  --opacity-fg-63: rgb(var(--base-fg) / 63%);
+  --opacity-fg-59: rgb(var(--base-fg) / 59%);
+
+  --color-bg-accent: rgb(172 19 13);
+  --color-fg-accent: rgb(172 19 13);
+  --color-fg-link: rgb(28 89 209);
+  --color-fg-link-visited: rgb(95 134 212);
+  --color-fg-negative: rgb(139 0 0);
+  --color-fg-affirmative: rgb(0 128 0);
+  --color-fg-author: rgb(96 129 189);
+  --color-fg-shape: rgb(187 187 187);
+
+  --color-bg: rgb(var(--base-bg));
+  --color-fg: rgb(var(--base-fg) / var(--opacity-fg));
+  --color-box-bg: #ffffff;
+  --color-box-bg-shaded: #f5f5f5;
+  --color-box-border: #cccccc;
+  --color-box-border-focus: #808080;
+
+  --color-button-bg: #fafafa;
+  --color-button-bg-shaded: #e6e6e6;
+
+  --color-table-header-bg: #eaeaea;
+  --color-table-header-border: #cacaca;
+  --color-table-row-bg-even: #f8f8f8;
+  --color-table-row-bg-odd: #f5f5f5;
+  --color-table-row-border: #e0e0e0;
+
+  --color-tag-bg: #fffcd7;
+  --color-tag-border: #d5d458;
+  --color-tag-meta-bg: #ddebf9;
+  --color-tag-meta-border: #b2ccf0;
+
+  --color-flash-bg-error: #fdcfcc;
+  --color-flash-bg-success: #dff0d8;
+  --color-flash-bg-notice: #cce6ee;
+
+  --color-comment-new-bg: #fff3cd;
+  --color-comment-new-border: #ffc107;
+  --color-comment-highlight: #fff3cd;
+
+  --color-rss: #f26522;
+  --color-rss-hover-bg: #fff3e0;
+
+  --font-size-default: 1rem;
+  --font-size-tags: 0.66rem;
+  --input-outline-width: 2px;
+  --transition-fast: 0.2s ease-in-out;
+}
+
+/* ТЁМНАЯ ТЕМА (автоматическая) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --base-bg: 20 20 20;
+    --base-fg: 220 220 220;
+    --base-color: #fff;
+    --color-bg-accent: rgb(220 80 70);
+    --color-fg-accent: rgb(220 80 70);
+    --color-fg-link: rgb(120 170 255);
+    --color-fg-link-visited: rgb(160 180 230);
+    --color-fg-negative: rgb(255 100 100);
+    --color-fg-affirmative: rgb(100 200 100);
+    --color-fg-author: rgb(140 170 230);
+    --color-fg-shape: rgb(80 80 80);
+    --color-box-bg: #2a2a2a;
+    --color-box-bg-shaded: #1e1e1e;
+    --color-box-border: #444444;
+    --color-box-border-focus: #888888;
+    --color-button-bg: #333333;
+    --color-button-bg-shaded: #444444;
+    --color-table-header-bg: #2e2e2e;
+    --color-table-header-border: #444444;
+    --color-table-row-bg-even: #252525;
+    --color-table-row-bg-odd: #2a2a2a;
+    --color-table-row-border: #333333;
+    --color-tag-bg: #3a3a20;
+    --color-tag-border: #6a6a30;
+    --color-tag-meta-bg: #1e3a5f;
+    --color-tag-meta-border: #2a4a6f;
+    --color-flash-bg-error: #4a2020;
+    --color-flash-bg-success: #204a20;
+    --color-flash-bg-notice: #203a4a;
+    --color-comment-new-bg: #3a3520;
+    --color-comment-new-border: #d29922;
+    --color-comment-highlight: #3a3520;
+    --color-rss: #ff8c42;
+    --color-rss-hover-bg: #3a2a1a;
+  }
+}
+
+/* ТЁМНАЯ ТЕМА (ручное переключение) */
+[data-theme="dark"] {
+  --base-bg: 20 20 20;
+  --base-fg: 220 220 220;
+  --base-color: #fff;
+  --color-bg-accent: rgb(220 80 70);
+  --color-fg-accent: rgb(220 80 70);
+  --color-fg-link: rgb(120 170 255);
+  --color-fg-link-visited: rgb(160 180 230);
+  --color-fg-negative: rgb(255 100 100);
+  --color-fg-affirmative: rgb(100 200 100);
+  --color-fg-author: rgb(140 170 230);
+  --color-fg-shape: rgb(80 80 80);
+  --color-box-bg: #2a2a2a;
+  --color-box-bg-shaded: #1e1e1e;
+  --color-box-border: #444444;
+  --color-box-border-focus: #888888;
+  --color-button-bg: #333333;
+  --color-button-bg-shaded: #444444;
+  --color-table-header-bg: #2e2e2e;
+  --color-table-header-border: #444444;
+  --color-table-row-bg-even: #252525;
+  --color-table-row-bg-odd: #2a2a2a;
+  --color-table-row-border: #333333;
+  --color-tag-bg: #3a3a20;
+  --color-tag-border: #6a6a30;
+  --color-tag-meta-bg: #1e3a5f;
+  --color-tag-meta-border: #2a4a6f;
+  --color-flash-bg-error: #4a2020;
+  --color-flash-bg-success: #204a20;
+  --color-flash-bg-notice: #203a4a;
+  --color-comment-new-bg: #3a3520;
+  --color-comment-new-border: #d29922;
+  --color-comment-highlight: #3a3520;
+  --color-rss: #ff8c42;
+  --color-rss-hover-bg: #3a2a1a;
+}

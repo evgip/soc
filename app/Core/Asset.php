@@ -160,20 +160,29 @@ class Asset
         $theme = self::getActiveTheme();
         $themeAssetsPath = dirname(__DIR__, 2) . "/themes/{$theme}/assets";
 
-        // 1. Сначала сканируем модули (базовые стили/скрипты)
         if (is_dir($modulesPath)) {
             $discovered = array_merge($discovered, self::scanDirectory($modulesPath, $extension));
         }
 
-        // 2. Затем сканируем активную тему.
-        // ВАЖНО: Файлы темы добавляются в конец массива. При конкатенации CSS это гарантирует,
-        // что стили темы будут идти после стилей модулей и смогут их корректно переопределять.
         if (is_dir($themeAssetsPath)) {
             $discovered = array_merge($discovered, self::scanDirectory($themeAssetsPath, $extension));
         }
 
-        // Сортируем для детерминированного порядка сборки (чтобы хэш/порядок не менялся хаотично)
-        sort($discovered);
+        // УЛУЧШЕНИЕ: Умная сортировка
+        // 1. Сначала файлы из Modules/Common (наш css фреймворк должен быть первым)
+        // 2. Затем остальные модули
+        // 3. В конце файлы темы (чтобы тема могла переопределять всё)
+        usort($discovered, function ($a, $b) {
+            $isCommonA = strpos($a, 'Modules' . DIRECTORY_SEPARATOR . 'Common') !== false;
+            $isCommonB = strpos($b, 'Modules' . DIRECTORY_SEPARATOR . 'Common') !== false;
+            
+            if ($isCommonA && !$isCommonB) return -1; // A (Common) идет раньше B
+            if (!$isCommonA && $isCommonB) return 1;  // B (Common) идет раньше A
+            
+            // Если оба не Common или оба Common, сортируем по алфавиту (сработают префиксы 00_, 01_)
+            return strcmp($a, $b);
+        });
+
         return $discovered;
     }
 

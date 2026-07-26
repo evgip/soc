@@ -1,0 +1,42 @@
+/* ============================================
+   W3A CSS Framework — Утилиты
+   ============================================ */
+
+.hint {
+  color: var(--opacity-fg-63);
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+.clear { clear: both; }
+
+.mr5 {
+  margin-right: 5px;
+}
+
+.delete, .red, .is-link.red { color: var(--color-fg-negative); }
+.delete { font-size: 0.85em; }
+.delete:hover { opacity: 0.8; }
+
+.green { color: var(--color-fg-affirmative); }
+
+.bold { font-weight: bold; }
+
+.mb1 { margin-bottom: 1em; }
+
+.inline-form { display: inline; }
+
+.flex { display: flex; }
+.gap { gap: 1.125rem; }
+.flex-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+
+.hidden { display: none; }
+
+.w-60 { width: 60%; }
+
+.text-sm { font-size: 0.85em; }
+
+.right { float: right; }
+
+.mb-none { display: none; } /* используется в мобильных медиа-запросах */

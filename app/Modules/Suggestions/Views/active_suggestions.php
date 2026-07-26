@@ -48,7 +48,7 @@ $isModerator = \App\Modules\Auth\Services\Auth::isModerator() || \App\Modules\Au
                         <div class="moderator-actions">
                             <form action="/suggestions/<?= $group['suggestion_id'] ?>/approve" method="POST">
                                 <?= csrf_field() ?>
-                                <button type="submit" class="btn-link">
+                                <button type="submit" class="is-link">
                                     ✓ Одобрить
                                 </button>
                             </form>
@@ -56,7 +56,7 @@ $isModerator = \App\Modules\Auth\Services\Auth::isModerator() || \App\Modules\Au
                             <form action="/suggestions/<?= $group['suggestion_id'] ?>/reject" method="POST">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="reason" value="Отклонено модератором">
-                                <button type="submit" class="btn-link red">
+                                <button type="submit" class="is-link red">
                                     ✗ Отклонить
                                 </button>
                             </form>

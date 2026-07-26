@@ -545,7 +545,7 @@ abstract class Controller
      */
     protected function renderBreadcrumbs(array $items): string
     {
-        $html = '<nav aria-label="breadcrumb"><ol class="breadcrumb">';
+        $html = '<nav aria-label="Breadcrumb"><ol>';
         foreach ($items as $item) {
             $label = $item['label'] ?? $item['title'] ?? '';
             if (isset($item['url'])) {
@@ -553,7 +553,7 @@ abstract class Controller
                 $html .= '<li><a href="' . e($item['url']) . '">' . e($label) . '</a></li>';
             } else {
                 // Текущая страница (некликабельная)
-                $html .= '<li class="active" aria-current="page">' . e($label) . '</li>';
+                $html .= '<li aria-current="page">' . e($label) . '</li>';
             }
         }
         $html .= '</ol></nav>';

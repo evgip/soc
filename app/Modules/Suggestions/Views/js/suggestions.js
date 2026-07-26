@@ -1,6 +1,15 @@
 class SuggestionsManager {
     constructor() {
+        // 1. Пытаемся найти модалку
         this.modal = document.getElementById('suggest-modal');
+        
+        // 2. ЗАЩИТНАЯ ПРОВЕРКА: Если модалки нет на этой странице, прекращаем выполнение.
+        // Это предотвратит ошибку и не будет нагружать браузер на других страницах.
+        if (!this.modal) {
+            return; 
+        }
+        
+        // 3. Если модалка есть, инициализируем остальные элементы
         this.tagsGroup = document.getElementById('suggest-tags-group');
         this.textGroup = document.getElementById('suggest-text-group');
         this.form = document.getElementById('suggest-form');
@@ -9,19 +18,26 @@ class SuggestionsManager {
     }
     
     init() {
-        // Открытие модалки
+        // Открытие модалки (используем closest для надежности)
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('suggest-edit-btn')) {
-                this.openSuggestModal(e.target);
+            const btn = e.target.closest('.suggest-edit-btn');
+            if (btn) {
+                this.openSuggestModal(btn);
             }
         });
         
-        // Закрытие модалки
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('close-modal') || e.target.id === 'suggest-modal') {
-                this.closeModal();
+        // Закрытие модалки при клике на затемненный фон (backdrop)
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.modal.close();
             }
         });
+
+        // Закрытие модалки кнопкой "Отмена"
+        const cancelBtn = this.modal.querySelector('.close-modal-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.modal.close());
+        }
         
         // Отправка формы
         if (this.form) {
@@ -30,13 +46,6 @@ class SuggestionsManager {
                 this.submitSuggestion();
             });
         }
-        
-        // Закрытие по Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !this.modal.classList.contains('hidden')) {
-                this.closeModal();
-            }
-        });
     }
     
     openSuggestModal(button) {
@@ -44,54 +53,24 @@ class SuggestionsManager {
         const targetId = button.dataset.targetId;
         const currentTitle = button.dataset.currentTitle || '';
         
-        // Заполняем данные формы
         document.getElementById('suggest-target-type').value = targetType;
         document.getElementById('suggest-target-id').value = targetId;
         document.getElementById('suggest-title').value = currentTitle;
         
-        // Показываем/скрываем группы полей через классы
         if (targetType === 'Story') {
-            this.showElement(this.tagsGroup);
-            this.hideElement(this.textGroup);
+            this.tagsGroup.classList.remove('hidden');
+            this.textGroup.classList.add('hidden');
         } else if (targetType === 'Comment') {
-            this.hideElement(this.tagsGroup);
-            this.showElement(this.textGroup);
+            this.tagsGroup.classList.add('hidden');
+            this.textGroup.classList.remove('hidden');
         }
         
-        // Показываем модальное окно
-        this.showModal();
-    }
-    
-    showModal() {
-        this.modal.classList.remove('hidden');
-        this.modal.classList.add('modal-visible');
-    }
-    
-    closeModal() {
-        this.modal.classList.remove('modal-visible');
-        this.modal.classList.add('hidden');
-    }
-    
-    showElement(element) {
-        if (element) {
-            element.classList.remove('field-hidden');
-            element.classList.add('field-visible');
-        }
-    }
-    
-    hideElement(element) {
-        if (element) {
-            element.classList.remove('field-visible');
-            element.classList.add('field-hidden');
-        }
+        this.modal.showModal();
     }
     
     async submitSuggestion() {
         const formData = new FormData(this.form);
-        
         const targetType = formData.get('target_type');
-        const csrfToken = getCsrfToken(); // Используем глобальную функцию из core_utils.js
-        
         const proposedData = {};
         
         const newTitle = formData.get('title')?.trim();
@@ -100,7 +79,7 @@ class SuggestionsManager {
         }
         
         if (targetType === 'Story') {
-            const selectedTags = Array.from(document.querySelectorAll('input[name="tags[]"]:checked'))
+            const selectedTags = Array.from(this.form.querySelectorAll('input[name="tags[]"]:checked'))
                 .map(cb => parseInt(cb.value));
             proposedData.tag_ids = selectedTags;
         } else if (targetType === 'Comment') {
@@ -121,13 +100,12 @@ class SuggestionsManager {
             const response = await fetch('/suggestions', {
                 method: 'POST',
                 body: formData
-                // CSRF-токен добавляется автоматически перехватчиком из core_utils.js
             });
             
             const result = await response.json();
             
             if (result.success) {
-                this.closeModal();
+                this.modal.close();
                 window.location.reload();
             } else {
                 alert('Ошибка: ' + result.error);
@@ -138,6 +116,7 @@ class SuggestionsManager {
     }
 }
 
+// Инициализация только после полной загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     new SuggestionsManager();
 });
