@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Notifications;
 
-use App\Core\Container;
-use App\Core\Logger;
-use App\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Container;
+use W3a\Core\Logger;
+use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Notifications\Services\NotificationService;
 use App\Modules\Comments\Models\Comment;

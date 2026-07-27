@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories;
 
-use App\Core\Container;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\Audit;
+use W3a\Core\Container;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\Audit;
 
-use App\Core\Validator;
-use App\Core\Events\EventDispatcher;
+use W3a\Core\Validator;
+use W3a\Core\Events\EventDispatcher;
+
+use W3a\Core\Security\UserContext;
 
 use App\Modules\Stories\Events\StoryCreated;
 use App\Modules\Stories\Events\StoryDeleted;
@@ -21,7 +23,7 @@ use App\Modules\Comments\Events\CommentCreated;
 use App\Modules\Comments\Events\CommentDeleted;
 use App\Modules\Comments\Events\CommentRestored;
 
-use App\Core\Events\Listeners\AuditListener;
+use W3a\Core\Events\Listeners\AuditListener;
 use App\Modules\Stories\Listeners\UpdateStoryCommentsCountListener;
 
 use App\Modules\Stories\Models\Story;
@@ -37,7 +39,7 @@ use App\Modules\Origins\Models\Domain;
 
 use App\Modules\Muted\Services\MuteService;
 
-class ModuleServiceProvider extends \App\Core\ModuleServiceProvider
+class ModuleServiceProvider extends \W3a\Core\ModuleServiceProvider
 {
     public function register(Container $container): void
     {
@@ -86,14 +88,14 @@ class ModuleServiceProvider extends \App\Core\ModuleServiceProvider
                 $c->get(Validator::class),
                 $c->get(Audit::class),
                 $c->get(EventDispatcher::class),
-                $c->get(\App\Core\Security\UserContext::class)
+                $c->get(UserContext::class)
             );
         });
 
         $container->singleton(ReadRibbonService::class, function (Container $c) {
             return new ReadRibbonService(
                 $c->get(ReadRibbon::class),
-                $c->get(\App\Core\Security\UserContext::class)
+                $c->get(UserContext::class)
             );
         });
 

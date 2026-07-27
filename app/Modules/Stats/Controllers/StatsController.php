@@ -2,10 +2,10 @@
 
 namespace App\Modules\Stats\Controllers;
 
-use App\Core\Controller;
+use App\BaseController;
 use App\Modules\Stats\Models\Stats;
 
-class StatsController extends Controller
+class StatsController extends BaseController
 {
     public function index(): void
     {

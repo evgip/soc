@@ -8,7 +8,7 @@
  * ВАЖНО: конкретные маршруты (mark-all-read) регистрируются ДО
  * параметрических ({id}/read), чтобы избежать конфликта.
  * 
- * @var \App\Core\Router $router
+ * @var \W3a\Core\Router $router
  */
 
 use App\Modules\Notifications\Controllers\NotificationsController;

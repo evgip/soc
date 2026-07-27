@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Services;
 
-use App\Core\Container;
+use W3a\Core\Container;
 use App\Modules\Stories\Models\Story;
 use App\Modules\Stories\Models\ReadRibbon;
 use App\Modules\Tags\Models\Tag;
@@ -12,7 +12,7 @@ use App\Modules\Votes\Models\Vote;
 use App\Modules\Votes\Services\VoteService; 
 use App\Modules\Suggestions\Services\SuggestionService;
 use App\Modules\Saved\Models\SavedStory;
-use App\Core\Exceptions\NotFoundException;
+use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Stories\ViewModels\StoryShowViewModel;
 
 /**

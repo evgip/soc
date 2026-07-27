@@ -7,8 +7,8 @@ namespace App\Modules\Wiki\Services;
 use App\Modules\Wiki\Models\WikiPermission;
 use App\Modules\Tags\Models\Tag;
 use App\Modules\Users\Models\User;
-use App\Core\Audit;
-use App\Core\Security\UserContext;
+use W3a\Core\Audit;
+use W3a\Core\Security\UserContext;
 use App\Modules\Wiki\Exceptions\WikiPermissionException;
 
 /**

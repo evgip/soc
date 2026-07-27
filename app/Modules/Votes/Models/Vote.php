@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Votes\Models;
 
-use App\Core\Model;
-use App\Core\Database;
-use App\Core\Logger;
+use W3a\Core\Model;
+use W3a\Core\Database;
+use W3a\Core\Logger;
 
 /**
  * Модель для работы с голосами пользователей.

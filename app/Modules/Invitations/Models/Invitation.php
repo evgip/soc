@@ -2,7 +2,7 @@
 
 namespace App\Modules\Invitations\Models;
 
-use App\Core\Model;
+use W3a\Core\Model;
 
 class Invitation extends Model
 {

@@ -7,7 +7,7 @@
  * - Гости: вход и регистрация (авторизованные редиректятся на главную)
  * - Авторизованные: настройки, выход, управление аккаунтом
  * 
- * @var \App\Core\Router $router
+ * @var \W3a\Core\Router $router
  */
 
 use App\Modules\Users\Controllers\UsersController;

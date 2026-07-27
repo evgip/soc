@@ -1,52 +1,37 @@
 <?php
 
-namespace App\Core\Middleware;
+declare(strict_types=1);
 
-use App\Core\Container;
-use App\Core\Session;
-use App\Core\Audit;
+namespace App\Modules\Users\Middleware;
+
+use W3a\Core\Container;
+use W3a\Core\Contracts\UserIdProviderInterface;
+use W3a\Core\Session;
+use W3a\Core\Audit;
+use W3a\Core\Exceptions\RedirectException;
+use W3a\Core\Middleware\MiddlewareInterface;
 use App\Modules\Users\Models\User;
-use App\Modules\Auth\Services\Auth;
-use App\Core\Exceptions\RedirectException;
 
-/**
- * Middleware для проверки бана пользователя.
- * 
- * ✅ ИЗМЕНЕНО: Все зависимости внедряются через DI-контейнер.
- * ✅ Использует RedirectException для управления потоком вместо exit.
- */
 class BanCheckMiddleware implements MiddlewareInterface
 {
-    private Container $container;
-
-    /**
-     * ✅ Конструктор с инъекцией контейнера
-     */
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-    }
+    public function __construct(
+        private readonly Container $container,
+        private readonly UserIdProviderInterface $userIdProvider
+    ) {}
 
     public function handle(callable $next): mixed
     {
-        // Проверяем только авторизованных пользователей
-        if (!Auth::check()) {
+        $userId = $this->userIdProvider->getUserId();
+        
+        if ($userId === null || (int)$userId <= 0) {
             return $next();
         }
         
-        $userId = (int)($_SESSION['user_id'] ?? 0);
-        if ($userId <= 0) {
-            return $next();
-        }
-        
-        // ✅ Получаем User из контейнера
         $userModel = $this->container->get(User::class);
         
-        if ($userModel->isBanned($userId)) {
-            // Получаем информацию о бане
-            $banInfo = $userModel->getBanInfo($userId);
+        if ($userModel->isBanned((int)$userId)) {
+            $banInfo = $userModel->getBanInfo((int)$userId);
             
-            // Формируем сообщение
             $message = 'Ваш аккаунт заблокирован.';
             if (!empty($banInfo['reason'])) {
                 $message .= ' Причина: ' . $banInfo['reason'];
@@ -55,7 +40,6 @@ class BanCheckMiddleware implements MiddlewareInterface
                 $message .= ' Срок до: ' . date('d.m.Y H:i', strtotime($banInfo['expires_at']));
             }
             
-            // ✅ Логируем через внедрённый Audit
             $audit = $this->container->get(Audit::class);
             $audit->log('security.banned_access', 'Попытка доступа забаненного пользователя', 'security', [
                 'user_id' => $userId,
@@ -63,7 +47,6 @@ class BanCheckMiddleware implements MiddlewareInterface
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             ]);
             
-            // ✅ Очищаем сессию через Session
             $session = $this->container->get(Session::class);
             $flash = $_SESSION['flash'] ?? null;
             $session->destroy();
@@ -74,8 +57,6 @@ class BanCheckMiddleware implements MiddlewareInterface
             }
             
             $session->flash('error', $message);
-            
-            // ✅ Выбрасываем исключение
             throw new RedirectException('/');
         }
         

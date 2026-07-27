@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Muted\Controllers;
 
-use App\Core\Controller;
+use App\BaseController;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Muted\Exceptions\MuteValidationException;
 use App\Modules\Users\Models\User;
@@ -14,7 +14,7 @@ use App\Modules\Users\Models\User;
  * 
  * Все маршруты защищены middleware ['web', 'auth'].
  */
-class MuteController extends Controller
+class MuteController extends BaseController
 {
     /**
      * Список игнорируемых пользователей.

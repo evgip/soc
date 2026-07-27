@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Comments\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
-use App\Core\Exceptions\NotFoundException;
+use App\BaseController;
+use W3a\Core\Session;
+use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Comments\Exceptions\CommentValidationException;
 use App\Modules\Comments\Exceptions\CommentPermissionException;
 
@@ -15,7 +15,7 @@ use App\Modules\Votes\Models\Vote;
 use App\Modules\Users\Models\User;
 use App\Modules\Stories\Services\ReadRibbonService;
 
-class CommentsController extends Controller
+class CommentsController extends BaseController
 {
     /**
      * Глобальная лента всех комментариев

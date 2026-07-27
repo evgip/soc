@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Invitations\Controllers;
 
-use App\Core\Controller;
-use App\Core\Validator;
-use App\Core\Lang;
+use App\BaseController;
+use W3a\Core\Validator;
+use W3a\Core\Lang;
 use App\Modules\Invitations\Models\Invitation;
 use App\Modules\Invitations\Models\InvitationRequest;
 use App\Modules\Users\Models\User;
@@ -28,7 +28,7 @@ use App\Modules\Mail\Core\Mailer;
  * Маршруты регистрации (showInviteRegistration, registerWithInvite) — публичные.
  * Маршруты запроса приглашения (showRequestForm, submitRequest) — публичные.
  */
-class InvitationsController extends Controller
+class InvitationsController extends BaseController
 {
     // =========================================================================
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ

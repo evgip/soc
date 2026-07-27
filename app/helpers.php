@@ -1,48 +1,61 @@
 <?php
 
-use App\Core\Router;
+use W3a\Core\Router;
+use W3a\Core\Container;
 
 /**
- * Получить сервис из контейнера
+ * Получить сервис из контейнера или установить сам контейнер.
  * 
- * @param string $abstract Имя сервиса
+ * @param string|Container|null $abstract Имя сервиса или экземпляр Container для инициализации
  * @return mixed
  */
 if (!function_exists('container')) {
-	function container(string $abstract): mixed
-	{
-		if (!isset($GLOBALS['app_container'])) {
-			throw new \RuntimeException('Application container not initialized');
-		}
+    function container(string|Container|null $abstract = null): mixed
+    {
+        // Статическая переменная хранит экземпляр контейнера между вызовами функции
+        static $containerInstance = null;
 
-		return $GLOBALS['app_container']->get($abstract);
-	}
+        // 1. Если передан экземпляр Container, мы его инициализируем (сохраняем)
+        if ($abstract instanceof Container) {
+            $containerInstance = $abstract;
+            return $containerInstance;
+        }
+
+        // 2. Если контейнер ещё не инициализирован, выбрасываем ошибку
+        if ($containerInstance === null) {
+            throw new \RuntimeException('Application container not initialized. Call container($container) in Application::bootstrap() first.');
+        }
+
+        // 3. Если передана строка, возвращаем запрошенный сервис
+        if (is_string($abstract)) {
+            return $containerInstance->get($abstract);
+        }
+
+        // 4. Если ничего не передано, возвращаем сам контейнер
+        return $containerInstance;
+    }
 }
 
 /**
  * Универсальный хелпер для ленивой загрузки и кэширования экземпляров из DI-контейнера.
- * Устраняет дублирование паттерна `static $instance = null` в глобальных функциях.
- *
- * @param string $abstract Класс или интерфейс для получения из контейнера
- * @param callable|null $fallback Функция, возвращающая значение при ошибке (если null, пробрасывает исключение)
- * @return mixed
  */
 if (!function_exists('get_cached_container')) {
-	function get_cached_container(string $abstract, ?callable $fallback = null): mixed
-	{
-		static $cache = [];
+    function get_cached_container(string $abstract, ?callable $fallback = null): mixed
+    {
+        static $cache = [];
 
-		if (!array_key_exists($abstract, $cache)) {
-			try {
-				$cache[$abstract] = container($abstract);
-			} catch (Throwable $e) {
-				error_log("get_cached_container failed for {$abstract}: " . $e->getMessage());
-				$cache[$abstract] = $fallback !== null ? $fallback($e) : throw $e;
-			}
-		}
+        if (!array_key_exists($abstract, $cache)) {
+            try {
+                // Теперь это безопасно вызовет container($abstract)
+                $cache[$abstract] = container($abstract);
+            } catch (\Throwable $e) {
+                error_log("get_cached_container failed for {$abstract}: " . $e->getMessage());
+                $cache[$abstract] = $fallback !== null ? $fallback($e) : throw $e;
+            }
+        }
 
-		return $cache[$abstract];
-	}
+        return $cache[$abstract];
+    }
 }
 
 /**
@@ -59,7 +72,7 @@ if (!function_exists('get_cached_container')) {
 if (!function_exists('route')) {
 	function route(string $name, array $params = []): string
 	{
-		$router = get_cached_container(App\Core\Router::class, fn() => null);
+		$router = get_cached_container(Router::class, fn() => null);
 		if ($router !== null) {
 			try {
 				return $router->route($name, $params);
@@ -77,7 +90,7 @@ if (!function_exists('route')) {
 if (!function_exists('redirect')) {
 	function redirect(string $url, int $code = 302): never
 	{
-		throw new \App\Core\Exceptions\RedirectException($url, $code);
+		throw new \W3a\Core\Exceptions\RedirectException($url, $code);
 	}
 }
 
@@ -88,7 +101,7 @@ if (!function_exists('redirect')) {
 if (!function_exists('__')) {
 	function __(string $key, array $replace = []): string
 	{
-		return \App\Core\Lang::get($key, $replace);
+		return \W3a\Core\Lang::get($key, $replace);
 	}
 }
 
@@ -113,8 +126,8 @@ if (!function_exists('partial')) {
 		// 2. Получаем имя активной темы через глобальный контейнер
 		// (Мы используем $GLOBALS, так как находимся в глобальной функции)
 		$theme = 'default';
-		if (isset($GLOBALS['app_container']) && $GLOBALS['app_container']->has(\App\Core\Config::class)) {
-			$theme = $GLOBALS['app_container']->get(\App\Core\Config::class)->get('config.app.theme', 'default');
+		if (isset($GLOBALS['app_container']) && $GLOBALS['app_container']->has(\W3a\Core\Config::class)) {
+			$theme = $GLOBALS['app_container']->get(\W3a\Core\Config::class)->get('config.app.theme', 'default');
 		}
 
 		// 3. Цепочка поиска (Fallback Chain)
@@ -235,14 +248,14 @@ if (!function_exists('csrf_field')) {
 	{
 		try {
 			// ✅ Получаем Request из контейнера
-			$request = container(\App\Core\Request::class);
+			$request = container(\W3a\Core\Request::class);
 			return $request->csrfField();
 		} catch (\Throwable $e) {
 			// Fallback: если контейнер не инициализирован
 			error_log("csrf_field() failed: " . $e->getMessage());
 
 			// Создаём временный Request
-			$request = new \App\Core\Request();
+			$request = new \W3a\Core\Request();
 			return $request->csrfField();
 		}
 	}
@@ -263,7 +276,7 @@ if (!function_exists('csp_nonce')) {
 		static $nonce = null;
 
 		if ($nonce === null) {
-			$security = get_cached_container(App\Core\Security::class, fn() => null);
+			$security = get_cached_container(W3a\Core\Security::class, fn() => null);
 			if ($security !== null) {
 				try {
 					$nonce = $security->getNonce();
@@ -324,7 +337,7 @@ if (!function_exists('config')) {
 		static $config = null;
 
 		if ($config === null) {
-			$config = get_cached_container(App\Core\Config::class, fn() => null);
+			$config = get_cached_container(W3a\Core\Config::class, fn() => null);
 		}
 
 		if ($config === null) {
@@ -491,7 +504,7 @@ if (!function_exists('safeLink')) {
 if (!function_exists('env')) {
 	function env(string $key, mixed $default = null): mixed
 	{
-		return \App\Core\Env::get($key, $default);
+		return \W3a\Core\Env::get($key, $default);
 	}
 }
 

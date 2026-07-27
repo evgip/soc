@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Search\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
+use App\BaseController;
+use W3a\Core\Session;
 use App\Modules\Search\Models\SearchResult;
 use App\Modules\Votes\Models\Vote;
 
@@ -14,7 +14,7 @@ use App\Modules\Votes\Models\Vote;
  * 
  * Обрабатывает контекстный поиск по историям и комментариям.
  */
-class SearchController extends Controller
+class SearchController extends BaseController
 {
     /**
      * Обработка контекстного поиска по историям или комментариям (GET /search?q=...)

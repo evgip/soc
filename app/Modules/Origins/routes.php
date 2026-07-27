@@ -6,7 +6,7 @@
  * - Публичные: список забаненных доменов (для всех)
  * - Админка: управление банами доменов (модераторы/админы)
  * 
- * @var \App\Core\Router $router
+ * @var \W3a\Core\Router $router
  */
 
 use App\Modules\Origins\Controllers\OriginsController;

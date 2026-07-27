@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
-use App\Core\Exceptions\NotFoundException;
+use App\BaseController;
+use W3a\Core\Session;
+use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Users\Services\UserService;
 use App\Modules\Users\Services\AvatarService;
 use App\Modules\Users\Models\User;
@@ -17,7 +17,7 @@ use App\Modules\Users\Exceptions\AvatarUploadException;
 /**
  * Контроллер для управления профилями пользователей и настройками аккаунта.
  */
-class UsersController extends Controller
+class UsersController extends BaseController
 {
     private function getUserService(): UserService
     {

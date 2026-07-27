@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Admin\Services;
 
-use App\Core\Audit;
-use App\Core\Logger;
+use W3a\Core\Audit;
+use W3a\Core\Logger;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Mail\Core\Mailer;
 use App\Modules\Stories\Services\RankingService; 
@@ -37,7 +37,7 @@ class AdminToolsService
 
     public function compileAssets(): void
     {
-        \App\Core\Asset::forceRebuild();
+        \W3a\Core\Asset::forceRebuild();
         $this->audit->log('admin.assets_compile', 'Администратор запустил ручную сборку CSS ассетов через панель инструментов', 'admin');
     }
 

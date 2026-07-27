@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Muted\Models;
 
-use App\Core\Model;
+use W3a\Core\Model;
 
 class MutedUser extends Model
 {

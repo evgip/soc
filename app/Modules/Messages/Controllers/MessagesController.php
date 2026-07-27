@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Messages\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
+use App\BaseController;
+use W3a\Core\Session;
 use App\Modules\Messages\Services\ConversationService;
 use App\Modules\Messages\Services\MessageService;
 use App\Modules\Messages\Exceptions\ConversationException;
@@ -13,7 +13,7 @@ use App\Modules\Messages\Exceptions\ConversationException;
 /**
  * Контроллер личных сообщений.
  */
-class MessagesController extends Controller
+class MessagesController extends BaseController
 {
     /**
      * Получить экземпляр Session из DI-контейнера.

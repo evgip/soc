@@ -6,7 +6,7 @@ namespace App\Modules\Admin\Services;
 
 use App\Modules\Admin\Models\AuditLog;
 use App\Modules\Admin\Models\Audit;
-use App\Core\Database;
+use W3a\Core\Database;
 
 /**
  * Сервис для работы с логами аудита.

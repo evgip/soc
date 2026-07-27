@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Votes\Controllers;
 
-use App\Core\Controller;
-use App\Core\Exceptions\JsonResponseException;
+use App\BaseController;
+use W3a\Core\Exceptions\JsonResponseException;
 use App\Modules\Votes\Services\VoteService;
 
 /**
  * Контроллер голосования.
  * Маршрут защищён middleware: web + auth.
  */
-class VotesController extends Controller
+class VotesController extends BaseController
 {
     private const ALLOWED_TYPES = ['story', 'comment'];
     private const ALLOWED_DIRECTIONS = ['up', 'down'];

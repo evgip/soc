@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Captcha\Core;
 
-use App\Core\Config;
-use App\Core\Request;
-use App\Core\Session;
+use W3a\Core\Config;
+use W3a\Core\Request;
+use W3a\Core\Session;
 
 class Captcha
 {

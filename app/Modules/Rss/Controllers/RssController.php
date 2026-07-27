@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Rss\Controllers;
 
-use App\Core\Controller;
-use App\Core\Exceptions\NotFoundException;
+use App\BaseController;
+use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Rss\Services\RssService;
 use App\Modules\Stories\Services\StoryFilterService;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Tags\Services\TagFilterService;
 use App\Modules\Users\Models\User;
 
-class RssController extends Controller
+class RssController extends BaseController
 {
     private const ITEM_LIMIT = 50;
 

@@ -6,10 +6,10 @@ namespace App\Modules\Stories\Services;
 
 use App\Modules\Stories\Models\Story;
 use App\Modules\Origins\Models\Domain;
-use App\Core\Validator;
-use App\Core\Audit;
-use App\Core\Events\EventDispatcher;
-use App\Core\Security\UserContext;
+use W3a\Core\Validator;
+use W3a\Core\Audit;
+use W3a\Core\Events\EventDispatcher;
+use W3a\Core\Security\UserContext;
 use App\Modules\Stories\Events\StoryDeleted;
 use App\Modules\Stories\Events\StoryRestored;
 use App\Modules\Stories\Exceptions\StoryValidationException;

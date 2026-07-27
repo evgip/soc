@@ -2,9 +2,9 @@
 
 namespace App\Modules\Origins\Models;
 
-use App\Core\Model;
-use App\Core\Database;
-use App\Core\Logger;
+use W3a\Core\Model;
+use W3a\Core\Database;
+use W3a\Core\Logger;
 
 class Domain extends Model
 {

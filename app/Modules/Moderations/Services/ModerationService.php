@@ -7,7 +7,7 @@ namespace App\Modules\Moderations\Services;
 use App\Modules\Moderations\Models\ModNote;
 use App\Modules\Moderations\Models\Moderation;
 use App\Modules\Users\Models\User;
-use App\Core\Events\EventDispatcher;
+use W3a\Core\Events\EventDispatcher;
 use App\Modules\Users\Events\UserBanned;
 use App\Modules\Users\Events\UserUnbanned;
 use App\Modules\Moderations\Events\ModNoteAdded;

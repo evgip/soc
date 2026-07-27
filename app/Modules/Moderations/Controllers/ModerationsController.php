@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Moderations\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
+use App\BaseController;
+use W3a\Core\Session;
 use App\Modules\Moderations\Models\ModNote;
 use App\Modules\Moderations\Models\ModActivity;
 use App\Modules\Admin\Models\AuditLog;
@@ -24,7 +24,7 @@ use App\Modules\Suggestions\Services\SuggestionService;
  * 
  * Все действия логируются через Audit сервис.
  */
-class ModerationsController extends Controller
+class ModerationsController extends BaseController
 {
     /**
      * Получить Session из контейнера

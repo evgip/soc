@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Suggestions\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
-use App\Core\Exceptions\JsonResponseException;
+use App\BaseController;
+use W3a\Core\Session;
+use W3a\Core\Exceptions\JsonResponseException;
 use App\Modules\Suggestions\Services\SuggestionService;
 use App\Modules\Suggestions\Models\Suggestion;
 
@@ -20,7 +20,7 @@ use App\Modules\Suggestions\Models\Suggestion;
  * - Поддержку существующих предложений
  * - Одобрение/отклонение предложений (модераторами)
  */
-class SuggestionController extends Controller
+class SuggestionController extends BaseController
 {
     /**
      * Получить Session из контейнера

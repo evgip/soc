@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Flags\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
-use App\Core\Audit;
+use App\BaseController;
+use W3a\Core\Session;
+use W3a\Core\Audit;
 use App\Modules\Flags\Models\Flag;
 use App\Modules\Comments\Models\Comment;
-use App\Core\Exceptions\BadRequestException;
-use App\Core\Exceptions\NotFoundException;
-use App\Core\Exceptions\JsonResponseException;
+use W3a\Core\Exceptions\BadRequestException;
+use W3a\Core\Exceptions\NotFoundException;
+use W3a\Core\Exceptions\JsonResponseException;
 
 /**
  * Контроллер жалоб (flags) на контент.
@@ -22,7 +22,7 @@ use App\Core\Exceptions\JsonResponseException;
  * - Админ-панель для модерации жалоб
  * - AJAX подсчёт количества ожидающих жалоб
  */
-class FlagsController extends Controller
+class FlagsController extends BaseController
 {
     /**
      * Получить Session из контейнера

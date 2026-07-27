@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
+use App\BaseController;
+use W3a\Core\Session;
 use App\Modules\Auth\Services\AuthService;
 use App\Modules\Auth\Services\PasswordResetService;
 
@@ -21,7 +21,7 @@ use App\Modules\Auth\Exceptions\InvalidTokenException;
  * Отвечает за обработку HTTP-запросов, связанных с входом, регистрацией и восстановлением пароля.
  * Перехватывает исключения от AuthService и преобразует их в flash-сообщения.
  */
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     public function showLoginForm(): void
     {
@@ -89,7 +89,7 @@ class AuthController extends Controller
         $email = trim($this->request->getParams('email'));
         $password = $this->request->getParams('password');
 
-        $validator = $this->container->get(\App\Core\Validator::class);
+        $validator = $this->container->get(\W3a\Core\Validator::class);
         $validator->validate([
             'username' => $username, 
             'email' => $email, 

@@ -10,7 +10,7 @@
  * @var int    $contentOwnerId 
  */
 
-$request = new \App\Core\Request();
+$request = new \W3a\Core\Request();
 $isOwnContent = $isLoggedIn && ($contentOwnerId === (int)($_SESSION['user_id'] ?? 0));
 ?>
 <div class="voters">

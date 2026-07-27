@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Wiki\Events;
 
-use App\Core\Events\Event;
+use W3a\Core\Events\Event;
 
 /**
  * Событие удаления wiki страницы.

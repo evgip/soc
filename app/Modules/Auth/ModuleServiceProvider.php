@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth;
 
-use App\Core\Container;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\Session;
-use App\Core\Audit;
-use App\Core\Config;
-use App\Core\Request;
-use App\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Container;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\Session;
+use W3a\Core\Audit;
+use W3a\Core\Config;
+use W3a\Core\Request;
+use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
 
 use App\Modules\Auth\Services\AuthService;
 use App\Modules\Auth\Services\PasswordResetService;

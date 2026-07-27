@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="/css/app.min.css">
     <link rel="stylesheet" href="/css/admin.min.css">
-    <script src="<?= \App\Core\Asset::js() ?>"></script>
+    <script src="<?= \W3a\Core\Asset::js() ?>"></script>
 
 </head>
 
@@ -43,7 +43,7 @@
             <?= $content ?>
         </main>
 
-        <?= \App\Core\Benchmark::renderStats() ?>
+        <?= \W3a\Core\Benchmark::renderStats() ?>
     </div>
 
 </body>

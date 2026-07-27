@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Services;
 
-use App\Core\Session;
-use App\Core\Logger;
-use App\Core\Audit;
-use App\Core\Config;
-use App\Core\Request;
-use App\Core\Lang;
+use W3a\Core\Session;
+use W3a\Core\Logger;
+use W3a\Core\Audit;
+use W3a\Core\Config;
+use W3a\Core\Request;
+use W3a\Core\Lang;
+
 use App\Modules\Users\Models\User;
 use App\Modules\Auth\Models\RememberToken;
 use App\Modules\Auth\Models\EmailActivation;
@@ -105,6 +106,13 @@ class AuthService
         if ((int)$user['is_active'] !== 1) {
             $this->logFailedAttempt($ip, $email, 'inactive_account');
             throw new AccountNotActiveException('Аккаунт не активирован. Проверьте вашу почту.');
+        }
+
+        // Запрет входа для забаненных пользователей
+        if ($this->userModel->isBanned((int)$user['id'])) {
+            $this->logFailedAttempt($ip, $email, 'banned_account');
+            // Можно использовать существующее исключение или создать новое BannedAccountException
+            throw new AccountNotActiveException('Ваш аккаунт заблокирован администрацией.');
         }
 
         // Успешный вход: очищаем историю неудачных попыток

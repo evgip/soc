@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Tags\Controllers;
 
-use App\Core\Controller;
+use App\BaseController;
 use App\Modules\Tags\Services\CategoryService;
 use App\Modules\Tags\Services\TagFilterService;
 use App\Modules\Votes\Models\Vote;
@@ -14,7 +14,7 @@ use App\Modules\Votes\Models\Vote;
  * Отвечает за отображение категорий тегов и управление фильтрами.
  * Вся бизнес-логика вынесена в сервисы CategoryService и TagFilterService.
  */
-class TagsController extends Controller
+class TagsController extends BaseController
 {
     // =========================================================================
     // КАТЕГОРИИ ТЕГОВ

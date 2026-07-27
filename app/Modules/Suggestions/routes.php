@@ -5,7 +5,7 @@
  * 
  * Все маршруты требуют авторизации (middleware: web + auth).
  * 
- * @var \App\Core\Router $router
+ * @var \W3a\Core\Router $router
  */
 
 use App\Modules\Suggestions\Controllers\SuggestionController;

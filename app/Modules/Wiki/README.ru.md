@@ -46,14 +46,14 @@ app/Modules/Wiki/
 │   ├── _form.php                   # Общая форма (переиспользуемая)
 │   ├── search.php                  # Результаты поиска
 │   └── permissions.php             # Управление правами
+├── Events/                    		# Классы событий
+│	├── WikiPageCreated.php			# Событие создания страницы
+│	├── WikiPageUpdated.php			# Событие обновления страницы
+│	└── WikiPageDeleted.php			# Событие удаления страницы
+│
 ├── ModuleServiceProvider.php       # Регистрация в контейнере
 ├── routes.php                      # Маршруты модуля
 └── README.md                       # Этот файл
-
-app/Core/Events/                    # Классы событий (вне модуля)
-├── WikiPageCreated.php             # Событие создания страницы
-├── WikiPageUpdated.php             # Событие обновления страницы
-└── WikiPageDeleted.php             # Событие удаления страницы
 ```
 
 ## 🗄️ Структура базы данных
@@ -221,9 +221,9 @@ new WikiPageDeleted(
 
 declare(strict_types=1);
 
-namespace App\Core\Events\Listeners;
+namespace W3a\Core\Events\Listeners;
 
-use App\Core\Events\WikiPageCreated;
+use W3a\Core\Events\WikiPageCreated;
 
 class WikiNotificationListener
 {

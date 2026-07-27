@@ -6,7 +6,7 @@
  * ВАЖНО: Порядок маршрутов имеет значение!
  * Более специфичные маршруты должны идти первыми.
  *
- * @var App\Core\Router $router
+ * @var W3a\Core\Router $router
  */
 
 use App\Modules\Wiki\Controllers\WikiController;

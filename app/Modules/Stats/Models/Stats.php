@@ -2,10 +2,10 @@
 
 namespace App\Modules\Stats\Models;
 
-use App\Core\Model;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\SvgChart;
+use W3a\Core\Model;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\SvgChart;
 
 class Stats extends Model
 {

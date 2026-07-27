@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Content;
 
-use App\Core\ModuleServiceProvider as BaseServiceProvider;
-use App\Core\Config;
-use App\Core\Container;
+use W3a\Core\ModuleServiceProvider as BaseServiceProvider;
+use W3a\Core\Config;
+use W3a\Core\Container;
 use App\Modules\Content\Core\Markdown;
 
 class ModuleServiceProvider extends BaseServiceProvider

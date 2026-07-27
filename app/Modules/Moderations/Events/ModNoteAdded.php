@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Moderations\Events;
 
-use App\Core\Events\Event;
+use W3a\Core\Events\Event;
 
 class ModNoteAdded extends Event
 {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Wiki\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
-use App\Core\Logger;
-use App\Core\Exceptions\NotFoundException;
+use App\BaseController;
+use W3a\Core\Session;
+use W3a\Core\Logger;
+use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Wiki\Services\WikiService;
 use App\Modules\Wiki\Services\WikiPermissionService;
 use App\Modules\Wiki\Models\WikiPage;
@@ -23,7 +23,7 @@ use App\Modules\Tags\Models\Tag;
  * - Поиск по wiki
  * - Управление правами доступа
  */
-class WikiController extends Controller
+class WikiController extends BaseController
 {
     // =========================================================================
     // СПИСОК WIKI СТРАНИЦ ТЕГА

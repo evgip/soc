@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Modules\Users;
 
-use App\Core\Container;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\Session;
-use App\Core\Audit;
-use App\Core\Security\UserContext;
-use App\Core\ModuleServiceProvider as BaseModuleServiceProvider;
-use App\Core\Events\EventDispatcher;
-use App\Core\Events\Listeners\AuditListener;
+use W3a\Core\Container;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\Session;
+use W3a\Core\Audit;
+use W3a\Core\Security\UserContext;
+use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Events\EventDispatcher;
+use W3a\Core\Events\Listeners\AuditListener;
 
 use App\Modules\Users\Events\UserBanned;
 use App\Modules\Users\Events\UserUnbanned;

@@ -6,9 +6,9 @@ namespace App\Modules\Comments\Services;
 
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Notifications\Services\NotificationService;
-use App\Core\Validator;
-use App\Core\Events\EventDispatcher;
-use App\Core\Security\UserContext;
+use W3a\Core\Validator;
+use W3a\Core\Events\EventDispatcher;
+use W3a\Core\Security\UserContext;
 
 use App\Modules\Comments\Exceptions\CommentValidationException;
 use App\Modules\Comments\Exceptions\CommentPermissionException;

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Moderations\Models;
 
-use App\Core\Model;
+use W3a\Core\Model;
 
 class Moderation extends Model
 {

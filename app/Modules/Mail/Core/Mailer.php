@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Mail\Core;
 
-use App\Core\Logger;
+use W3a\Core\Logger;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 

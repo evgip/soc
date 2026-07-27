@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Saved\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
+use App\BaseController;
+use W3a\Core\Session;
 use App\Modules\Saved\Models\SavedStory;
 use App\Modules\Saved\Services\SavedService;
 use App\Modules\Stories\Services\StoryFilterService;
@@ -14,7 +14,7 @@ use App\Modules\Votes\Models\Vote;
 /**
  * Контроллер сохранённых историй (закладок).
  */
-class SavedController extends Controller
+class SavedController extends BaseController
 {
     /**
      * Получить экземпляр Session из DI-контейнера.

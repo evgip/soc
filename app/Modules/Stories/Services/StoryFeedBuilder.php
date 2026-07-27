@@ -4,8 +4,8 @@ namespace App\Modules\Stories\Services;
 
 use App\Modules\Stories\DTO\StoryFeedDTO;
 use App\Modules\Votes\Models\Vote;
-use App\Core\Container;
-use App\Core\Request;
+use W3a\Core\Container;
+use W3a\Core\Request;
 
 class StoryFeedBuilder
 {

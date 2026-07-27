@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Rss;
 
-use App\Core\Container;
+use W3a\Core\Container;
 use App\Modules\Rss\Services\RssService;
 
-class ModuleServiceProvider extends \App\Core\ModuleServiceProvider
+class ModuleServiceProvider extends \W3a\Core\ModuleServiceProvider
 {
     public function register(Container $container): void
     {

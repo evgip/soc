@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Services;
 
 use App\Modules\Stories\Models\ReadRibbon;
-use App\Core\Security\UserContext;
+use W3a\Core\Security\UserContext;
 
 /**
  * Сервис для управления статусом прочтения историй и комментариев.

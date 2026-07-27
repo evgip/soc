@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Origins\Controllers;
 
-use App\Core\Controller;
-use App\Core\Audit;
+use App\BaseController;
+use W3a\Core\Audit;
 use App\Modules\Origins\Models\Domain;
 
 /**
@@ -19,7 +19,7 @@ use App\Modules\Origins\Models\Domain;
  * Все действия логируются через Audit сервис.
  * Маршруты админ-панели защищены middleware ['web', 'auth', 'admin'].
  */
-class OriginsController extends Controller
+class OriginsController extends BaseController
 {
     /**
      * Получить Audit из контейнера

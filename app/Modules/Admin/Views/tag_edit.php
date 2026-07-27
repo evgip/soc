@@ -8,7 +8,7 @@ $categories = $categoryModel->getAllOrdered();
 /** 
  * @var array $tagItem 
  * @var array $categories 
- * @var App\Core\Request $request 
+ * @var W3a\Core\Request $request 
  */
 ?>
 

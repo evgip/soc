@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Content\Core;
 
-use App\Core\Config;
+use W3a\Core\Config;
 
 /**
  * Markdown parser using Parsedown library

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Notifications\Controllers;
 
-use App\Core\Controller;
-use App\Core\Exceptions\JsonResponseException;
+use App\BaseController;
+use W3a\Core\Exceptions\JsonResponseException;
 use App\Modules\Notifications\Services\NotificationService;
 
 /**
@@ -20,7 +20,7 @@ use App\Modules\Notifications\Services\NotificationService;
  * Все маршруты защищены middleware ['web', 'auth'],
  * поэтому проверки авторизации в контроллере не требуются.
  */
-class NotificationsController extends Controller
+class NotificationsController extends BaseController
 {
     // =========================================================================
     // СПИСОК УВЕДОМЛЕНИЙ

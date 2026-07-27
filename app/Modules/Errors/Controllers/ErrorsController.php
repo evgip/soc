@@ -3,9 +3,9 @@
 
 namespace App\Modules\Errors\Controllers;
 
-use App\Core\Controller;
+use App\BaseController;
 
-class ErrorsController extends Controller
+class ErrorsController extends BaseController
 {
 	/**
 	 * Ошибка 404 —  Страница не найдена

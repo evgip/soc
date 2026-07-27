@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Admin\Controllers;
 
-use App\Core\Controller;
-use App\Core\Audit;
-use App\Core\Router;
-use App\Core\Exceptions\JsonResponseException;
+use W3a\Core\Audit;
+use W3a\Core\Router;
+use W3a\Core\Exceptions\JsonResponseException;
+
+use App\BaseController;
 use App\Modules\Admin\Services\AdminUserService;
 use App\Modules\Admin\Services\AdminTagService;
 use App\Modules\Admin\Services\AdminCategoryService;
@@ -32,7 +33,7 @@ use App\Modules\Wiki\Models\WikiPage;
  * Все действия логируются через Audit сервис.
  * Все маршруты защищены middleware ['web', 'auth', 'admin'].
  */
-class AdminController extends Controller
+class AdminController extends BaseController
 {
     // =========================================================================
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Admin\Services;
 
 use App\Modules\Tags\Models\Category;
-use App\Core\Audit;
+use W3a\Core\Audit;
 use App\Modules\Admin\Exceptions\AdminValidationException;
 
 /**

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Muted;
 
-use App\Core\Container;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Container;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
 
 use App\Modules\Muted\Models\MutedUser;
 use App\Modules\Muted\Services\MuteService;

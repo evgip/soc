@@ -8,7 +8,7 @@
  * - Публичные: запрос приглашения
  * - Администраторы: модерация запросов
  * 
- * @var \App\Core\Router $router
+ * @var \W3a\Core\Router $router
  */
 
 use App\Modules\Invitations\Controllers\InvitationsController;

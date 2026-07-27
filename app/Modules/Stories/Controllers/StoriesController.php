@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Controllers;
 
-use App\Core\Controller;
-use App\Core\Session;
+use App\BaseController;
+use W3a\Core\Session;
 use App\Modules\Stories\Services\StoryService;
 use App\Modules\Stories\Services\ReadRibbonService;
 use App\Modules\Stories\Services\UrlFetcherService;
@@ -19,7 +19,7 @@ use App\Modules\Users\Models\User;
 use App\Modules\Content\Core\Markdown;
 use App\Modules\Wiki\Services\WikiService;
 
-class StoriesController extends Controller
+class StoriesController extends BaseController
 {
     // =========================================================================
     // ЛЕНТА ИСТОРИЙ
@@ -351,7 +351,7 @@ class StoriesController extends Controller
             return '';
         }
 
-        $validator = $this->container->get(\App\Core\Validator::class);
+        $validator = $this->container->get(\W3a\Core\Validator::class);
         $validator->validate(
             ['username' => $username],
             ['username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/']
@@ -372,21 +372,21 @@ class StoriesController extends Controller
     // =========================================================================
     public function userStories(string $username): void
     {
-        $validator = $this->container->get(\App\Core\Validator::class); // Уточните неймспейс, если отличается (в оригинале AppCoreValidator::class)
+        $validator = $this->container->get(\W3a\Core\Validator::class); // Уточните неймспейс, если отличается (в оригинале AppCoreValidator::class)
         $validator->validate(
             ['username' => $username],
             ['username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/']
         );
 
         if (!$validator->isValid()) {
-            throw new \App\Core\Exceptions\NotFoundException("Пользователь не найден");
+            throw new \W3a\Core\Exceptions\NotFoundException("Пользователь не найден");
         }
 
         $userModel = $this->container->get(\App\Modules\Users\Models\User::class);
         $user = $userModel->findByName($username);
 
         if (!$user) {
-            throw new \App\Core\Exceptions\NotFoundException("Пользователь не найден");
+            throw new \W3a\Core\Exceptions\NotFoundException("Пользователь не найден");
         }
 
         $userContext = $this->getUserContext();

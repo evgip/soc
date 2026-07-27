@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Admin;
 
-use App\Core\Container;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\Audit;
-use App\Core\Validator;
-use App\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Container;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\Audit;
+use W3a\Core\Validator;
+use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
 
 use App\Modules\Admin\Models\AdminUser;
 use App\Modules\Admin\Models\AuditLog;

@@ -4,36 +4,32 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Middleware;
 
-use App\Core\Container;
-use App\Core\Session;
-use App\Core\Security\UserContext;
+use W3a\Core\Container;
+use W3a\Core\Contracts\UserIdProviderInterface;
+use W3a\Core\Session;
+use W3a\Core\Middleware\MiddlewareInterface;
 use App\Modules\Users\Models\User;
 
 /**
- * Middleware модуля Users.
- * Отвечает исключительно за создание и регистрацию UserContext для текущего запроса.
- * Core об этом ничего не знает.
+ * Middleware для создания и регистрации UserContext в контейнере.
+ * Инициализирует контекст пользователя для текущего запроса.
  */
-class UserContextMiddleware
+class UserContextMiddleware implements MiddlewareInterface
 {
-    private Container $container;
-
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
+    public function __construct(
+        private readonly Container $container,
+        private readonly UserIdProviderInterface $userIdProvider
+    ) {
     }
 
     public function handle(callable $next): mixed
     {
-        $session = $this->container->get(Session::class);
-        $userId = (int)($_SESSION['user_id'] ?? 0);
+        $userId = (int)$this->userIdProvider->getUserId();
 
         if ($userId > 0) {
             $userModel = $this->container->get(User::class);
             $user = $userModel->find($userId);
 
-            // ⚠️ Выберите вариант, который подходит под вашу БД:
-            
             // ВАРИАНТ А: Если есть поле `role`
             $role = $user['role'] ?? 'user';
             $isAdmin = ($role === 'admin');
@@ -45,17 +41,14 @@ class UserContextMiddleware
             $isModerator = (bool)($user['is_moderator'] ?? false) || $isAdmin;
             */
 
-            // Создаем объект контекста
             $currentUserContext = new UserContext(
                 id: $userId,
                 isAdmin: $isAdmin,
                 isModerator: $isModerator
             );
 
-            // Регистрируем его в контейнере
             $this->container->instance(UserContext::class, $currentUserContext);
         } else {
-            // Если пользователь не авторизован, создаем "гостевой" контекст
             $guestContext = new UserContext(
                 id: 0,
                 isAdmin: false,

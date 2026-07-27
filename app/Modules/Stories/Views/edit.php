@@ -47,7 +47,7 @@
             $isBound = in_array((int)$tagItem['id'], $activeTagIds);
             ?>
 
-            <div class="tag">
+            <div class="tag-checkbox">
                 <input type="checkbox" name="tags[]" value="<?= (int)$tagItem['id'] ?>"
                     <?= $isBound ? 'checked' : '' ?>>
                 <span><?= e($tagItem['name']) ?></span>

@@ -13,10 +13,10 @@ use App\Modules\Tags\Models\Tag;
 use App\Modules\Tags\Services\TagValidator;
 use App\Modules\Users\Models\User;
 use App\Modules\Moderations\Models\Moderation;
-use App\Core\Container;
-use App\Core\Logger;
-use App\Core\IpResolver;
-use App\Core\Events\EventDispatcher;
+use W3a\Core\Container;
+use W3a\Core\Logger;
+use W3a\Core\IpResolver;
+use W3a\Core\Events\EventDispatcher;
 use App\Modules\Suggestions\Events\ContentUpdated;
 use App\Modules\Auth\Services\Auth;
 use Exception;
@@ -540,7 +540,7 @@ class SuggestionService
     /**
      * Безопасно диспатчит событие через EventDispatcher.
      */
-    private function dispatchContentEvent(\App\Core\Events\Event $event): void
+    private function dispatchContentEvent(\W3a\Core\Events\Event $event): void
     {
         $this->eventDispatcher->dispatch($event);
     }

@@ -29,6 +29,7 @@
         "ext-json": "*",
         "ext-openssl": "*",
         "phpmailer/phpmailer": "^7.1.1",
-        "erusev/parsedown": "^1.8"
+        "erusev/parsedown": "^1.8",
+        "evgip/w3a-core": "^0.1"
     }
 }

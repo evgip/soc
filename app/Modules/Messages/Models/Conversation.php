@@ -2,7 +2,7 @@
 
 namespace App\Modules\Messages\Models;
 
-use App\Core\Model;
+use W3a\Core\Model;
 
 class Conversation extends Model
 {

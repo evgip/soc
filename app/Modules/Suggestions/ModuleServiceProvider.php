@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Suggestions;
 
-use App\Core\Container;
-use App\Core\Database;
-use App\Core\Logger;
-use App\Core\IpResolver;
-use App\Core\ModuleServiceProvider as BaseModuleServiceProvider;
-use App\Core\Events\EventDispatcher;
+use W3a\Core\Container;
+use W3a\Core\Database;
+use W3a\Core\Logger;
+use W3a\Core\IpResolver;
+use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Events\EventDispatcher;
 use App\Modules\Suggestions\Models\Suggestion;
 use App\Modules\Suggestions\Models\ContentLog;
 use App\Modules\Suggestions\Services\SuggestionService;
