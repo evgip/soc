@@ -718,7 +718,7 @@ if (!function_exists('pagination')) {
 		for ($i = $start; $i <= $end; $i++) {
 			if ($i === $currentPage) {
 				// Текущая страница выделяется как неактивный элемент (span)
-				$html .= '<span class="pagination-link current">' . $i . '</span>';
+				$html .= '<span class="pagination-link is-current">' . $i . '</span>';
 			} else {
 				$query = buildPaginationQuery($i, $params);
 				$href = ($baseUrl ? rtrim($baseUrl, '/?&') : '') . '?' . $query;

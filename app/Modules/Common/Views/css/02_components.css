@@ -23,7 +23,6 @@ button.is-link {
   border: none;
   color: var(--opacity-fg-67);
   padding: 0;
-  text-decoration: none;
 }
 
 button.is-danger {
@@ -84,6 +83,12 @@ dialog form {
   display: flex;
   gap: 0.5em;
 }
+
+.pagination-btn,
+.pagination-link {
+	padding: 2px 6px;
+}
+
 .pagination a:hover {
   background-color: var(--color-button-bg-shaded);
 }
