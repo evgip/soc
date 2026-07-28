@@ -130,6 +130,10 @@ class ReadRibbon extends Model
 			return [];
 		}
 
+        // Гарантируем непрерывность ключей для PDO
+        $storyIds = array_values($storyIds);
+        $mutedUserIds = array_values($mutedUserIds);
+
 		$storyPlaceholders = implode(',', array_fill(0, count($storyIds), '?'));
 
 		$sql = "SELECT 
@@ -259,8 +263,11 @@ class ReadRibbon extends Model
 			return;
 		}
 
+        // 1. Сбрасываем ключи массива, чтобы PDO корректно мапил позиционные параметры
+        $storyIds = array_values($storyIds);
+
 		try {
-			// 1. Одним запросом находим последний комментарий для каждой истории
+			// 2. Одним запросом находим последний комментарий для каждой истории
 			$placeholders = implode(',', array_fill(0, count($storyIds), '?'));
 			
 			$sql = "SELECT story_id, COALESCE(MAX(id), 0) AS last_comment_id
@@ -276,12 +283,13 @@ class ReadRibbon extends Model
 				return;
 			}
 
-			// 2. Формируем batch UPSERT
+			// 3. Формируем batch UPSERT
 			$valuesPlaceholders = [];
 			$values = [];
 			
 			foreach ($lastComments as $row) {
-				$valuesPlaceholders[] = '(?, ?, ?)';
+                // ИСПРАВЛЕНИЕ: Добавили NOW() как 4-е значение для колонки updated_at
+				$valuesPlaceholders[] = '(?, ?, ?, NOW())';
 				$values[] = $userId;
 				$values[] = (int)$row['story_id'];
 				$values[] = (int)$row['last_comment_id'];
