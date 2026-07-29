@@ -3,38 +3,7 @@
 use W3a\Core\Router;
 use W3a\Core\Container;
 
-/**
- * Получить сервис из контейнера или установить сам контейнер.
- * 
- * @param string|Container|null $abstract Имя сервиса или экземпляр Container для инициализации
- * @return mixed
- */
-if (!function_exists('container')) {
-    function container(string|Container|null $abstract = null): mixed
-    {
-        // Статическая переменная хранит экземпляр контейнера между вызовами функции
-        static $containerInstance = null;
 
-        // 1. Если передан экземпляр Container, мы его инициализируем (сохраняем)
-        if ($abstract instanceof Container) {
-            $containerInstance = $abstract;
-            return $containerInstance;
-        }
-
-        // 2. Если контейнер ещё не инициализирован, выбрасываем ошибку
-        if ($containerInstance === null) {
-            throw new \RuntimeException('Application container not initialized. Call container($container) in Application::bootstrap() first.');
-        }
-
-        // 3. Если передана строка, возвращаем запрошенный сервис
-        if (is_string($abstract)) {
-            return $containerInstance->get($abstract);
-        }
-
-        // 4. Если ничего не передано, возвращаем сам контейнер
-        return $containerInstance;
-    }
-}
 
 /**
  * Универсальный хелпер для ленивой загрузки и кэширования экземпляров из DI-контейнера.
@@ -58,130 +27,6 @@ if (!function_exists('get_cached_container')) {
     }
 }
 
-/**
- * Генерация URL по имени маршрута
- * 
- * @param string $name Имя маршрута
- * @param array $params Параметры маршрута
- * @return string URL
- * 
- * Пример:
- *   route('profile', ['id' => 1])  // /user/1
- *   route('story.show', ['slug' => 'hello-world'])  // /story/hello-world
- */
-if (!function_exists('route')) {
-	function route(string $name, array $params = []): string
-	{
-		$router = get_cached_container(Router::class, fn() => null);
-		if ($router !== null) {
-			try {
-				return $router->route($name, $params);
-			} catch (Throwable $e) {
-				error_log("Route helper failed: " . $e->getMessage());
-			}
-		}
-		return '#route-error';
-	}
-}
-
-/**
- * Выполнить HTTP редирект
- */
-if (!function_exists('redirect')) {
-	function redirect(string $url, int $code = 302): never
-	{
-		throw new \W3a\Core\Exceptions\RedirectException($url, $code);
-	}
-}
-
-/**
- * Global helper to output localized translation strings
- * Глобальный хелпер для вывода локализованных строк перевода
- */
-if (!function_exists('__')) {
-	function __(string $key, array $replace = []): string
-	{
-		return \W3a\Core\Lang::get($key, $replace);
-	}
-}
-
-/**
- * Подключение partial-шаблона с поддержкой тем (Fallback Chain).
- *
- * @param string $path Путь в формате 'Votes::_voters' или 'Users::_avatar'
- * @param array  $vars Переменные для передачи в шаблон
- * @throws \RuntimeException Если шаблон не найден ни в теме, ни в модуле
- * @throws \InvalidArgumentException Если формат пути неверный
- */
-if (!function_exists('partial')) {
-	function partial(string $path, array $vars = []): void
-	{
-		// 1. Разбор пути: "Votes::_voters" → $module = 'Votes', $file = '_voters'
-		$parts = explode('::', $path);
-		if (count($parts) !== 2) {
-			throw new \InvalidArgumentException("Неверный формат пути partial. Используйте 'Модуль::файл', например: 'Votes::_voters'");
-		}
-		[$module, $file] = $parts;
-
-		// 2. Получаем имя активной темы через глобальный контейнер
-		// (Мы используем $GLOBALS, так как находимся в глобальной функции)
-		$theme = 'default';
-		if (isset($GLOBALS['app_container']) && $GLOBALS['app_container']->has(\W3a\Core\Config::class)) {
-			$theme = $GLOBALS['app_container']->get(\W3a\Core\Config::class)->get('config.app.theme', 'default');
-		}
-
-		// 3. Цепочка поиска (Fallback Chain)
-		// ВНИМАНИЕ: Проверьте, что путь dirname(__DIR__) . '/app/Modules' соответствует вашей реальной структуре!
-		$appModulesPath = dirname(__DIR__) . '/app/Modules';
-		$themesPath = dirname(__DIR__, 2) . '/themes';
-
-		$candidates = [
-			// Приоритет 1: Переопределение в активной теме для конкретного модуля
-			"{$themesPath}/{$theme}/Modules/{$module}/Views/{$file}.php",
-
-			// Приоритет 2: Глобальное переопределение в теме (например, для общих элементов)
-			"{$themesPath}/{$theme}/Views/{$file}.php",
-
-			// Приоритет 3: Оригинальный файл модуля (ваш исходный путь)
-			"{$appModulesPath}/{$module}/Views/{$file}.php",
-		];
-
-		$filePath = null;
-		foreach ($candidates as $candidate) {
-			if (file_exists($candidate)) {
-				$filePath = $candidate;
-				break; // Нашли первый существующий файл, прекращаем поиск
-			}
-		}
-
-		if ($filePath === null) {
-			throw new \RuntimeException(
-				"Partial не найден: '{$path}'. " .
-					"Проверьте пути в теме '{$theme}' или в модуле '{$module}'."
-			);
-		}
-
-		// 4. Безопасное извлечение переменных и включение файла
-		// Используем замыкание (IIFE), чтобы переменные из $vars не "загрязняли" 
-		// глобальную область видимости или область видимости вызывающего шаблона.
-		// EXTR_SKIP гарантирует, что мы не перезапишем критичные системные переменные.
-		(function () use ($filePath, $vars) {
-			extract($vars, EXTR_SKIP);
-			include $filePath;
-		})();
-	}
-}
-
-/**
- * HTML-escape a string (null-safe)
- * HTML-экранирование строки (безопасно при null)
- */
-if (!function_exists('e')) {
-	function e(?string $value): string
-	{
-		return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
-	}
-}
 
 /**
  * Format a datetime string (nullable input)
@@ -240,59 +85,6 @@ if (!function_exists('plural')) {
 }
 
 /**
- * Generate a hidden CSRF token field
- * Генерация скрытого поля с CSRF-токеном
- */
-if (!function_exists('csrf_field')) {
-	function csrf_field(): string
-	{
-		try {
-			// ✅ Получаем Request из контейнера
-			$request = container(\W3a\Core\Request::class);
-			return $request->csrfField();
-		} catch (\Throwable $e) {
-			// Fallback: если контейнер не инициализирован
-			error_log("csrf_field() failed: " . $e->getMessage());
-
-			// Создаём временный Request
-			$request = new \W3a\Core\Request();
-			return $request->csrfField();
-		}
-	}
-}
-
-/**
- * Получить nonce для CSP (для inline скриптов и стилей)
- * 
- * Использование:
- *   <script nonce="<?= csp_nonce() ?>">...</script>
- *   <style nonce="<?= csp_nonce() ?>">...</style>
- * 
- * @return string Nonce для CSP
- */
-if (!function_exists('csp_nonce')) {
-	function csp_nonce(): string
-	{
-		static $nonce = null;
-
-		if ($nonce === null) {
-			$security = get_cached_container(W3a\Core\Security::class, fn() => null);
-			if ($security !== null) {
-				try {
-					$nonce = $security->getNonce();
-				} catch (Throwable $e) {
-					$nonce = bin2hex(random_bytes(16));
-				}
-			} else {
-				$nonce = bin2hex(random_bytes(16));
-			}
-		}
-
-		return $nonce;
-	}
-}
-
-/**
  * Render flash messages by type (success, error, notice)
  * Вывод flash-сообщений по типу (успех, ошибка, информационное)
  */
@@ -324,33 +116,6 @@ if (!function_exists('render_flashes')) {
 	}
 }
 
-/**
- * Получить значение из конфигурации
- * 
- * @param string|null $key Ключ конфигурации
- * @param mixed $default Значение по умолчанию
- * @return mixed
- */
-if (!function_exists('config')) {
-	function config(?string $key = null, mixed $default = null): mixed
-	{
-		static $config = null;
-
-		if ($config === null) {
-			$config = get_cached_container(W3a\Core\Config::class, fn() => null);
-		}
-
-		if ($config === null) {
-			return $default;
-		}
-
-		if ($key === null) {
-			return $config;
-		}
-
-		return $config->get($key, $default);
-	}
-}
 
 /**
  * Retrieve application name
@@ -360,27 +125,6 @@ if (!function_exists('app_name')) {
 	function app_name(): string
 	{
 		return config('config.app.name', 'w3a');
-	}
-}
-
-/**
- * Generate URL for a specific comment with anchor
- * Генерация URL для конкретного комментария с якорем
- *
- * @param int $storyId    - Story ID
- *                        - ID истории
- * @param int $commentId  - Comment ID
- *                        - ID комментария
- * @return string URL with fragment identifier (e.g., `/story/123#comment-block-456`)
- *                URL с якорем (например, `/story/123#comment-block-456`)
- */
-if (!function_exists('comment_url')) {
-	function comment_url(int $storyId, int $commentId): string
-	{
-		$baseUrl = "/story/{$storyId}";
-		$anchor = "comment-block-{$commentId}";  // ← Updated here
-
-		return "{$baseUrl}#{$anchor}";
 	}
 }
 
@@ -491,20 +235,6 @@ if (!function_exists('safeLink')) {
 			},
 			$text
 		);
-	}
-}
-
-/**
- * Получить значение из переменных окружения (.env)
- *
- * @param string $key Ключ
- * @param mixed $default Значение по умолчанию
- * @return mixed
- */
-if (!function_exists('env')) {
-	function env(string $key, mixed $default = null): mixed
-	{
-		return \W3a\Core\Env::get($key, $default);
 	}
 }
 
