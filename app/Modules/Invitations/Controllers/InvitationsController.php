@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Invitations\Controllers;
 
 use App\BaseController;
-use W3a\Core\Validator;
-use W3a\Core\Lang;
+use W3a\Core\Support\Validator;
+use W3a\Core\Support\Lang;
 use App\Modules\Invitations\Models\Invitation;
 use App\Modules\Invitations\Models\InvitationRequest;
 use App\Modules\Users\Models\User;

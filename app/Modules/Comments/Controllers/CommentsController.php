@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Comments\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Comments\Exceptions\CommentValidationException;
 use App\Modules\Comments\Exceptions\CommentPermissionException;

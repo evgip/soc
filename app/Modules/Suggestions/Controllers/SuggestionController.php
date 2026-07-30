@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Suggestions\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use W3a\Core\Exceptions\JsonResponseException;
 use App\Modules\Suggestions\Services\SuggestionService;
 use App\Modules\Suggestions\Models\Suggestion;

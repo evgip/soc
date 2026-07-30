@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use App\Modules\Stories\Services\StoryService;
 use App\Modules\Stories\Services\ReadRibbonService;
 use App\Modules\Stories\Services\UrlFetcherService;
@@ -351,7 +351,7 @@ class StoriesController extends BaseController
             return '';
         }
 
-        $validator = $this->container->get(\W3a\Core\Validator::class);
+        $validator = $this->container->get(\W3a\Core\Support\Validator::class);
         $validator->validate(
             ['username' => $username],
             ['username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/']
@@ -372,7 +372,7 @@ class StoriesController extends BaseController
     // =========================================================================
     public function userStories(string $username): void
     {
-        $validator = $this->container->get(\W3a\Core\Validator::class); // Уточните неймспейс, если отличается (в оригинале AppCoreValidator::class)
+        $validator = $this->container->get(\W3a\Core\Support\Validator::class); // Уточните неймспейс, если отличается (в оригинале AppCoreValidator::class)
         $validator->validate(
             ['username' => $username],
             ['username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/']

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Flags\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
-use W3a\Core\Audit;
+use W3a\Core\Http\Session;
+use W3a\Core\Support\Audit;
 use App\Modules\Flags\Models\Flag;
 use App\Modules\Comments\Models\Comment;
 use W3a\Core\Exceptions\BadRequestException;

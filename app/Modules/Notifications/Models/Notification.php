@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Notifications\Models;
 
-use W3a\Core\Model;
+use W3a\Core\Database\Model;
 
 class Notification extends Model
 {

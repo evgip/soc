@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Search\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use App\Modules\Search\Models\SearchResult;
 use App\Modules\Votes\Models\Vote;
 

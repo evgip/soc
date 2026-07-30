@@ -6,7 +6,7 @@ namespace App\Modules\Comments\Services;
 
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Notifications\Services\NotificationService;
-use W3a\Core\Validator;
+use W3a\Core\Support\Validator;
 use W3a\Core\Events\EventDispatcher;
 use W3a\Core\Security\UserContext;
 

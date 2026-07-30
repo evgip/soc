@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="csrf-token" content="<?= e($csrf_token ?? '') ?>">
 	<title><?= e($title ?? 'Лента историй') ?> | <?= e(app_name()); ?> <?= __('forum') ?></title>
-	<?= \W3a\Core\OpenGraph::render() ?>
+	<?= \W3a\Core\View\OpenGraph::render() ?>
 
 	<?php if (!empty($rssFeed)): ?>
 		<link rel="alternate" type="application/rss+xml"
@@ -179,12 +179,12 @@
 				<a href="/rss" title="RSS лента">RSS</a>
 			</nav>
 			<?php if (!empty($currentUser['isAdmin'])): ?>
-				<?= \W3a\Core\Benchmark::renderStats() ?>
+				<?= \W3a\Core\Support\Benchmark::renderStats() ?>
 			<?php endif; ?>	
 		</div>
 	</footer>
 
-	<script src="<?= \W3a\Core\Asset::js() ?>"></script>
+	<script src="<?= \W3a\Core\View\Asset::js() ?>"></script>
 </body>
 
 </html>

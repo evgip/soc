@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Wiki\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
-use W3a\Core\Logger;
+use W3a\Core\Http\Session;
+use W3a\Core\Support\Logger;
 use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Wiki\Services\WikiService;
 use App\Modules\Wiki\Services\WikiPermissionService;

@@ -1,7 +1,7 @@
 <?php
 
 /** 
- * @var W3a\Core\Request $request 
+ * @var W3a\Core\Http\Request $request 
  */
 ?>
 

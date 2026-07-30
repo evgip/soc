@@ -6,8 +6,8 @@ namespace App\Modules\Stories\Services;
 
 use App\Modules\Stories\Models\Story;
 use App\Modules\Origins\Models\Domain;
-use W3a\Core\Validator;
-use W3a\Core\Audit;
+use W3a\Core\Support\Validator;
+use W3a\Core\Support\Audit;
 use W3a\Core\Events\EventDispatcher;
 use W3a\Core\Security\UserContext;
 use App\Modules\Stories\Events\StoryDeleted;

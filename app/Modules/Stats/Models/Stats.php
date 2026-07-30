@@ -2,9 +2,9 @@
 
 namespace App\Modules\Stats\Models;
 
-use W3a\Core\Model;
-use W3a\Core\Database;
-use W3a\Core\Logger;
+use W3a\Core\Database\Model;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
 use W3a\Core\SvgChart;
 
 class Stats extends Model

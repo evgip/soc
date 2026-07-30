@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Admin\Controllers;
 
-use W3a\Core\Audit;
+use W3a\Core\Support\Audit;
 use W3a\Core\Router;
 use W3a\Core\Exceptions\JsonResponseException;
 

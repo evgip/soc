@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Wiki\Models;
 
-use W3a\Core\Model;
+use W3a\Core\Database\Model;
 
 /**
  * Модель ревизий wiki страниц.

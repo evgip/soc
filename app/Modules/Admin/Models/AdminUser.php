@@ -2,9 +2,7 @@
 
 namespace App\Modules\Admin\Models;
 
-use W3a\Core\Model;
-use W3a\Core\Database;
-use W3a\Core\Logger;
+use W3a\Core\Database\Model;
 
 class AdminUser extends Model
 {

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App;
 
-use W3a\Core\Controller as CoreController;
-use W3a\Core\Session;
-use W3a\Core\OpenGraph;
+use W3a\Core\Http\Controller as CoreController;
+use W3a\Core\Http\Session;
+use W3a\Core\View\OpenGraph;
 
 use App\Modules\Auth\Services\Auth;
-use App\Modules\Users\Models\User;
 use App\Modules\Notifications\Models\Notification;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Flags\Models\Flag;
@@ -18,7 +17,7 @@ use App\Modules\Votes\Services\VoteService;
 
 /**
  * Базовый контроллер приложения.
- * Наследует всю общую функциональность из W3a\Core\Controller,
+ * Наследует всю общую функциональность из W3a\Core\Http\Controller,
  * но добавляет специфичную для этого проекта логику.
  */
 abstract class BaseController extends CoreController
@@ -169,7 +168,7 @@ abstract class BaseController extends CoreController
         }
 
         // ✅ ВОССТАНОВЛЕН ВЫЗОВ, КАК БЫЛО В ОРИГИНАЛЬНОМ КОНТРОЛЛЕРЕ
-        // Если класс OpenGraph находится в неймспейсе (например, W3a\Core\OpenGraph), 
+        // Если класс OpenGraph находится в неймспейсе (например, W3a\Core\View\OpenGraph), 
         // добавьте use W3a\Core\OpenGraph; в начало этого файла и уберите слэш.
         OpenGraph::set($data);
     }

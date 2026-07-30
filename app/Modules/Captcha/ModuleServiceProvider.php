@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Captcha;
 
-use W3a\Core\ModuleServiceProvider as BaseServiceProvider;
-use W3a\Core\Config;
-use W3a\Core\Container;
-use W3a\Core\Request;
-use W3a\Core\Session;
+use W3a\Core\Foundation\ModuleServiceProvider as BaseServiceProvider;
+use W3a\Core\Foundation\Config;
+use W3a\Core\Foundation\Container;
+use W3a\Core\Http\Request;
+use W3a\Core\Http\Session;
 use App\Modules\Captcha\Core\Captcha;
 
 class ModuleServiceProvider extends BaseServiceProvider

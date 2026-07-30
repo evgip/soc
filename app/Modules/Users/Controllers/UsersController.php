@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Users\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use W3a\Core\Exceptions\NotFoundException;
 use App\Modules\Users\Services\UserService;
 use App\Modules\Users\Services\AvatarService;

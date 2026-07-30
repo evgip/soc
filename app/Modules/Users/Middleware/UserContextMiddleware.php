@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Users\Middleware;
 
-use W3a\Core\Container;
+use W3a\Core\Foundation\Container;
 use W3a\Core\Contracts\UserIdProviderInterface;
-use W3a\Core\Session;
-use W3a\Core\Middleware\MiddlewareInterface;
+use W3a\Core\Http\Session;
+use W3a\Core\Http\Middleware\MiddlewareInterface;
 use App\Modules\Users\Models\User;
 
 /**

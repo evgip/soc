@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App;
 
-use W3a\Core\Container;
-use W3a\Core\Router;
 use W3a\Core\Contracts\RateLimitStorageInterface;
 use W3a\Core\Contracts\UserIdProviderInterface;
 use W3a\Core\Contracts\AuditStorageInterface;
 use W3a\Core\Contracts\BannedIpRepositoryInterface;
-use W3a\Core\Contracts\UniqueCheckerInterface;
+// use W3a\Core\Contracts\UniqueCheckerInterface;
 use W3a\Core\Contracts\ErrorHandlerInterface;
+
+use W3a\Core\Database\Database;
+use W3a\Core\Foundation\Container;
+use W3a\Core\Foundation\Config;
+use W3a\Core\Http\Router;
 
 class AppServiceProvider
 {
@@ -22,7 +25,7 @@ class AppServiceProvider
         // =========================================================================
         
         $container->singleton(RateLimitStorageInterface::class, fn($c) => 
-            new \App\Modules\Users\Services\RateLimitStorage($c->get(\W3a\Core\Database::class), $c->get(\W3a\Core\Config::class))
+            new \App\Modules\Users\Services\RateLimitStorage($c->get(Database::class), $c->get(Config::class))
         );
 
         $container->singleton(UserIdProviderInterface::class, fn($c) => 
@@ -30,16 +33,17 @@ class AppServiceProvider
         );
 
         $container->singleton(AuditStorageInterface::class, fn($c) => 
-            new \App\Modules\Admin\Services\AuditStorage($c->get(\W3a\Core\Database::class))
+            new \App\Modules\Admin\Services\AuditStorage($c->get(Database::class))
         );
 
         $container->singleton(BannedIpRepositoryInterface::class, fn($c) => 
-            new \App\Modules\Admin\Services\BannedIpRepository($c->get(\W3a\Core\Database::class))
+            new \App\Modules\Admin\Services\BannedIpRepository($c->get(Database::class))
         );
 
-        $container->singleton(UniqueCheckerInterface::class, fn($c) => 
-            new \App\Modules\Users\Services\UniqueChecker($c->get(\W3a\Core\Database::class))
-        );
+        // Файлов этих нет
+       // $container->singleton(UniqueCheckerInterface::class, fn($c) => 
+         //   new \App\Modules\Users\Services\UniqueChecker($c->get(Database::class))
+        //);
 
         $container->singleton(ErrorHandlerInterface::class, fn($c) => 
             new \App\Modules\Errors\Services\ErrorHandler($c)
@@ -60,11 +64,11 @@ class AppServiceProvider
         $router = $container->get(Router::class);
 
         $router->addMiddlewareGroup('web', [
-            \W3a\Core\Middleware\CsrfMiddleware::class,
+            \W3a\Core\Http\Middleware\CsrfMiddleware::class,
         ]);
 
         $router->addMiddlewareGroup('guest', [
-            \W3a\Core\Middleware\GuestMiddleware::class,
+            \W3a\Core\Http\Middleware\GuestMiddleware::class,
         ]);
 
         $router->addMiddlewareGroup('auth', [

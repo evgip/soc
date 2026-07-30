@@ -2,7 +2,7 @@
 
 namespace App\Modules\Wiki\Components;
 
-use W3a\Core\Request;
+use W3a\Core\Http\Request;
 
 class WikiCard
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Auth\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use App\Modules\Auth\Services\AuthService;
 use App\Modules\Auth\Services\PasswordResetService;
 
@@ -89,7 +89,7 @@ class AuthController extends BaseController
         $email = trim($this->request->getParams('email'));
         $password = $this->request->getParams('password');
 
-        $validator = $this->container->get(\W3a\Core\Validator::class);
+        $validator = $this->container->get(\W3a\Core\Support\Validator::class);
         $validator->validate([
             'username' => $username, 
             'email' => $email, 

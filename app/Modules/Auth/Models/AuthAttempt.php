@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Models;
 
-use W3a\Core\Database;
-use W3a\Core\Logger;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
 
 /**
  * Модель для работы с попытками аутентификации.

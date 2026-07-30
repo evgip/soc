@@ -8,8 +8,8 @@ use App\Modules\Votes\Models\Vote;
 use App\Modules\Users\Models\User;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Stories\Services\RankingService; 
-use W3a\Core\Logger;
-use W3a\Core\Database;
+use W3a\Core\Support\Logger;
+use W3a\Core\Database\Database;
 
 
 /**

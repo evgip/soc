@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Comments\Models;
 
 use Exception;
-use W3a\Core\Model;
-use W3a\Core\Database;
-use W3a\Core\Logger;
+use W3a\Core\Database\Model;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
 
 class Comment extends Model
 {

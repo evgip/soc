@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Origins\Controllers;
 
 use App\BaseController;
-use W3a\Core\Audit;
+use W3a\Core\Support\Audit;
 use App\Modules\Origins\Models\Domain;
 
 /**

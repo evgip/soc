@@ -2,7 +2,7 @@
 
 namespace App\Modules\Users\Models;
 
-use W3a\Core\Model;
+use W3a\Core\Database\Model;
 
 class RateLimit extends Model
 {

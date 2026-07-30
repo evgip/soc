@@ -2,7 +2,7 @@
 
 namespace App\Modules\Messages\Services;
 
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use App\Modules\Messages\Models\Message;
 use App\Modules\Messages\Models\Conversation;
 use App\Modules\Notifications\Services\NotificationService;

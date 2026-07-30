@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Moderations\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use App\Modules\Moderations\Models\ModNote;
 use App\Modules\Moderations\Models\ModActivity;
 use App\Modules\Admin\Models\AuditLog;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Users\Services;
 
 use W3a\Core\Contracts\RateLimitStorageInterface;
-use W3a\Core\Database;
-use W3a\Core\Config;
+use W3a\Core\Database\Database;
+use W3a\Core\Foundation\Config;
 
 class RateLimitStorage implements RateLimitStorageInterface
 {

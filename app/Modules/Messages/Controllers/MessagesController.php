@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Messages\Controllers;
 
 use App\BaseController;
-use W3a\Core\Session;
+use W3a\Core\Http\Session;
 use App\Modules\Messages\Services\ConversationService;
 use App\Modules\Messages\Services\MessageService;
 use App\Modules\Messages\Exceptions\ConversationException;

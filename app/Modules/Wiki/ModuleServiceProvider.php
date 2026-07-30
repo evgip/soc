@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Wiki;
 
-use W3a\Core\Container;
-use W3a\Core\Database;
-use W3a\Core\Logger;
-use W3a\Core\Audit;
+use W3a\Core\Foundation\Container;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
+use W3a\Core\Support\Audit;
 use W3a\Core\Events\EventDispatcher;
 use W3a\Core\Events\Listeners\AuditListener;
 use W3a\Core\Security\UserContext;
-use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Foundation\ModuleServiceProvider as BaseModuleServiceProvider;
 
 use App\Modules\Wiki\Events\WikiPageCreated;
 use App\Modules\Wiki\Events\WikiPageUpdated;

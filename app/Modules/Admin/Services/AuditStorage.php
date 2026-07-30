@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Admin\Services;
 
 use W3a\Core\Contracts\AuditStorageInterface;
-use W3a\Core\Database;
+use W3a\Core\Database\Database;
 
 /**
  * Реализация хранилища аудита.

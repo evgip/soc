@@ -3,6 +3,15 @@
    Всё, что работает без классов.
    ============================================ */
 
+@font-face {
+  font-family: 'Inter';
+  font-style: oblique;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('Inter-var.woff2') format('woff2');
+}
+
+
 /* ---------- БАЗОВЫЙ СБРОС ---------- */
 html {
   font-size: var(--font-size-default);
@@ -11,7 +20,7 @@ html {
 }
 
 body, textarea, input, button, select {
-  font-family: "helvetica neue", arial, sans-serif;
+  font-family: 'Inter', 'Helvetica Neue', 'Helvetica', sans-serif;
   color: var(--color-fg);
   line-height: 1.6em;
 }
@@ -46,10 +55,14 @@ hr {
 }
 
 pre {
-  overflow-x: auto;
   background-color: var(--color-box-bg-shaded);
   padding: 0.5em;
   border-radius: 3px;
+  white-space: pre-wrap; /* Перенос с сохранением пробелов */
+  overflow-x: auto; /* Горизонтальная прокрутка при длинной строке */
+  overflow-y: auto; /* Вертикальная прокрутка, если текст слишком длинный */
+  word-break: break-word; /* Чтобы длинные слова разрывались корректно */
+  font-family: monospace; /* Моноширинный шрифт по умолчанию */  
 }
 
 code {

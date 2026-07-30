@@ -2,7 +2,7 @@
 
 namespace App\Modules\Messages\Models;
 
-use W3a\Core\Model;
+use W3a\Core\Database\Model;
 
 class Message extends Model
 {

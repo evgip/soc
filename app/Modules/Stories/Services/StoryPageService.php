@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Services;
 
-use W3a\Core\Container;
+use W3a\Core\Foundation\Container;
 use App\Modules\Stories\Models\Story;
 use App\Modules\Stories\Models\ReadRibbon;
 use App\Modules\Tags\Models\Tag;

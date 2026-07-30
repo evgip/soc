@@ -2,9 +2,9 @@
 
 namespace App\Modules\Tags\Models;
 
-use W3a\Core\Model;
-use W3a\Core\Database;
-use W3a\Core\Logger;
+use W3a\Core\Database\Model;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
 use App\Modules\Stories\Repositories\StoryRepository;
 
 class Category extends Model

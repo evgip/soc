@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Models;
 
-use W3a\Core\Model;
-use W3a\Core\Database;
-use W3a\Core\Logger;
+use W3a\Core\Database\Model;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
 use App\Modules\Stories\Services\RankingService; 
 
 class Story extends Model

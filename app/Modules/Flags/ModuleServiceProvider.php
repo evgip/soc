@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Modules\Flags;
 
-use W3a\Core\Container;
-use W3a\Core\Config;
-use W3a\Core\Database;
-use W3a\Core\Logger;
-use W3a\Core\ModuleServiceProvider as BaseModuleServiceProvider;
+use W3a\Core\Foundation\Container;
+use W3a\Core\Foundation\Config;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
+use W3a\Core\Foundation\ModuleServiceProvider as BaseModuleServiceProvider;
 use App\Modules\Flags\Models\Flag;
 
 /**

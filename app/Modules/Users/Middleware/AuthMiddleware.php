@@ -6,8 +6,8 @@ namespace App\Modules\Users\Middleware;
 
 use W3a\Core\Contracts\UserIdProviderInterface;
 use W3a\Core\Exceptions\RedirectException;
-use W3a\Core\Session;
-use W3a\Core\Middleware\MiddlewareInterface;
+use W3a\Core\Http\Session;
+use W3a\Core\Http\Middleware\MiddlewareInterface;
 
 /**
  * Middleware для проверки факта авторизации пользователя.

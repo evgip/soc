@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Repositories;
 
-use W3a\Core\Database;
+use W3a\Core\Database\Database;
 
 /**
  * Репозиторий для выборки данных историй (stories).

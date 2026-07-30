@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Services;
 
-use W3a\Core\Session;
-use W3a\Core\Logger;
-use W3a\Core\Audit;
-use W3a\Core\Config;
-use W3a\Core\Request;
-use W3a\Core\Lang;
+use W3a\Core\Http\Session;
+use W3a\Core\Support\Logger;
+use W3a\Core\Support\Audit;
+use W3a\Core\Foundation\Config;
+use W3a\Core\Http\Request;
+use W3a\Core\Support\Lang;
 
 use App\Modules\Users\Models\User;
 use App\Modules\Auth\Models\RememberToken;

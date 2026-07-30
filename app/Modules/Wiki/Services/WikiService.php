@@ -6,7 +6,7 @@ namespace App\Modules\Wiki\Services;
 
 use App\Modules\Wiki\Models\WikiPage;
 use App\Modules\Wiki\Models\WikiRevision;
-use W3a\Core\Audit;
+use W3a\Core\Support\Audit;
 use W3a\Core\Events\EventDispatcher;
 use App\Modules\Wiki\Events\WikiPageCreated;
 use App\Modules\Wiki\Events\WikiPageUpdated;

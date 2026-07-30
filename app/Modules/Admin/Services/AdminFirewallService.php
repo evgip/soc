@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Admin\Services;
 
-use W3a\Core\Database;
-use W3a\Core\Audit;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Audit;
 
 /**
  * Сервис для управления IP-баном (Firewall).

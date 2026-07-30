@@ -1,7 +1,7 @@
 <?php
 
 use W3a\Core\Router;
-use W3a\Core\Container;
+use W3a\Core\Foundation\Container;
 
 
 

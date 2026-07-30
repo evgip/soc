@@ -270,7 +270,7 @@ li.comment {
 li.comment > .comment_votes { float: left; margin-right: 0.75em; }
 li.comment .comment_votes .voters { float: none; margin-right: 0; }
 li.comment .comment_votes .voters form { margin-bottom: 0; }
-li.comment > .comment_body { overflow: hidden; min-height: 1px; }
+li.comment > .comment_body { overflow: hidden; min-height: 1px; padding: 2px; }
 li.comment > ol.comments {
   clear: both;
   margin-left: 0.6em;

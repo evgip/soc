@@ -7,9 +7,9 @@ namespace App\Modules\Admin\Services;
 use App\Modules\Tags\Models\Tag;
 use App\Modules\Tags\Models\Category;
 use App\Modules\Stories\Models\Story;
-use W3a\Core\Audit;
-use W3a\Core\Validator;
-use W3a\Core\Database;
+use W3a\Core\Support\Audit;
+use W3a\Core\Support\Validator;
+use W3a\Core\Database\Database;
 use App\Modules\Admin\Exceptions\AdminValidationException;
 
 /**

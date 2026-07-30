@@ -8,7 +8,7 @@ use App\Modules\Notifications\Models\Notification;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Users\Models\User;
 use App\Modules\Muted\Services\MuteService;
-use W3a\Core\Logger;
+use W3a\Core\Support\Logger;
 
 class NotificationService
 {

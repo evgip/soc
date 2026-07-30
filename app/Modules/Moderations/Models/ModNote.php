@@ -2,7 +2,7 @@
 
 namespace App\Modules\Moderations\Models;
 
-use W3a\Core\Model;
+use W3a\Core\Database\Model;
 
 class ModNote extends Model
 {

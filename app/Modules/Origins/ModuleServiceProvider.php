@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Origins;
 
-use W3a\Core\Container;
+use W3a\Core\Foundation\Container;
 use App\Modules\Origins\Models\Domain;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Services;
 
-use W3a\Core\Audit;
+use W3a\Core\Support\Audit;
 
 /**
  * Статический класс для проверки состояния авторизации.

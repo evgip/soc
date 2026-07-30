@@ -7,7 +7,7 @@ namespace App\Modules\Admin\Services;
 use App\Modules\Users\Models\User;
 use App\Modules\Users\Models\Notification;
 use App\Modules\Admin\Models\AdminUser;
-use W3a\Core\Audit;
+use W3a\Core\Support\Audit;
 use App\Modules\Admin\Exceptions\AdminUserException;
 use App\Modules\Admin\Exceptions\AdminValidationException;
 

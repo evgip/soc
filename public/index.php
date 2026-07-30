@@ -1,55 +1,44 @@
 <?php
 
-/**
- * Точка входа приложения
- */
+declare(strict_types=1);
 
-// ═══════════════════════════════════════════
-// 1. ЗАГРУЗКА .ENV (САМОЕ ПЕРВОЕ!)
-// ═══════════════════════════════════════════
+require_once __DIR__ . '/../vendor/autoload.php';
 
-require_once dirname(__DIR__) . '/app/Core/Env.php';
-\App\Core\Env::load(dirname(__DIR__) . '/.env');
+// 1. Загрузка переменных окружения
+\W3a\Core\Foundation\Env::load(dirname(__DIR__) . '/.env');
 
-// ═══════════════════════════════════════════
-// 2. АВТОЗАГРУЗКА COMPOSER
-// ═══════════════════════════════════════════
-
-require_once dirname(__DIR__) . '/vendor/autoload.php';
-
-// ═══════════════════════════════════════════
-// 3. 🔐 НАСТРОЙКИ БЕЗОПАСНОСТИ СЕССИИ
-// ═══════════════════════════════════════════
-    $isProduction = env('APP_ENV', 'development') === 'production';
-	
-
+// 2. 🔥 ИНИЦИАЛИЗАЦИЯ СЕССИИ (Вернули, так как это критично для CSRF и авторизации)
 if (session_status() === PHP_SESSION_NONE) {
-    $isProduction = env('APP_ENV', 'development') === 'production';
+    $isProduction = \W3a\Core\Foundation\Env::get('APP_ENV', 'development') === 'production';
+    
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+               || (($_SERVER['SERVER_PORT'] ?? 80) == 443)
+               || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
 
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-               || ($_SERVER['SERVER_PORT'] ?? 80) == 443;
-
-    $useSecure = ($isProduction && $isHttps);
+    $useSecure = $isProduction && $isHttps;
 
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
-        'domain' => '',
-        'secure' => $useSecure,
+        'domain' => '', 
+        'secure' => $useSecure, 
         'httponly' => true,
-        'samesite' => 'Strict',
+        'samesite' => 'Lax', 
     ]);
 
     ini_set('session.use_only_cookies', '1');
     ini_set('session.use_strict_mode', '1');
 
-    $sessionName = env('SESSION_NAME', 'w3a_session');
+    $sessionName = \W3a\Core\Foundation\Env::get('SESSION_NAME', 'w3a_session');
     session_name($sessionName);
+    
+    session_start();
 }
 
-// ═══════════════════════════════════════════
-// 4. ЗАПУСК ПРИЛОЖЕНИЯ
-// ═══════════════════════════════════════════
+// 3. Запуск приложения
+$app = new \W3a\Core\Foundation\Application(dirname(__DIR__), [
+    \W3a\Core\Foundation\CoreServiceProvider::class,
+    \App\AppServiceProvider::class,
+]);
 
-$app = new \App\Core\Application();
 $app->bootstrap()->run();

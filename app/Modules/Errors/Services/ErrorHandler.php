@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Errors\Services;
 
 use W3a\Core\Contracts\ErrorHandlerInterface;
-use W3a\Core\Container;
+use W3a\Core\Foundation\Container;
 
 /**
  * Реализация обработчика ошибок для основного приложения.

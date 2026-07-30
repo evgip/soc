@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories;
 
-use W3a\Core\Container;
-use W3a\Core\Database;
-use W3a\Core\Logger;
-use W3a\Core\Audit;
+use W3a\Core\Foundation\Container;
+use W3a\Core\Database\Database;
+use W3a\Core\Support\Logger;
+use W3a\Core\Support\Audit;
 
-use W3a\Core\Validator;
+use W3a\Core\Support\Validator;
 use W3a\Core\Events\EventDispatcher;
 
 use W3a\Core\Security\UserContext;
@@ -39,7 +39,7 @@ use App\Modules\Origins\Models\Domain;
 
 use App\Modules\Muted\Services\MuteService;
 
-class ModuleServiceProvider extends \W3a\Core\ModuleServiceProvider
+class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
 {
     public function register(Container $container): void
     {
