@@ -1,6 +1,6 @@
 <?php
 
-use W3a\Core\Router;
+use W3a\Core\Http\Router;
 use W3a\Core\Foundation\Container;
 
 

@@ -8,8 +8,6 @@ use App\Modules\Invitations\Models\InvitationRequest;
 
 /**
  * Сервис для управления запросами на приглашение.
- * 
- * ✅ ИЗМЕНЕНО: Зависимость обязательна.
  */
 class AdminInvitationService
 {

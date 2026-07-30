@@ -40,7 +40,6 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
         });
 
         // === СЕРВИС ===
-        // ✅ ИСПРАВЛЕНО: убрана Session, добавлен UserContext, порядок совпадает с новым конструктором
         $container->singleton(CommentService::class, function (Container $c) {
             return new CommentService(
                 $c->get(Comment::class),

@@ -3,8 +3,6 @@
 namespace App\Modules\Admin\Models;
 
 use W3a\Core\Database\Model;
-use W3a\Core\Database\Database;
-use W3a\Core\Support\Logger;
 
 class Audit extends Model
 {

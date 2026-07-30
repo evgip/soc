@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Admin\Controllers;
 
 use W3a\Core\Support\Audit;
-use W3a\Core\Router;
+use W3a\Core\Http\Router;
 use W3a\Core\Exceptions\JsonResponseException;
 
 use App\BaseController;
@@ -16,6 +16,10 @@ use App\Modules\Admin\Services\AdminAuditService;
 use App\Modules\Admin\Services\AdminToolsService;
 use App\Modules\Admin\Services\AdminFirewallService;
 use App\Modules\Admin\Services\AdminInvitationService;
+
+use App\Modules\Admin\Exceptions\AdminValidationException;
+use App\Modules\Admin\Exceptions\AdminUserException;
+
 use App\Modules\Wiki\Models\WikiPage;
 
 /**

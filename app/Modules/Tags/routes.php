@@ -6,7 +6,7 @@
  * - Публичные: просмотр тегов и категорий
  * - Авторизованные: персональные фильтры пользователя
  * 
- * @var \W3a\Core\Router $router
+ * @var \W3a\Core\Http\Router $router
  */
 
 use App\Modules\Tags\Controllers\TagsController;

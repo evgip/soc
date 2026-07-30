@@ -5,7 +5,7 @@
  * Публичная страница — доступна всем, включая гостей.
  * Middleware не требуются (GET-запрос, без форм).
  * 
- * @var \W3a\Core\Router $router
+ * @var \W3a\Core\Http\Router $router
  */
 
 use App\Modules\Stats\Controllers\StatsController;

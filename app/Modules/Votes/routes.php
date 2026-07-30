@@ -4,7 +4,7 @@
  * 
  * Единый endpoint для голосования за истории и комментарии.
  * 
- * @var \W3a\Core\Router $router
+ * @var \W3a\Core\Http\Router $router
  */
 
 use App\Modules\Votes\Controllers\VotesController;

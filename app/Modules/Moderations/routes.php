@@ -5,7 +5,7 @@
  * Все маршруты требуют роль модератора или администратора.
  * Админы имеют доступ автоматически благодаря иерархии ролей.
  * 
- * @var \W3a\Core\Router $router
+ * @var \W3a\Core\Http\Router $router
  */
 
 use App\Modules\Moderations\Controllers\ModerationsController;

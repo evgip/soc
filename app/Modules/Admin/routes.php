@@ -7,7 +7,7 @@
  * - `web`   → CSRF-защита
  * - `admin` → проверка авторизации + роль администратора
  * 
- * @var \W3a\Core\Router $router
+ * @var \W3a\Core\Http\Router $router
  */
 
 use App\Modules\Admin\Controllers\AdminController;
