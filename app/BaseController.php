@@ -7,8 +7,8 @@ namespace App;
 use W3a\Core\Http\Controller as CoreController;
 use W3a\Core\Http\Session;
 use W3a\Core\View\OpenGraph;
+use W3a\Core\Auth\Auth;
 
-use App\Modules\Auth\Services\Auth;
 use App\Modules\Notifications\Models\Notification;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Flags\Models\Flag;
@@ -167,9 +167,6 @@ abstract class BaseController extends CoreController
             $data['url'] = $protocol . $host . $uri;
         }
 
-        // ✅ ВОССТАНОВЛЕН ВЫЗОВ, КАК БЫЛО В ОРИГИНАЛЬНОМ КОНТРОЛЛЕРЕ
-        // Если класс OpenGraph находится в неймспейсе (например, W3a\Core\View\OpenGraph), 
-        // добавьте use W3a\Core\OpenGraph; в начало этого файла и уберите слэш.
         OpenGraph::set($data);
     }
 

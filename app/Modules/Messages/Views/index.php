@@ -6,7 +6,7 @@
         <?php foreach ($chats as $chat): ?>
 
 		<?php
-		$isUnread = ((int)$chat['unread_count'] > 0 && !empty($chat['last_message']) && (int)$chat['last_sender_id'] !== \App\Modules\Auth\Services\Auth::id());
+		$isUnread = ((int)$chat['unread_count'] > 0 && !empty($chat['last_message']) && (int)$chat['last_sender_id'] !== \W3a\Core\Auth\Auth::id());
 		?>
 			
             <li>

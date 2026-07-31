@@ -1,5 +1,5 @@
 <?php
-$currentUserId = \App\Modules\Auth\Services\Auth::check() ? \App\Modules\Auth\Services\Auth::id() : 0;
+$currentUserId = \W3a\Core\Auth\Auth::check() ? \W3a\Core\Auth\Auth::id() : 0;
 $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
 ?>
 
@@ -46,7 +46,7 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
 			</div>
 		<?php endif; ?>
 		
-		<?php if (\App\Modules\Auth\Services\Auth::isModerator() && $profileUser['id'] !== \App\Modules\Auth\Services\Auth::id()): ?>
+		<?php if (\W3a\Core\Auth\Auth::isModerator() && $profileUser['id'] !== \W3a\Core\Auth\Auth::id()): ?>
 			<div class="mod-actions">
 				<h3>Действия модератора</h3>
 				

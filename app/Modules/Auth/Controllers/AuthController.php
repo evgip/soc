@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Auth\Controllers;
 
-use App\BaseController;
 use W3a\Core\Http\Session;
-use App\Modules\Auth\Services\AuthService;
-use App\Modules\Auth\Services\PasswordResetService;
+use W3a\Core\Auth\AuthService;
+use W3a\Core\Auth\PasswordResetService;
+use W3a\Core\Auth\Exceptions\AuthBlockedException;
+use W3a\Core\Auth\Exceptions\InvalidCredentialsException;
+use W3a\Core\Auth\Exceptions\AccountNotActiveException;
+use W3a\Core\Auth\Exceptions\RegistrationFailedException;
+use W3a\Core\Auth\Exceptions\InvalidTokenException;
 
-use App\Modules\Auth\Exceptions\AuthBlockedException;
-use App\Modules\Auth\Exceptions\InvalidCredentialsException;
-use App\Modules\Auth\Exceptions\AccountNotActiveException;
-use App\Modules\Auth\Exceptions\RegistrationFailedException;
-use App\Modules\Auth\Exceptions\InvalidTokenException;
+use App\BaseController;
 
 /**
  * Контроллер аутентификации.

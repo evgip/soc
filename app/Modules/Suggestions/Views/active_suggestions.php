@@ -1,6 +1,5 @@
 <?php
 $suggestions = $activeSuggestions ?? [];
-$isModerator = \App\Modules\Auth\Services\Auth::isModerator() || \App\Modules\Auth\Services\Auth::isAdmin();
 ?>
 
 <?php if (!empty($suggestions)): ?>
@@ -43,7 +42,7 @@ $isModerator = \App\Modules\Auth\Services\Auth::isModerator() || \App\Modules\Au
                         </div>
                     </div>
 
-                    <?php if ($isModerator): ?>
+                    <?php if (!empty($currentUser['isModerator'])): ?>
                         <!-- Кнопки для модератора -->
                         <div class="moderator-actions">
                             <form action="/suggestions/<?= $group['suggestion_id'] ?>/approve" method="POST">

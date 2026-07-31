@@ -33,7 +33,7 @@
 <div class="dialog-messages">
     <?php if (!empty($messages)): ?>
         <?php foreach ($messages as $msg): ?>
-            <?php $isOutgoing = ((int)$msg['sender_id'] === \App\Modules\Auth\Services\Auth::id()); ?>
+            <?php $isOutgoing = ((int)$msg['sender_id'] === \W3a\Core\Auth\Auth::id()); ?>
             
             <div class="dialog-message <?= $isOutgoing ? 'outgoing' : 'incoming' ?>" 
                  title="<?= e(date('d.m.Y H:i', strtotime($msg['created_at']))) ?>">

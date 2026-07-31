@@ -17,8 +17,8 @@ use W3a\Core\Foundation\Container;
 use W3a\Core\Support\Logger;
 use W3a\Core\Security\IpResolver;
 use W3a\Core\Events\EventDispatcher;
+use W3a\Core\Auth\Auth;
 use App\Modules\Suggestions\Events\ContentUpdated;
-use App\Modules\Auth\Services\Auth;
 use Exception;
 
 /**

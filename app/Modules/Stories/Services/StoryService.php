@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Services;
 
-use App\Modules\Stories\Models\Story;
-use App\Modules\Origins\Models\Domain;
 use W3a\Core\Support\Validator;
 use W3a\Core\Support\Audit;
 use W3a\Core\Events\EventDispatcher;
 use W3a\Core\Security\UserContext;
+
+use App\Modules\Stories\Models\Story;
+use App\Modules\Origins\Models\Domain;
 use App\Modules\Stories\Events\StoryDeleted;
 use App\Modules\Stories\Events\StoryRestored;
 use App\Modules\Stories\Exceptions\StoryValidationException;

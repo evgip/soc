@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Services;
 
 use W3a\Core\Foundation\Container;
+use W3a\Core\Auth\Auth;
 use App\Modules\Stories\Models\Story;
 use App\Modules\Stories\Models\ReadRibbon;
 use App\Modules\Stories\Services\RankingService;
 use App\Modules\Origins\Models\Domain;
 use App\Modules\Tags\Models\TagFilter;
-use App\Modules\Auth\Services\Auth;
 use App\Modules\Muted\Services\MuteService;
 
 /**
