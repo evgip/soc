@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Auth\Controllers;
 
 use W3a\Core\Http\Session;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Auth\AuthService;
 use W3a\Core\Auth\PasswordResetService;
 use W3a\Core\Auth\Exceptions\AuthBlockedException;
@@ -23,15 +26,15 @@ use App\BaseController;
  */
 class AuthController extends BaseController
 {
-    public function showLoginForm(): void
+    public function showLoginForm(): ViewResponse
     {
-        $this->render('login', [
+        return $this->render('login', [
             'title' => 'Авторизация',
             'request' => $this->request
         ]);
     }
 
-    public function login(): void
+    public function login(): RedirectResponse
     {
         $email = trim($this->request->getParams('email'));
         $password = $this->request->getParams('password');
@@ -42,47 +45,41 @@ class AuthController extends BaseController
         try {
             $user = $this->service(AuthService::class)->authenticate($email, $password);
             $this->service(AuthService::class)->createSession($user, $remember);
-            
         } catch (AuthBlockedException | InvalidCredentialsException | AccountNotActiveException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack('/login');
-            return;
-            
+            return $this->redirectBack('/login');
         } catch (\Throwable $e) {
             $this->logError($e, 'Auth.login');
             $this->session()->flash('error', 'Произошла ошибка при входе в систему.');
-            $this->redirectBack('/login');
-            return;
+            return $this->redirectBack('/login');
         }
 
         $this->session()->flash('success', 'Добро пожаловать!');
-        $this->redirect('/');
+        return $this->redirect('/');
     }
-	
 
-    public function showRegisterForm(): void
+
+    public function showRegisterForm(): Response
     {
         if (config('invitations.config.invitations_enabled')) {
-            $this->redirect(route('home'));
-            return;
+            return $this->redirect(route('home'));
         }
 
         $old = $this->session()->get('old_input', []);
         $this->session()->delete('old_input');
 
-        $this->render('register', [
+        return $this->render('register', [
             'title' => 'Регистрация нового пользователя',
             'request' => $this->request,
             'old' => $old
         ]);
     }
 
-    public function register(): void
+    public function register(): RedirectResponse
     {
         if (!captcha_validate($this->request->post('smart-token'))) {
             $this->session()->flash('error', 'Пожалуйста, подтвердите, что вы не робот.');
-            $this->redirectBack('/register');
-            return;
+            return $this->redirectBack('/register');
         }
 
         $username = trim($this->request->getParams('username'));
@@ -91,8 +88,8 @@ class AuthController extends BaseController
 
         $validator = $this->container->get(\W3a\Core\Support\Validator::class);
         $validator->validate([
-            'username' => $username, 
-            'email' => $email, 
+            'username' => $username,
+            'email' => $email,
             'password' => $password,
         ], [
             'username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/',
@@ -106,8 +103,7 @@ class AuthController extends BaseController
 
             $this->session()->flash('error', implode('<br>', $errorMessages));
             $this->session()->set('old_input', ['username' => $username, 'email' => $email]);
-            $this->redirectBack('/register');
-            return;
+            return $this->redirectBack('/register');
         }
 
         try {
@@ -115,94 +111,84 @@ class AuthController extends BaseController
         } catch (RegistrationFailedException $e) {
             $this->session()->set('old_input', ['username' => $username, 'email' => $email]);
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack('/register');
-			return;
-            
+            return $this->redirectBack('/register');
         } catch (\Throwable $e) {
             $this->logError($e, 'Auth.register');
             $this->session()->set('old_input', ['username' => $username, 'email' => $email]);
             $this->session()->flash('error', 'Произошла ошибка при регистрации.');
-            $this->redirectBack('/register');
-			return;
+            return $this->redirectBack('/register');
         }
-		
+
         $this->session()->flash('success', 'Регистрация успешна! Проверьте почту для активации.');
-        $this->redirect('/login');
+        return $this->redirect('/login');
     }
 
-    public function logout(): void
+    public function logout(): RedirectResponse
     {
         $this->service(AuthService::class)->logout();
-        $this->redirect('/');
+        return $this->redirect('/');
     }
 
-    public function activateAccount(string $token): void
+    public function activateAccount(string $token): RedirectResponse
     {
         try {
             $this->service(AuthService::class)->activateAccount($token);
-            
         } catch (InvalidTokenException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirect('/register');
-			return;
-            
+            return $this->redirect('/register');
         } catch (\Throwable $e) {
             $this->logError($e, 'Auth.activate');
             $this->session()->flash('error', 'Произошла ошибка при активации аккаунта.');
-            $this->redirect('/register');
-			return;
+            return $this->redirect('/register');
         }
-		
-		$this->session()->flash('success', 'Аккаунт успешно активирован! Теперь вы можете войти.');
-		$this->redirect('/login');
+
+        $this->session()->flash('success', 'Аккаунт успешно активирован! Теперь вы можете войти.');
+        return $this->redirect('/login');
     }
 
-    public function showRequestResetForm(): void
+    public function showRequestResetForm(): ViewResponse
     {
-        $this->render('password/reset_request', [
+        return $this->render('password/reset_request', [
             'title' => 'Восстановление пароля'
         ]);
     }
 
-    public function sendResetLink(): void
+    public function sendResetLink(): RedirectResponse
     {
         if (captcha_is_required() && !captcha_validate($this->request->post('smart-token'))) {
             $this->session()->flash('error', 'Пожалуйста, подтвердите, что вы не робот.');
-            $this->redirect(route('password.request'));
-            return;
+            return $this->redirect(route('password.request'));
         }
 
         $email = filter_var($this->request->post('email', ''), FILTER_VALIDATE_EMAIL);
 
         if (!$email) {
             $this->session()->flash('error', 'Неверный email адрес.');
-            $this->redirect(route('password.request'));
-            return;
+            return $this->redirect(route('password.request'));
         }
 
         $this->getPasswordResetService()->sendResetLink($email);
 
         $this->session()->flash('success', 'Если email найден в системе, инструкция по восстановлению отправлена на почту.');
-        $this->redirect(route('password.request'));
+        return $this->redirect(route('password.request'));
     }
 
-    public function showResetPasswordForm(string $token): void
+    public function showResetPasswordForm(string $token): Response
     {
         $user = $this->getPasswordResetService()->validateToken($token);
 
         if (!$user) {
             $this->session()->flash('error', 'Ссылка недействительна или истекла.');
-            $this->redirect(route('password.request'));
-            return;
+            return $this->redirect(route('password.request'));
         }
 
-        $this->render('password/reset_form', [
+        return $this->render('password/reset_form', [
             'title' => 'Установить новый пароль',
             'token' => $token
         ]);
     }
 
-    public function executePasswordReset(): void
+    public function executePasswordReset(): RedirectResponse
     {
         $token = $this->request->getParams('token');
         $password = $this->request->getParams('password');
@@ -210,30 +196,27 @@ class AuthController extends BaseController
 
         if (empty($token) || empty($password) || empty($passwordConfirm)) {
             $this->session()->flash('error', 'Заполните все поля.');
-            $this->redirect(route('password.reset', ['token' => $token]));
-            return;
+            return $this->redirect(route('password.reset', ['token' => $token]));
         }
 
         if (strlen($password) < 6) {
             $this->session()->flash('error', 'Пароль должен быть не менее 6 символов.');
-            $this->redirect(route('password.reset', ['token' => $token]));
-            return;
+            return $this->redirect(route('password.reset', ['token' => $token]));
         }
 
         if ($password !== $passwordConfirm) {
             $this->session()->flash('error', 'Пароли не совпадают.');
-            $this->redirect(route('password.reset', ['token' => $token]));
-            return;
+            return $this->redirect(route('password.reset', ['token' => $token]));
         }
 
         $success = $this->getPasswordResetService()->resetPassword($token, $password);
 
         if ($success) {
             $this->session()->flash('success', 'Пароль успешно изменён. Теперь вы можете войти.');
-            $this->redirect(route('auth.login'));
+            return $this->redirect(route('auth.login'));
         } else {
             $this->session()->flash('error', 'Ошибка при смене пароля. Попробуйте запросить новую ссылку.');
-            $this->redirect(route('password.request'));
+            return $this->redirect(route('password.request'));
         }
     }
 

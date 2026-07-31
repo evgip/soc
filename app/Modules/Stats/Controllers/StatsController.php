@@ -2,16 +2,17 @@
 
 namespace App\Modules\Stats\Controllers;
 
+use W3a\Core\Http\ViewResponse;
 use App\BaseController;
 use App\Modules\Stats\Models\Stats;
 
 class StatsController extends BaseController
 {
-    public function index(): void
+    public function index(): ViewResponse
     {
         $stats =  $this->service(Stats::class);
 
-        $this->render('index', [
+        return $this->render('index', [
             'title'             => 'Статистика',
             'totalUsers'        => $stats->getTotalUsers(),
             'totalStories'      => $stats->getTotalStories(),

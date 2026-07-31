@@ -94,33 +94,36 @@ class UsersController extends BaseController
     /**
      * Обработка обновления настроек профиля.
      */
-    public function updateSettings(): void
+    public function updateSettings(): \W3a\Core\Http\RedirectResponse
     {
         $userContext = $this->getUserContext();
-        $user = $this->getUserWithProfileOrRedirect($userContext['id']);
+        
+        // Получаем пользователя. Если его нет, вспомогательный метод вернет объект RedirectResponse
+        $userOrRedirect = $this->getUserWithProfileOrRedirect($userContext['id']);
 
-        if ($user === null) {
-            return;
+        if ($userOrRedirect instanceof \W3a\Core\Http\RedirectResponse) {
+            return $userOrRedirect;
         }
+        
+        $user = $userOrRedirect; // Теперь мы точно знаем, что это массив
 
         $email = trim($this->request->getParams('email', ''));
         $bio = trim($this->request->getParams('bio', ''));
         $oldAvatarFilename = $user['avatar'] ?? '';
         $newAvatarFilename = $oldAvatarFilename;
 
+        $errorMessage = null;
+
         try {
-            // 1. Обновление email
             if ($email !== $user['email']) {
                 $this->getUserService()->updateEmail($userContext['id'], $email);
             }
 
-            // 2. Обработка аватара
             $avatarFile = $this->request->file('avatar_file');
             if ($avatarFile && $avatarFile['error'] === UPLOAD_ERR_OK) {
                 $newAvatarFilename = $this->getAvatarService()->handleUpload($avatarFile, $oldAvatarFilename);
             }
 
-            // 3. Обновление профиля и настроек
             $this->getUserService()->updateProfile($userContext['id'], [
                 'bio' => $bio,
                 'avatar' => $newAvatarFilename
@@ -134,44 +137,46 @@ class UsersController extends BaseController
                 'email_notifications' => $this->request->getParams('email_notifications') ? 1 : 0,
             ]);
 
-            // 4. Обновление сессии (это ответственность контроллера)
             $this->container->get(Session::class)->set('user_avatar', $newAvatarFilename);
 
-            $this->redirectWithMessage(route('account.settings'), 'Настройки успешно сохранены.', 'success');
-
         } catch (UserValidationException | AvatarUploadException $e) {
-            $this->redirectWithMessage(route('account.settings'), $e->getMessage(), 'error');
-            
+            $errorMessage = $e->getMessage();
         } catch (\Throwable $e) {
             $this->logError($e, 'Users.updateSettings');
-            $this->redirectWithMessage(route('account.settings'), 'Произошла непредвиденная ошибка при сохранении.', 'error');
+            $errorMessage = 'Произошла непредвиденная ошибка при сохранении.';
         }
+
+        $targetUrl = route('account.settings');
+        
+        if ($errorMessage !== null) {
+            return $this->redirectWithMessage($targetUrl, $errorMessage, 'error');
+        }
+        
+        return $this->redirectWithMessage($targetUrl, 'Настройки успешно сохранены.', 'success');
     }
 
     /**
      * Обработка смены пароля.
      */
-    public function updatePassword(): void
+    public function updatePassword(): \W3a\Core\Http\RedirectResponse
     {
         $userContext = $this->getUserContext();
         $currentPassword = $this->request->getParams('current_password', '');
         $newPassword = $this->request->getParams('new_password', '');
 
         if (strlen($newPassword) < 6) {
-            $this->redirectWithMessage(route('account.settings'), 'Пароль должен быть не менее 6 символов.', 'error');
-            return;
+            return $this->redirectWithMessage(route('account.settings'), 'Пароль должен быть не менее 6 символов.', 'error');
         }
 
         try {
             $this->getUserService()->changePassword($userContext['id'], $currentPassword, $newPassword);
-            $this->redirectWithMessage(route('account.settings'), 'Пароль успешно изменён.', 'success');
+            return $this->redirectWithMessage(route('account.settings'), 'Пароль успешно изменён.', 'success');
             
         } catch (UserValidationException | UserNotFoundException $e) {
-            $this->redirectWithMessage(route('account.settings'), $e->getMessage(), 'error');
-            
+            return $this->redirectWithMessage(route('account.settings'), $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Users.updatePassword');
-            $this->redirectWithMessage(route('account.settings'), 'Произошла непредвиденная ошибка.', 'error');
+            return $this->redirectWithMessage(route('account.settings'), 'Произошла непредвиденная ошибка.', 'error');
         }
     }
 
@@ -189,19 +194,19 @@ class UsersController extends BaseController
         }
 
         $user['profile'] = $userModel->getProfile((int)$user['id']);
-
         return $user;
     }
 
-    private function getUserWithProfileOrRedirect(int $userId): ?array
+    private function getUserWithProfileOrRedirect(int $userId): array|\W3a\Core\Http\RedirectResponse
     {
         $user = $this->getUserService()->getUserWithProfile($userId);
 
         if (!$user) {
-            $this->redirect('/');
-            return null;
+            return $this->redirect('/');
         }
 
         return $user;
     }
+
+
 }

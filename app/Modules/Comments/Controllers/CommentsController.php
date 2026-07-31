@@ -71,7 +71,7 @@ class CommentsController extends BaseController
     /**
      * Создание комментария
      */
-    public function create(): void
+    public function create(): \W3a\Core\Http\RedirectResponse
     {
         $storyId = (int)$this->request->getParams('story_id');
         $parentIdRaw = $this->request->getParams('parent_id');
@@ -89,23 +89,21 @@ class CommentsController extends BaseController
             $commentId = $this->service(CommentService::class)->createComment($storyId, $commentText, $parentId);
         } catch (CommentValidationException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirect("/story/{$storyId}");
-            return;
+            return $this->redirect("/story/{$storyId}");
         } catch (\Throwable $e) {
             $this->logError($e, 'Comments.create');
             $this->session()->flash('error', 'Произошла ошибка при создании комментария.');
-            $this->redirect("/story/{$storyId}");
-            return;
+            return $this->redirect("/story/{$storyId}");
         }
 
         $this->session()->flash('success', 'Ваш комментарий успешно опубликован!');
-        $this->redirect(comment_url($storyId, $commentId));
+        return $this->redirect(comment_url($storyId, $commentId));
     }
 
     /**
      * Редактирование комментария (поддерживает AJAX и обычный POST)
      */
-    public function edit(string $id): void
+    public function edit(string $id): \W3a\Core\Http\JsonResponse|\W3a\Core\Http\RedirectResponse
     {
         $commentId = (int)$id;
         $newText = (string)$this->request->getParams('comment_text');
@@ -120,43 +118,41 @@ class CommentsController extends BaseController
         // 2. Ловим ожидаемые бизнес-ошибки
         catch (CommentValidationException | CommentPermissionException | \InvalidArgumentException $e) {
             if ($isAjax) {
-                $this->json(['success' => false, 'error' => $e->getMessage()], 400);
-                return;
+                return $this->json(['success' => false, 'error' => $e->getMessage()], 400);
             }
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         } 
         // 3. Ловим непредвиденные ошибки и логируем их
         catch (\Throwable $e) {
             $this->logError($e, 'Comments.edit');
             if ($isAjax) {
-                $this->json(['success' => false, 'error' => 'Внутренняя ошибка сервера'], 500);
-                return;
+                return $this->json(['success' => false, 'error' => 'Внутренняя ошибка сервера'], 500);
             }
             $this->session()->flash('error', 'Произошла непредвиденная ошибка.');
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         }
 
+        // 4. Успешное выполнение
         if ($isAjax) {
             $html = markdown_comment($result['comment']['comment']);
-            $this->json([
+            
+            return $this->json([
                 'success' => true,
                 'html' => $html,
                 'raw' => $result['comment']['comment']
             ]);
-            return;
         }
 
         $this->session()->flash('success', 'Комментарий успешно обновлён.');
-        $this->redirect(comment_url((int)$result['comment']['story_id'], $commentId));
+		
+        return $this->redirect(comment_url((int)$result['comment']['story_id'], $commentId));
     }
 
     /**
      * Удаление комментария
      */
-    public function delete(string $id): void
+    public function delete(string $id): \W3a\Core\Http\RedirectResponse
     {
         $commentId = (int)$id;
         $result = null;
@@ -165,24 +161,23 @@ class CommentsController extends BaseController
             $result = $this->service(CommentService::class)->deleteComment($commentId);
         } catch (CommentPermissionException | \InvalidArgumentException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Comments.delete');
             $this->session()->flash('error', 'Произошла ошибка при удалении.');
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         }
 
         // Исключение уйдет сразу в Application::handleRedirect без логирования.
         $this->session()->flash('success', 'Комментарий успешно удален.');
-        $this->redirect(comment_url($result['story_id'], $commentId));
+		
+        return $this->redirect(comment_url($result['story_id'], $commentId));
     }
 
     /**
      * Восстановление комментария
      */
-    public function restore(string $id): void
+    public function restore(string $id): \W3a\Core\Http\RedirectResponse
     {
         $commentId = (int)$id;
         $result = null;
@@ -191,17 +186,16 @@ class CommentsController extends BaseController
             $result = $this->service(CommentService::class)->restoreComment($commentId);
         } catch (CommentValidationException | CommentPermissionException | \InvalidArgumentException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Comments.restore');
             $this->session()->flash('error', 'Произошла ошибка при восстановлении.');
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         }
 
         $this->session()->flash('success', 'Комментарий успешно восстановлен.');
-        $this->redirect(comment_url($result['story_id'], $commentId));
+		
+        return $this->redirect(comment_url($result['story_id'], $commentId));
     }
 
     /**

@@ -190,7 +190,7 @@ class ModerationsController extends BaseController
      * 
      * После успешного выполнения редиректит на профиль пользователя.
      */
-    public function banUser(string $id): void
+    public function banUser(string $id): \W3a\Core\Http\RedirectResponse
     {
         $targetUserId = (int)$id;
         $userContext = $this->getUserContext();
@@ -210,22 +210,20 @@ class ModerationsController extends BaseController
                 $message = "Пользователь «{$result['username']}» разбанен";
             } else {
                 $this->session()->flash('error', 'Неизвестное действие');
-                $this->redirectBack();
-                return;
+                return $this->redirectBack();
             }
         } catch (\App\Modules\Moderations\Exceptions\ModerationPermissionException | \InvalidArgumentException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Moderations.banUser');
             $this->session()->flash('error', 'Произошла ошибка при выполнении действия');
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         }
 
         $this->session()->flash('success', $message);
-        $this->redirect('/user/' . $result['username']);
+		
+        return $this->redirect('/user/' . $result['username']);
     }
 	
 

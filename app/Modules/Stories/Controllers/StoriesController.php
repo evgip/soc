@@ -6,6 +6,10 @@ namespace App\Modules\Stories\Controllers;
 
 use App\BaseController;
 use W3a\Core\Http\Session;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\ViewResponse;
+
 use App\Modules\Stories\Services\StoryService;
 use App\Modules\Stories\Services\ReadRibbonService;
 use App\Modules\Stories\Services\UrlFetcherService;
@@ -18,13 +22,14 @@ use App\Modules\Tags\Models\Tag;
 use App\Modules\Users\Models\User;
 use App\Modules\Content\Core\Markdown;
 use App\Modules\Wiki\Services\WikiService;
+use W3a\Core\Http\JsonResponse;
 
 class StoriesController extends BaseController
 {
     // =========================================================================
     // ЛЕНТА ИСТОРИЙ
     // =========================================================================
-    public function index(string $tagslug = '', string $domain = ''): void
+    public function index(string $tagslug = '', string $domain = ''): ViewResponse
     {
         $userContext = $this->getUserContext();
 
@@ -41,7 +46,7 @@ class StoriesController extends BaseController
             pageData: $pageData
         );
 
-        $this->render('index', [
+        return $this->render('index', [
             'stories' => $feed->stories,
             'currentPage' => $feed->currentPage,
             'totalPages' => $feed->totalPages,
@@ -65,34 +70,34 @@ class StoriesController extends BaseController
     // =========================================================================
     // ПРОСМОТР ОДНОЙ ИСТОРИИ
     // =========================================================================
-   public function show(string $id): void
-   {
-       $userContext = $this->getUserContext();
-       $viewModel = $this->service(StoryPageService::class)->buildShowPageData((int)$id, $userContext);
+    public function show(string $id): ViewResponse
+    {
+        $userContext = $this->getUserContext();
+        $viewModel = $this->service(StoryPageService::class)->buildShowPageData((int)$id, $userContext);
 
-       $this->setOpenGraph([
-           'type' => 'article',
-           'title' => $viewModel->story['title'],
-           'description' => $viewModel->story['seo_description'] ?? '', 
-           'image' => $viewModel->story['og_image'] ?? '',
-       ]);
+        $this->setOpenGraph([
+            'type' => 'article',
+            'title' => $viewModel->story['title'],
+            'description' => $viewModel->story['seo_description'] ?? '',
+            'image' => $viewModel->story['og_image'] ?? '',
+        ]);
 
-       $this->render('show', [
-           'title' => $viewModel->story['title'],
-           'viewModel' => $viewModel,
-       ]);
-   }
+        return $this->render('show', [
+            'title' => $viewModel->story['title'],
+            'viewModel' => $viewModel,
+        ]);
+    }
 
     // =========================================================================
     // СОЗДАНИЕ ИСТОРИИ
     // =========================================================================
 
-    public function showCreateForm(): void
+    public function showCreateForm(): ViewResponse
     {
         $tagModel = $this->container->get(Tag::class);
         $availableTags = $tagModel->getAllTags(false);
 
-        $this->render('create', [
+        return $this->render('create', [
             'title' => 'Поделиться интересным',
             'availableTags' => $availableTags,
             'request' => $this->request
@@ -102,7 +107,7 @@ class StoriesController extends BaseController
     /**
      * Обработка создания новой истории.
      */
-    public function create(): void
+    public function create(): RedirectResponse
     {
         $data = [
             'title' => $this->request->getParams('title'),
@@ -118,24 +123,25 @@ class StoriesController extends BaseController
             $storyId = $this->service(StoryService::class)->createStory($data, $userContext['id']);
         } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack();
-            return;
+
+            return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Stories.create');
             $this->session()->flash('error', 'Произошла ошибка при создании публикации.');
-            $this->redirectBack();
-            return;
+
+            return $this->redirectBack();
         }
 
         $this->session()->flash('success', 'Ваша история успешно опубликована!');
-        $this->redirect('/story/' . $storyId);
+
+        return $this->redirect('/story/' . $storyId);
     }
 
     // =========================================================================
     // РЕДАКТИРОВАНИЕ ИСТОРИИ
     // =========================================================================
 
-    public function showEditForm(string $id): void
+    public function showEditForm(string $id): Response
     {
         $storyId = (int)$id;
 
@@ -146,13 +152,12 @@ class StoriesController extends BaseController
 
         if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
             $this->container->get(Session::class)->flash('error', 'У вас нет прав для изменения этой публикации.');
-            $this->redirectBack('/');
-            return;
+            return $this->redirectBack('/');
         }
 
         $tagModel = $this->container->get(Tag::class);
 
-        $this->render('edit', [
+        return $this->render('edit', [
             'title' => 'Редактирование публикации',
             'story' => $story,
             'availableTags' => $tagModel->getAllTags(),
@@ -161,10 +166,10 @@ class StoriesController extends BaseController
         ]);
     }
 
-	/**
+    /**
      * Обработка обновления существующей истории.
      */
-    public function update(string $id): void
+    public function update(string $id): RedirectResponse
     {
         $storyId = (int)$id;
         $storyModel = $this->container->get(Story::class);
@@ -173,8 +178,7 @@ class StoriesController extends BaseController
 
         if (!$story || !$this->service(StoryService::class)->canEditStory($story)) {
             $this->session()->flash('error', 'У вас нет прав для изменения этой публикации.');
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         }
 
         $data = [
@@ -189,99 +193,97 @@ class StoriesController extends BaseController
             $this->service(StoryService::class)->updateStory($storyId, $data);
         } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
             $this->session()->flash('error', $e->getMessage());
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Stories.update');
             $this->session()->flash('error', 'Произошла ошибка при редактировании.');
-            $this->redirectBack();
-            return;
+            return $this->redirectBack();
         }
 
         $this->session()->flash('success', 'Публикация успешно отредактирована.');
-        $this->redirect('/story/' . $storyId);
+
+        return $this->redirect('/story/' . $storyId);
     }
 
     // =========================================================================
     // АДМИНИСТРИРОВАНИЕ ИСТОРИЙ
     // =========================================================================
 
-    public function adminDelete(string $id): void
+    public function adminDelete(string $id): RedirectResponse
     {
         $userContext = $this->getUserContext();
         $this->service(StoryService::class)->deleteStory((int)$id, $userContext['id']);
-        $this->redirectBack();
+
+        return $this->redirectBack();
     }
 
-    public function adminRestore(string $id): void
+    public function adminRestore(string $id): RedirectResponse
     {
         $userContext = $this->getUserContext();
         $this->service(StoryService::class)->restoreStory((int)$id, $userContext['id']);
-        $this->redirectBack();
+
+        return $this->redirectBack();
     }
 
     // =========================================================================
     // ПОДПИСКА И ПРОЧТЕНИЕ
     // =========================================================================
-    public function toggleFollow(string $id): void
+    public function toggleFollow(string $id): Response
     {
         $storyId = (int)$id;
         $userContext = $this->getUserContext();
 
         // Используем репозиторий для операций с данными
         $storyRepo = $this->container->get(StoryRepository::class);
-        
+
         // Выполняем переключение (внутри репозитория уже есть защита по user_id)
         $storyRepo->toggleFollow($storyId, $userContext['id']);
 
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
             // Получаем актуальный статус через тот же репозиторий
             $isFollowing = $storyRepo->isFollowing($storyId, $userContext['id']);
-            
-            $this->json([
+
+            return $this->json([
                 'success' => true,
                 'is_following' => $isFollowing,
             ]);
-            return;
         }
 
         $referer = $_SERVER['HTTP_REFERER'] ?? '/story/' . $storyId;
-        $this->redirectBack($referer);
+        return $this->redirectBack($referer);
     }
 
-    public function markRead(string $id): void
+    public function markRead(string $id): RedirectResponse
     {
         $storyId = (int)$id;
         $this->service(ReadRibbonService::class)->markAsRead($storyId);
 
         $referer = $_SERVER['HTTP_REFERER'] ?? '/story/' . $storyId;
-        $this->redirectBack($referer);
+        return $this->redirectBack($referer);
     }
 
     // =========================================================================
     // AJAX ENDPOINTS
     // =========================================================================
 
-    public function fetchUrlTitle(): void
+    public function fetchUrlTitle(): JsonResponse
     {
         $url = $this->request->getParams('url');
 
         if (empty($url)) {
-            $this->json(['title' => '', 'url' => '']);
-            return;
+            return $this->json(['title' => '', 'url' => '']);
         }
 
         $fetcher = $this->container->get(UrlFetcherService::class);
         $attributes = $fetcher->fetchAttributes($url);
 
-        $this->json($attributes);
+        return $this->json($attributes);
     }
 
-    public function preview(): void
+    public function preview(): JsonResponse
     {
         if (!$this->request->isCsrfValid()) {
-            $this->json(['error' => 'Неверный CSRF токен'], 419);
-            return;
+            return $this->json(['error' => 'Неверный CSRF токен'], 419);
         }
 
         $text = $this->request->post('text', '');
@@ -290,7 +292,7 @@ class StoriesController extends BaseController
         $markdown = $this->container->get(Markdown::class);
         $html = $markdown->parse($text, $allowImages);
 
-        $this->json([
+        return $this->json([
             'html' => $html,
             'success' => true
         ]);
@@ -370,7 +372,7 @@ class StoriesController extends BaseController
     // =========================================================================
     // ЛЕНТА ПОЛЬЗОВАТЕЛЯ
     // =========================================================================
-    public function userStories(string $username): void
+    public function userStories(string $username): ViewResponse
     {
         $validator = $this->container->get(\W3a\Core\Support\Validator::class); // Уточните неймспейс, если отличается (в оригинале AppCoreValidator::class)
         $validator->validate(
@@ -409,7 +411,7 @@ class StoriesController extends BaseController
             pageData: ['title' => $pageTitle]
         );
 
-        $this->render('index', [
+        return $this->render('index', [
             'stories' => $feed->stories,
             'currentPage' => $feed->currentPage,
             'totalPages' => $feed->totalPages,

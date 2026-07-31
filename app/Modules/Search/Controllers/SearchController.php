@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Search\Controllers;
 
-use App\BaseController;
 use W3a\Core\Http\Session;
+use W3a\Core\Http\ViewResponse;
+use App\BaseController;
 use App\Modules\Search\Models\SearchResult;
 use App\Modules\Votes\Models\Vote;
 
@@ -19,7 +20,7 @@ class SearchController extends BaseController
     /**
      * Обработка контекстного поиска по историям или комментариям (GET /search?q=...)
      */
-    public function index(): void
+    public function index(): ViewResponse
     {
         $query  = trim($this->request->getParams('q', ''));
         $sortBy = $this->request->getParams('order', 'relevance');
@@ -49,7 +50,7 @@ class SearchController extends BaseController
             $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
         }
 
-        $this->render('index', [
+        return $this->render('index', [
             'title'   => !empty($query) ? 'Результаты поиска' : 'Поиск по сайту',
             'query'   => $query,
             'sortBy'  => $sortBy,

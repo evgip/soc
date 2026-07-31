@@ -6,9 +6,11 @@ namespace App\Modules\Messages\Controllers;
 
 use App\BaseController;
 use W3a\Core\Http\Session;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\ViewResponse;
 use App\Modules\Messages\Services\ConversationService;
 use App\Modules\Messages\Services\MessageService;
-use App\Modules\Messages\Exceptions\ConversationException;
 
 /**
  * Контроллер личных сообщений.
@@ -30,12 +32,12 @@ class MessagesController extends BaseController
     /**
      * Список всех диалогов текущего пользователя
      */
-    public function index(): void
+    public function index(): ViewResponse
     {
         $userContext = $this->getUserContext();
         $chats = $this->service(ConversationService::class)->getUserConversations($userContext['id']);
 
-        $this->render('index', [
+        return $this->render('index', [
             'title' => 'Мои диалоги',
             'chats' => $chats
         ]);
@@ -48,15 +50,14 @@ class MessagesController extends BaseController
     /**
      * Просмотр диалога с пагинацией сообщений
      */
-    public function showDialog(string $id): void
+    public function showDialog(string $id): Response
     {
         $conversationId = (int)$id;
         $userContext = $this->getUserContext();
 
         $chatRoom = $this->service(ConversationService::class)->getConversationWithAccessCheck($conversationId, $userContext['id']);
         if (!$chatRoom) {
-            $this->redirectBack('/messages');
-            return;
+            return $this->redirectBack('/messages');
         }
 
         $this->service(MessageService::class)->markAsRead($conversationId, $userContext['id']);
@@ -67,7 +68,7 @@ class MessagesController extends BaseController
         $messagesData = $this->service(MessageService::class)->getPaginatedMessages($conversationId, $currentPage, $perPage);
         $recipient = $this->service(ConversationService::class)->getConversationPartner($conversationId, $userContext['id']);
 
-        $this->render('dialog', [
+        return $this->render('dialog', [
             'title' => 'Чат с ' . e($recipient['username']),
             'messages' => $messagesData['messages'],
             'recipient' => $recipient,
@@ -85,7 +86,7 @@ class MessagesController extends BaseController
     /**
      * Отправка сообщения в диалог
      */
-    public function sendMessage(): void
+    public function sendMessage(): RedirectResponse
     {
         $conversationId = (int)$this->request->getParams('conversation_id');
         $messageText = $this->request->getParams('message_text');
@@ -93,7 +94,7 @@ class MessagesController extends BaseController
 
         $this->service(MessageService::class)->sendMessage($conversationId, $userContext['id'], $messageText);
 
-        $this->redirect('/messages/chat/' . $conversationId);
+        return $this->redirect('/messages/chat/' . $conversationId);
     }
 
     // =========================================================================
@@ -103,7 +104,7 @@ class MessagesController extends BaseController
     /**
      * Создание нового диалога с пользователем
      */
-    public function startConversation(string $userId): void
+    public function startConversation(string $userId): RedirectResponse
     {
         $userContext = $this->getUserContext();
         $targetUid = (int)$userId;
@@ -111,21 +112,17 @@ class MessagesController extends BaseController
         try {
             // Пытаемся создать или получить диалог
             $roomId = $this->service(ConversationService::class)->getOrCreateConversation($userContext['id'], $targetUid);
-            
         } catch (\App\Modules\Messages\Exceptions\ConversationException $e) {
             // Ловим бизнес-ошибки (например, "Нельзя создать диалог с самим собой")
             $this->session()->flash('error', $e->getMessage());
-            $this->redirect('/messages');
-            return; // Обязательно прерываем выполнение
-            
+            return $this->redirect('/messages');
         } catch (\Throwable $e) {
             // Ловим реальные непредвиденные ошибки и логируем их
             $this->logError($e, 'Messages.startConversation');
             $this->session()->flash('error', 'Произошла непредвиденная ошибка при создании диалога.');
-            $this->redirect('/messages');
-            return; // Обязательно прерываем выполнение
+            return $this->redirect('/messages');
         }
 
-        $this->redirect('/messages/chat/' . $roomId);
+        return $this->redirect('/messages/chat/' . $roomId);
     }
 }

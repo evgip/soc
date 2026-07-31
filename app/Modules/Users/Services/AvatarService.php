@@ -5,16 +5,27 @@ declare(strict_types=1);
 namespace App\Modules\Users\Services;
 
 use App\Modules\Users\Exceptions\AvatarUploadException;
+use W3a\Core\Foundation\Config;
 
 /**
  * Сервис для загрузки и обработки аватаров.
- * Не зависит от HTTP или сессий, выполняет только работу с файлами.
+ * Не зависит от HTTP или сessions, выполняет только работу с файлами.
  */
 class AvatarService
 {
     private const TARGET_SIZE = 150;
     private const JPEG_QUALITY = 85;
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+
+    private Config $config;
+
+    /**
+     * Внедряем Config через конструктор (Dependency Injection).
+     */
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
 
     /**
      * Обрабатывает загрузку аватара: валидация, ресайз, сохранение.
@@ -28,8 +39,8 @@ class AvatarService
             throw new AvatarUploadException('Временный файл загрузки недоступен.');
         }
 
-        $maxSize = config('uploads.avatar_max_size', 5242880, 'int');
-        $maxSizeMb = config('uploads.avatar_max_size_mb', 5, 'int');
+        $maxSize = $this->config->getInt('uploads.avatar_max_size', 5242880);
+        $maxSizeMb = $this->config->getInt('uploads.avatar_max_size_mb', 5);
         
         if ($file['size'] > $maxSize) {
             throw new AvatarUploadException("Размер файла не должен превышать {$maxSizeMb} МБ.");
@@ -46,8 +57,13 @@ class AvatarService
         $newFilename = bin2hex(random_bytes(16)) . '.jpg';
         $subFolder = substr($newFilename, 0, 2);
         
-        $projectRoot = dirname(__FILE__, 5);
-        $baseUploadDir = $projectRoot . '/public/uploads/avatars';
+        $baseUploadDir = $this->config->get('storage.disks.avatars.root');
+        
+        // Защитный fallback: если конфиг вдруг не настроен, используем разумное значение по умолчанию
+        if (empty($baseUploadDir)) {
+            $baseUploadDir = dirname(__DIR__, 5) . '/public/uploads/avatars';
+        }
+
         $uploadTargetDir = $baseUploadDir . '/' . $subFolder;
 
         if (!is_dir($baseUploadDir)) {
@@ -71,6 +87,7 @@ class AvatarService
 
     private function resizeAndSave(string $srcPath, string $mimeType, string $dstPath): bool
     {
+        // Ваш существующий код GD библиотеки без изменений
         $imageInfo = getimagesize($srcPath);
         if (!$imageInfo) {
             return false;
@@ -119,6 +136,7 @@ class AvatarService
 
     private function deleteOldAvatar(string $oldFilename, string $baseUploadDir): void
     {
+        // Ваш существующий код без изменений
         $oldSub = substr($oldFilename, 0, 2);
         $oldFolderDir = $baseUploadDir . '/' . $oldSub;
         $oldAvatarPath = $oldFolderDir . '/' . $oldFilename;
@@ -130,7 +148,7 @@ class AvatarService
         if (is_dir($oldFolderDir)) {
             $remainingFiles = array_diff(scandir($oldFolderDir), ['.', '..']);
             if (empty($remainingFiles)) {
-                rmdir($oldFolderDir);
+                @rmdir($oldFolderDir);
             }
         }
     }

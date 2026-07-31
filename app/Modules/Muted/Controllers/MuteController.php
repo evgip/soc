@@ -35,7 +35,7 @@ class MuteController extends BaseController
     /**
      * Переключение статуса игнорирования пользователя.
      */
-    public function toggle(string $id): void
+    public function toggle(string $id): \W3a\Core\Http\RedirectResponse
     {
         $userContext = $this->getUserContext();
         $targetUserId = (int)$id;
@@ -47,11 +47,9 @@ class MuteController extends BaseController
 
         if (!$targetUser) {
             if ($isAjax) {
-                $this->json(['error' => 'Пользователь не найден'], 404);
-                return;
+                return $this->json(['error' => 'Пользователь не найден'], 404);
             }
-            $this->redirectBack();
-            return;
+           return $this->redirectBack();
         }
 
         $isMuted = null;
@@ -70,8 +68,7 @@ class MuteController extends BaseController
         } catch (MuteValidationException $e) {
             // Ловим бизнес-ошибки (например, "Нельзя игнорировать самого себя")
             if ($isAjax) {
-                $this->json(['error' => $e->getMessage()], 400);
-                return;
+                return $this->json(['error' => $e->getMessage()], 400);
             }
             $this->backWithMessage($e->getMessage(), 'error');
             return;
@@ -80,11 +77,9 @@ class MuteController extends BaseController
             // Ловим реальные непредвиденные ошибки
             $this->logError($e, 'Mute.toggle');
             if ($isAjax) {
-                $this->json(['error' => 'Произошла ошибка сервера'], 500);
-                return;
+                return $this->json(['error' => 'Произошла ошибка сервера'], 500);
             }
-            $this->backWithMessage('Произошла непредвиденная ошибка', 'error');
-            return;
+            return $this->backWithMessage('Произошла непредвиденная ошибка', 'error');
         }
 
         if ($isAjax) {
@@ -97,6 +92,6 @@ class MuteController extends BaseController
             return;
         }
 
-        $this->redirectWithMessage('/muted', $message, 'success');
+        return $this->redirectWithMessage('/muted', $message, 'success');
     }
 }

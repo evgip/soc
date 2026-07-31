@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Users;
 
 use W3a\Core\Foundation\Container;
+use W3a\Core\Foundation\Config;
 use W3a\Core\Database\Database;
 use W3a\Core\Support\Logger;
 use W3a\Core\Http\Session;
@@ -51,7 +52,9 @@ class ModuleServiceProvider extends BaseModuleServiceProvider
         });
         
         $container->singleton(AvatarService::class, function (Container $c) {
-            return new AvatarService($c->get(Session::class));
+            return new AvatarService(
+                $c->get(Config::class)
+            );
         });
 
         // === СЛУШАТЕЛИ ===
@@ -59,7 +62,6 @@ class ModuleServiceProvider extends BaseModuleServiceProvider
             return new AuditListener($c->get(Audit::class));
         });
 
-        // ✅ 2. НОВОЕ: Factory для UserContext. 
         // Контейнер сам выполнит этот код при первом запросе UserContext и запомнит результат.
         $container->singleton(UserContext::class, function (Container $c) {
             // Читаем ID из сессии (используем $_SESSION, как в вашем AuthMiddleware)
@@ -69,18 +71,10 @@ class ModuleServiceProvider extends BaseModuleServiceProvider
                 $userModel = $c->get(User::class);
                 $user = $userModel->find($userId);
                 
-                // ⚠️ ОСТАВЬТЕ ТОЛЬКО ОДИН ВАРИАНТ, который подходит вашей БД:
-                
-                // ВАРИАНТ А: Если есть поле `role`
                 $role = $user['role'] ?? 'user';
                 $isAdmin = ($role === 'admin');
                 $isModerator = ($role === 'moderator' || $role === 'admin');
                 
-                /* 
-                // ВАРИАНТ Б: Если есть поля `is_admin` и `is_moderator`
-                $isAdmin = (bool)($user['is_admin'] ?? false);
-                $isModerator = (bool)($user['is_moderator'] ?? false) || $isAdmin;
-                */
             } else {
                 // Гостевой пользователь
                 $isAdmin = false;
