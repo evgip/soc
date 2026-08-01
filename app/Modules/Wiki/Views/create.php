@@ -4,9 +4,17 @@
     Создайте документацию для тега <strong>#<?= e($tag['name']) ?></strong>, чтобы помочь другим пользователям лучше понимать его.
 </p>
 
-<?php if (!empty($error)): ?>
+<!-- Блок ошибок валидации (если он не выводится глобально в вашем layout.php) -->
+<?php if ($errors->allErrors()): ?>
     <div role="alert" class="alert is-danger">
-        <?= e($error) ?>
+        <strong>Исправьте ошибки в форме:</strong>
+        <ul class="validation-errors-list">
+            <?php foreach ($errors->allErrors() as $fieldErrors): ?>
+                <?php foreach ($fieldErrors as $err): ?>
+                    <li><?= htmlspecialchars($err) ?></li>
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+        </ul>
     </div>
 <?php endif; ?>
 
@@ -20,6 +28,7 @@
         </p>
     </div>
 
+    <!-- Подключаем универсальную форму -->
     <?php include __DIR__ . '/_form.php'; ?>
 
     <div class="form-actions">

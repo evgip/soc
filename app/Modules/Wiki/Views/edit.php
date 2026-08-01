@@ -4,16 +4,24 @@
     Вы редактируете страницу <strong><?= e($page['title']) ?></strong> для тега <strong>#<?= e($tag['name']) ?></strong>.
 </p>
 
-<?php if (!empty($error)): ?>
+<!-- Блок ошибок валидации -->
+<?php if ($errors->allErrors()): ?>
     <div role="alert" class="alert is-danger">
-        <?= e($error) ?>
+        <strong>Исправьте ошибки в форме:</strong>
+        <ul class="validation-errors-list">
+            <?php foreach ($errors->allErrors() as $fieldErrors): ?>
+                <?php foreach ($fieldErrors as $err): ?>
+                    <li><?= htmlspecialchars($err) ?></li>
+                <?php endforeach; ?>
+            <?php endforeach; ?>
+        </ul>
     </div>
 <?php endif; ?>
 
 <form action="/t/<?= e($tag['slug']) ?>/wiki/<?= $page['id'] ?>/update" method="POST">
     <?= csrf_field() ?>
 
-    <?php $isEdit = true; ?>
+    <!-- Подключаем ту же самую универсальную форму -->
     <?php include __DIR__ . '/_form.php'; ?>
 
     <div class="form-actions">

@@ -1,9 +1,12 @@
 <div class="form-field-group">
     <label for="wiki-title"><strong>Заголовок</strong></label>
     <input type="text" id="wiki-title" name="title"
-        value="<?= e($old['title'] ?? '') ?>"
+        value="<?= e($errors->getOld('title', $page['title'] ?? '')) ?>"
         required placeholder="Введите заголовок страницы"
-        class="form-input-wide">
+        class="form-input-wide <?= $errors->hasError('title') ? 'is-danger' : '' ?>">
+    <?php if ($errors->hasError('title')): ?>
+        <small class="form-error-text"><?= $errors->firstError('title') ?></small>
+    <?php endif; ?>
 </div>
 
 <div class="form-field-group">
@@ -12,26 +15,33 @@
         <span class="form-field-hint-inline">— необязательно</span>
     </label>
     <input type="text" id="wiki-slug" name="slug"
-        value="<?= e($old['slug'] ?? '') ?>"
+        value="<?= e($errors->getOld('slug', $page['slug'] ?? '')) ?>"
         placeholder="auto-generated-slug"
         pattern="[a-z0-9\-]+"
-        class="form-input-wide">
+        class="form-input-wide <?= $errors->hasError('slug') ? 'is-danger' : '' ?>">
     <small class="form-text text-muted">
         Только латинские буквы, цифры и дефисы. Если оставить пустым — будет сгенерирован автоматически из заголовка.
     </small>
+    <?php if ($errors->hasError('slug')): ?>
+        <small class="form-error-text"><?= $errors->firstError('slug') ?></small>
+    <?php endif; ?>
 </div>
 
 <div class="form-field-group">
     <label for="wiki-content"><strong>Содержимое</strong></label>
     <p class="hint">Поддерживается Markdown-разметка: **жирный**, *курсив*, [ссылки](url), `код`, списки</p>
     <textarea id="wiki-content" name="content" rows="15"
-        required placeholder="Текст wiki страницы..."><?= e($old['content'] ?? '') ?></textarea>
+        required placeholder="Текст wiki страницы..."
+        class="<?= $errors->hasError('content') ? 'is-danger' : '' ?>"><?= e($errors->getOld('content', $page['content'] ?? '')) ?></textarea>
+    <?php if ($errors->hasError('content')): ?>
+        <small class="form-error-text"><?= $errors->firstError('content') ?></small>
+    <?php endif; ?>
 </div>
 
 <div class="form-field-group">
     <label>
         <input type="checkbox" name="is_primary" value="1"
-            <?= !empty($old['is_primary']) ? 'checked' : '' ?>>
+            <?= $errors->getOld('is_primary', $page['is_primary'] ?? 0) ? 'checked' : '' ?>>
         <strong>Сделать основной страницей тега</strong>
     </label>
     <small class="form-text text-muted">
@@ -39,14 +49,15 @@
     </small>
 </div>
 
-<?php if (isset($isEdit) && $isEdit): ?>
+<!-- Это поле показываем ТОЛЬКО если существует $page (то есть мы в режиме редактирования) -->
+<?php if (isset($page)): ?>
     <div class="form-field-group">
         <label for="wiki-edit-summary">
             <strong>Описание изменений</strong>
             <span class="form-field-hint-inline">— необязательно</span>
         </label>
         <input type="text" id="wiki-edit-summary" name="edit_summary"
-            value="<?= e($old['edit_summary'] ?? '') ?>"
+            value="<?= e($errors->getOld('edit_summary', '')) ?>"
             placeholder="Кратко опишите что вы изменили..."
             class="form-input-wide">
         <small class="form-text text-muted">
