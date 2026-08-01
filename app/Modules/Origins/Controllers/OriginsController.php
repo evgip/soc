@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Origins\Controllers;
 
 use App\BaseController;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Support\Audit;
+use W3a\Core\Support\MessageBag; // 🔥 Добавили использование MessageBag
+
 use App\Modules\Origins\Models\Domain;
 
 /**
@@ -39,12 +44,12 @@ class OriginsController extends BaseController
      * Показывает публичный список доменов, заблокированных модераторами.
      * Доступен всем пользователям для прозрачности модерации.
      */
-    public function index(): void
+    public function index(): ViewResponse
     {
         $domainModel = $this->service(Domain::class);
         $bannedDomains = $domainModel->getBannedDomains();
 
-        $this->render('index', [
+        return $this->render('index', [
             'title'         => 'Заблокированные домены',
             'bannedDomains' => $bannedDomains,
             'totalBanned'   => count($bannedDomains),
@@ -61,12 +66,12 @@ class OriginsController extends BaseController
      * Показывает полный список доменов в системе с информацией
      * о количестве заблокированных.
      */
-    public function adminIndex(): void
+    public function adminIndex(): ViewResponse
     {
         $domainModel = $this->service(Domain::class);
         $allDomains = $domainModel->getAllDomains();
 
-        $this->render('admin_index', [
+        return $this->render('admin_index', [
             'title'       => 'Управление доменами',
             'allDomains'  => $allDomains,
             'totalBanned' => $domainModel->getBannedCount(),
@@ -80,9 +85,9 @@ class OriginsController extends BaseController
     /**
      * Форма блокировки домена (GET /admin/domains/create).
      */
-    public function showBanForm(): void
+    public function showBanForm(): ViewResponse
     {
-        $this->render('ban_form', [
+        return $this->render('ban_form', [
             'title'   => 'Заблокировать домен',
             'request' => $this->request,
         ]);
@@ -96,7 +101,7 @@ class OriginsController extends BaseController
      * 
      * Действие логируется в аудит с указанием домена и причины.
      */
-    public function ban(): void
+    public function ban(): RedirectResponse
     {
         $this->request->validateCsrf();
 
@@ -105,8 +110,8 @@ class OriginsController extends BaseController
 
         // Валидация формата домена
         if (empty($domain) || !preg_match('/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*\.[a-z]{2,}$/i', $domain)) {
-            $this->backWithMessage('Указан некорректный домен. Пример: example.com', 'error', '/admin/domains/create');
-            return;
+            MessageBag::flashMessage('error', 'Указан некорректный домен. Пример: example.com');
+            return $this->redirect('/admin/domains/create');
         }
 
         $domainModel = $this->service(Domain::class);
@@ -118,11 +123,12 @@ class OriginsController extends BaseController
                 'reason' => $reason,
             ]);
 
-            $this->redirectWithMessage('/admin/domains', "Домен «{$domain}» успешно заблокирован.", 'success');
-            return;
+            MessageBag::flashMessage('success', "Домен «{$domain}» успешно заблокирован.");
+            return $this->redirect('/admin/domains');
         }
 
-        $this->redirectWithMessage('/admin/domains', "Домен «{$domain}» уже заблокирован.", 'error');
+        MessageBag::flashMessage('error', "Домен «{$domain}» уже заблокирован.");
+        return $this->redirect('/admin/domains');
     }
 
     /**
@@ -133,7 +139,7 @@ class OriginsController extends BaseController
      * 
      * Действие логируется в аудит с указанием ID домена.
      */
-    public function unban(string $id): void
+    public function unban(string $id): RedirectResponse
     {
         $this->request->validateCsrf();
 
@@ -141,8 +147,8 @@ class OriginsController extends BaseController
         $domain = $domainModel->find((int) $id);
 
         if (!$domain) {
-            $this->backWithMessage('Домен не найден.', 'error', '/admin/domains');
-            return;
+            MessageBag::flashMessage('error', 'Домен не найден.');
+            return $this->redirect('/admin/domains');
         }
 
         $domainModel->unban($domain['domain']);
@@ -151,6 +157,7 @@ class OriginsController extends BaseController
             'domain_id' => (int) $id,
         ]);
 
-        $this->redirectWithMessage('/admin/domains', "Домен «{$domain['domain']}» успешно разблокирован.", 'success');
+        MessageBag::flashMessage('success', "Домен «{$domain['domain']}» успешно разблокирован.");
+        return $this->redirect('/admin/domains');
     }
 }

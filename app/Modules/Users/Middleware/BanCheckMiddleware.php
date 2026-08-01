@@ -8,7 +8,7 @@ use W3a\Core\Foundation\Container;
 use W3a\Core\Contracts\UserIdProviderInterface;
 use W3a\Core\Http\Session;
 use W3a\Core\Support\Audit;
-use W3a\Core\Exceptions\RedirectException;
+use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Http\Middleware\MiddlewareInterface;
 use App\Modules\Users\Models\User;
 
@@ -47,17 +47,23 @@ class BanCheckMiddleware implements MiddlewareInterface
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
             ]);
             
-            $session = $this->container->get(Session::class);
+            // Сохраняем flash-сообщения перед уничтожением сессии, чтобы показать их на главной
             $flash = $_SESSION['flash'] ?? null;
-            $session->destroy();
-            session_start();
+            
+            $session = $this->container->get(Session::class);
+            $session->destroy(); // Уничтожаем старую сессию (разлогиниваем пользователя)
+            
+            session_start(); // Начинаем новую чистую сессию для отображения сообщения
             
             if ($flash) {
                 $_SESSION['flash'] = $flash;
             }
             
             $session->flash('error', $message);
-            throw new RedirectException('/');
+            
+            // Возвращаем объект RedirectResponse вместо выбрасывания исключения.
+            // Это корректно прерывает цепочку middleware и отправляет редирект.
+            return new RedirectResponse('/');
         }
         
         return $next();

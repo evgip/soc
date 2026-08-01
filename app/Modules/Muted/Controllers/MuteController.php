@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Muted\Controllers;
 
 use App\BaseController;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\JsonResponse;
+use W3a\Core\Support\MessageBag;
+
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Muted\Exceptions\MuteValidationException;
 use App\Modules\Users\Models\User;
@@ -19,13 +25,13 @@ class MuteController extends BaseController
     /**
      * Список игнорируемых пользователей.
      */
-    public function list(): void
+    public function list(): ViewResponse
     {
         $userContext = $this->getUserContext();
         $muteService = $this->service(MuteService::class);
         $mutedUsers = $muteService->getMutedList($userContext['id']);
 
-        $this->render('list', [
+        return $this->render('list', [
             'title' => 'Игнорируемые пользователи',
             'mutedUsers' => $mutedUsers,
             'currentUserId' => $userContext['id'],
@@ -35,7 +41,7 @@ class MuteController extends BaseController
     /**
      * Переключение статуса игнорирования пользователя.
      */
-    public function toggle(string $id): \W3a\Core\Http\RedirectResponse
+    public function toggle(string $id): Response
     {
         $userContext = $this->getUserContext();
         $targetUserId = (int)$id;
@@ -49,15 +55,16 @@ class MuteController extends BaseController
             if ($isAjax) {
                 return $this->json(['error' => 'Пользователь не найден'], 404);
             }
-           return $this->redirectBack();
+            MessageBag::flashMessage('error', 'Пользователь не найден');
+            return $this->redirectBack();
         }
 
         $isMuted = null;
         $message = '';
+        $muteService = $this->service(MuteService::class);
 
         try {
             // Переключаем статус игнорирования
-            $muteService = $this->service(MuteService::class);
             $isMuted = $muteService->toggle($userContext['id'], $targetUserId);
 
             // Формируем сообщение на основе результата
@@ -70,8 +77,8 @@ class MuteController extends BaseController
             if ($isAjax) {
                 return $this->json(['error' => $e->getMessage()], 400);
             }
-            $this->backWithMessage($e->getMessage(), 'error');
-            return;
+            MessageBag::flashMessage('error', $e->getMessage());
+            return $this->redirectBack();
             
         } catch (\Throwable $e) {
             // Ловим реальные непредвиденные ошибки
@@ -79,19 +86,20 @@ class MuteController extends BaseController
             if ($isAjax) {
                 return $this->json(['error' => 'Произошла ошибка сервера'], 500);
             }
-            return $this->backWithMessage('Произошла непредвиденная ошибка', 'error');
+            MessageBag::flashMessage('error', 'Произошла непредвиденная ошибка');
+            return $this->redirectBack();
         }
 
         if ($isAjax) {
-            $this->json([
+            return $this->json([
                 'success' => true,
                 'is_muted' => $isMuted,
                 'username' => $targetUser['username'],
                 'message' => $message,
             ]);
-            return;
         }
 
-        return $this->redirectWithMessage('/muted', $message, 'success');
+        MessageBag::flashMessage('success', $message);
+        return $this->redirect('/muted');
     }
 }

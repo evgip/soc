@@ -61,7 +61,7 @@ class AdminController extends BaseController
         return $this->render('dashboard', [
             'title' => 'Панель управления',
             'totalUsers' => count($users),
-            'totalAdmins' => count(array_filter($users, fn($u) => ($u['role'] ?? '') === 'admin'))
+            'totalAdmins' => collect($users)->where('role', 'admin')->count()
         ]);
     }
 

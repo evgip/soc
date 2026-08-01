@@ -43,15 +43,19 @@ class CommentsController extends BaseController
 
         if ($userContext['isLoggedIn'] && !empty($comments)) {
             $readRibbonService = $this->service(ReadRibbonService::class);
-            $storyIds = array_unique(array_column($comments, 'story_id'));
+            $storyIds = collect($comments)
+						->pluck('story_id')
+						->unique()
+						->values() // Гарантированно сбрасывает ключи на 0, 1, 2...
+						->toArray();
             $readRibbonService->markStoriesAsRead($storyIds);
         }
 
         $currentCommentVotes = [];
         if ($userContext['isLoggedIn'] && !empty($comments)) {
             $voteModel = $this->container->get(Vote::class);
-            $commentIds = array_map('intval', array_column($comments, 'id'));
-            $currentCommentVotes = $voteModel->getUserVotesForComments($userContext['id'], $commentIds);
+			$commentIds = collect($comments)->pluck('id')->map(fn($id) => (int) $id)->toArray();
+			$currentCommentVotes = $voteModel->getUserVotesForComments($userContext['id'], $commentIds);
         }
 
         $canDownvote = $this->canUserDownvote($userContext['id']);

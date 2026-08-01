@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace App\Modules\Invitations\Controllers;
 
 use App\BaseController;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\ViewResponse;
 use W3a\Core\Support\Validator;
 use W3a\Core\Support\Lang;
+use W3a\Core\Support\MessageBag;
+
 use App\Modules\Invitations\Models\Invitation;
 use App\Modules\Invitations\Models\InvitationRequest;
 use App\Modules\Users\Models\User;
@@ -14,19 +19,6 @@ use App\Modules\Mail\Core\Mailer;
 
 /**
  * Контроллер системы приглашений (invitations).
- * 
- * Обрабатывает:
- * - Управление приглашениями для авторизованных пользователей
- * - Создание и отзыв приглашений с учётом лимитов и кармы
- * - Регистрацию новых пользователей по приглашению
- * - Публичные запросы на приглашение для незарегистрированных
- * 
- * Система может быть полностью отключена через конфиг
- * (invitations.config.invitations_enabled).
- * 
- * Маршруты управления (index, create, revoke) защищены middleware auth.
- * Маршруты регистрации (showInviteRegistration, registerWithInvite) — публичные.
- * Маршруты запроса приглашения (showRequestForm, submitRequest) — публичные.
  */
 class InvitationsController extends BaseController
 {
@@ -34,33 +26,21 @@ class InvitationsController extends BaseController
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     // =========================================================================
 
-    /**
-     * Получить Mailer из контейнера
-     */
     private function mailer(): Mailer
     {
         return $this->container->get(Mailer::class);
     }
 
-    /**
-     * Получить Validator из контейнера
-     */
     private function validator(): Validator
     {
         return $this->container->get(Validator::class);
     }
 
-    /**
-     * Проверить, включена ли система инвайтов в конфиге
-     */
     private function isInvitationsEnabled(): bool
     {
         return (bool) config('invitations.config.invitations_enabled');
     }
 
-    /**
-     * Проверить, достаточно ли кармы у пользователя для создания приглашений
-     */
     private function hasEnoughKarma(int $userId): bool
     {
         $minKarma = (int) config('invitations.config.min_karma_for_invitation');
@@ -74,16 +54,12 @@ class InvitationsController extends BaseController
 
     /**
      * Главная страница управления приглашениями (GET /invitations).
-     * 
-     * Показывает список приглашений пользователя, количество активных
-     * и доступный лимит. Также проверяет, достаточно ли кармы
-     * для создания новых приглашений.
      */
-    public function index(): void
+    public function index(): Response
     {
         if (!$this->isInvitationsEnabled()) {
-            $this->redirectWithMessage('/', 'Система приглашений отключена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Система приглашений отключена.');
+            return $this->redirect('/');
         }
 
         $userContext = $this->getUserContext();
@@ -93,7 +69,7 @@ class InvitationsController extends BaseController
         $activeCount = $invitationModel->countActiveInvitations($userContext['id']);
         $maxInvitations = (int) config('invitations.config.max_invitations_per_user');
 
-        $this->render('index', [
+        return $this->render('index', [
             'title' => 'Управление приглашениями',
             'invitations' => $invitations,
             'activeCount' => $activeCount,
@@ -106,63 +82,40 @@ class InvitationsController extends BaseController
 
     /**
      * Создание нового приглашения (POST /invitations/create).
-     * 
-     * Проверяет:
-     * - Включена ли система приглашений
-     * - Достаточно ли кармы у пользователя
-     * - Не превышен ли лимит активных приглашений
-     * - Валидность email (если указан)
-     * 
-     * Если указан email, отправляет письмо с приглашением.
      */
-    public function create(): void
+    public function create(): RedirectResponse
     {
         $this->request->validateCsrf();
 
         if (!$this->isInvitationsEnabled()) {
-            $this->redirectWithMessage('/', 'Система приглашений отключена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Система приглашений отключена.');
+            return $this->redirect('/');
         }
 
         $userContext = $this->getUserContext();
 
         if (!$this->hasEnoughKarma($userContext['id'])) {
-            $this->redirectWithMessage(
-                route('invitations.index'),
-                'Недостаточно кармы для создания приглашений.',
-                'error'
-            );
-            return;
+            MessageBag::flashMessage('error', 'Недостаточно кармы для создания приглашений.');
+            return $this->redirect(route('invitations.index'));
         }
 
         $invitationModel = $this->service(Invitation::class);
-
         $activeCount = $invitationModel->countActiveInvitations($userContext['id']);
         $maxInvitations = (int) config('invitations.config.max_invitations_per_user');
 
         if ($activeCount >= $maxInvitations) {
-            $this->redirectWithMessage(
-                route('invitations.index'),
-                "Вы достигли лимита активных приглашений ({$maxInvitations}).",
-                'error'
-            );
-            return;
+            MessageBag::flashMessage('error', "Вы достигли лимита активных приглашений ({$maxInvitations}).");
+            return $this->redirect(route('invitations.index'));
         }
 
         // Валидация email, если он указан
         $email = trim((string) $this->request->getParams('email'));
         if (!empty($email)) {
-            $this->validator()->validate(['email' => $email], [
-                'email' => 'required|email'
-            ]);
+            $this->validator()->validate(['email' => $email], ['email' => 'required|email']);
 
             if (!$this->validator()->isValid()) {
-                $this->redirectWithMessage(
-                    route('invitations.index'),
-                    'Некорректный email адрес.',
-                    'error'
-                );
-                return;
+                MessageBag::flashMessage('error', 'Некорректный email адрес.');
+                return $this->redirect(route('invitations.index'));
             }
         }
 
@@ -176,30 +129,29 @@ class InvitationsController extends BaseController
                 $this->sendInvitationEmail($email, $invitation);
             }
 
-            $this->redirectWithMessage(route('invitations.index'), 'Приглашение успешно создано!', 'success');
-            return;
+            MessageBag::flashMessage('success', 'Приглашение успешно создано!');
+            return $this->redirect(route('invitations.index'));
         }
 
-        $this->redirectWithMessage(route('invitations.index'), 'Ошибка создания приглашения.', 'error');
+        MessageBag::flashMessage('error', 'Ошибка создания приглашения.');
+        return $this->redirect(route('invitations.index'));
     }
 
     /**
      * Отзыв приглашения (POST /invitations/revoke/{id}).
-     * 
-     * Приглашение может отозвать только его создатель.
      */
-    public function revoke(int $id): void
+    public function revoke(int $id): RedirectResponse
     {
         $this->request->validateCsrf();
-
         $userContext = $this->getUserContext();
 
         if ($this->service(Invitation::class)->revokeInvitation($id, $userContext['id'])) {
-            $this->redirectWithMessage(route('invitations.index'), 'Приглашение отозвано.', 'success');
-            return;
+            MessageBag::flashMessage('success', 'Приглашение отозвано.');
+            return $this->redirect(route('invitations.index'));
         }
 
-        $this->redirectWithMessage(route('invitations.index'), 'Не удалось отозвать приглашение.', 'error');
+        MessageBag::flashMessage('error', 'Не удалось отозвать приглашение.');
+        return $this->redirect(route('invitations.index'));
     }
 
     // =========================================================================
@@ -208,25 +160,23 @@ class InvitationsController extends BaseController
 
     /**
      * Страница регистрации по приглашению (GET /register/invite/{code}).
-     * 
-     * Проверяет валидность кода приглашения и показывает форму регистрации.
      */
-    public function showInviteRegistration(string $code): void
+    public function showInviteRegistration(string $code): Response
     {
         if (!$this->isInvitationsEnabled()) {
-            $this->redirectWithMessage('/', 'Система приглашений отключена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Система приглашений отключена.');
+            return $this->redirect('/');
         }
 
         $invitationModel = $this->service(Invitation::class);
         $invitation = $invitationModel->findByCode($code);
 
         if (!$invitation || !$invitationModel->isValid($invitation)) {
-            $this->redirectWithMessage('/', 'Приглашение недействительно или истек срок действия.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Приглашение недействительно или истек срок действия.');
+            return $this->redirect('/');
         }
 
-        $this->render('register_invite', [
+        return $this->render('register_invite', [
             'title' => 'Регистрация по приглашению',
             'code' => $code,
             'invitation' => $invitation,
@@ -236,15 +186,12 @@ class InvitationsController extends BaseController
 
     /**
      * Обработка регистрации по приглашению (POST /register/invite/{code}).
-     * 
-     * Валидирует данные формы, проверяет уникальность username и email,
-     * создаёт нового пользователя и активирует приглашение.
      */
-    public function registerWithInvite(string $code): void
+    public function registerWithInvite(string $code): RedirectResponse
     {
         if (!$this->isInvitationsEnabled()) {
-            $this->redirectWithMessage('/', 'Система приглашений отключена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Система приглашений отключена.');
+            return $this->redirect('/');
         }
 
         $this->request->validateCsrf();
@@ -253,8 +200,8 @@ class InvitationsController extends BaseController
         $invitation = $invitationModel->findByCode($code);
 
         if (!$invitation || !$invitationModel->isValid($invitation)) {
-            $this->redirectWithMessage('/', 'Приглашение недействительно или истек срок действия.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Приглашение недействительно или истек срок действия.');
+            return $this->redirect('/');
         }
 
         // Валидация формы регистрации
@@ -271,12 +218,8 @@ class InvitationsController extends BaseController
         ]);
 
         if (!$this->validator()->isValid()) {
-            $this->redirectWithMessage(
-                '/register/invite/' . $code,
-                $this->formatValidationErrors(),
-                'error'
-            );
-            return;
+            MessageBag::flashMessage('error', $this->formatValidationErrors());
+            return $this->redirect('/register/invite/' . $code);
         }
 
         $userModel = $this->service(User::class);
@@ -284,13 +227,13 @@ class InvitationsController extends BaseController
         $email = (string) $this->request->getParams('email');
 
         if ($userModel->findBy('username', $username)) {
-            $this->redirectWithMessage('/register/invite/' . $code, 'Имя пользователя уже занято.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Имя пользователя уже занято.');
+            return $this->redirect('/register/invite/' . $code);
         }
 
         if ($userModel->findBy('email', $email)) {
-            $this->redirectWithMessage('/register/invite/' . $code, 'Email уже зарегистрирован.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Email уже зарегистрирован.');
+            return $this->redirect('/register/invite/' . $code);
         }
 
         $newUserId = $userModel->create([
@@ -303,12 +246,12 @@ class InvitationsController extends BaseController
 
         if ($newUserId > 0) {
             $invitationModel->acceptInvitation($code, $newUserId);
-
-            $this->redirectWithMessage(route('auth.login'), 'Регистрация успешна! Добро пожаловать!', 'success');
-            return;
+            MessageBag::flashMessage('success', 'Регистрация успешна! Добро пожаловать!');
+            return $this->redirect(route('auth.login'));
         }
 
-        $this->redirectWithMessage('/register/invite/' . $code, 'Ошибка регистрации.', 'error');
+        MessageBag::flashMessage('error', 'Ошибка регистрации.');
+        return $this->redirect('/register/invite/' . $code);
     }
 
     // =========================================================================
@@ -317,18 +260,15 @@ class InvitationsController extends BaseController
 
     /**
      * Форма запроса приглашения (GET /invite/request).
-     * 
-     * Доступна для незарегистрированных пользователей,
-     * которые хотят получить приглашение в систему.
      */
-    public function showRequestForm(): void
+    public function showRequestForm(): Response
     {
         if (!$this->isInvitationsEnabled()) {
-            $this->redirectWithMessage('/', 'Система приглашений отключена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Система приглашений отключена.');
+            return $this->redirect('/');
         }
 
-        $this->render('request', [
+        return $this->render('request', [
             'title' => 'Запрос приглашения',
             'request' => $this->request
         ]);
@@ -336,18 +276,12 @@ class InvitationsController extends BaseController
 
     /**
      * Обработка запроса приглашения (POST /invite/request).
-     * 
-     * Валидирует email и причину запроса, проверяет:
-     * - Отсутствие уже отправленного запроса
-     * - Отсутствие пользователя с таким email в системе
-     * 
-     * Сохраняет запрос с IP-адресом для рассмотрения модераторами.
      */
-    public function submitRequest(): void
+    public function submitRequest(): RedirectResponse
     {
         if (!$this->isInvitationsEnabled()) {
-            $this->redirectWithMessage('/', 'Система приглашений отключена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Система приглашений отключена.');
+            return $this->redirect('/');
         }
 
         $this->request->validateCsrf();
@@ -364,38 +298,33 @@ class InvitationsController extends BaseController
         ]);
 
         if (!$this->validator()->isValid()) {
-            $this->redirectWithMessage('/invite/request', $this->formatValidationErrors(), 'error');
-            return;
+            MessageBag::flashMessage('error', $this->formatValidationErrors());
+            return $this->redirect('/invite/request');
         }
 
         $requestModel = $this->service(InvitationRequest::class);
 
         if ($requestModel->hasPendingRequest($email)) {
-            $this->redirectWithMessage('/invite/request', 'Вы уже отправили запрос. Ожидайте рассмотрения.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Вы уже отправили запрос. Ожидайте рассмотрения.');
+            return $this->redirect('/invite/request');
         }
 
         $userModel = $this->service(User::class);
         if ($userModel->findBy('email', $email)) {
-            $this->redirectWithMessage('/invite/request', 'Этот email уже зарегистрирован.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Этот email уже зарегистрирован.');
+            return $this->redirect('/invite/request');
         }
 
-        // Используем метод Request вместо прямого обращения к $_SERVER
         $requestModel->createRequest($email, $reason, $this->request->getIp());
 
-        $this->redirectWithMessage('/', 'Ваш запрос отправлен! Мы рассмотрим его в ближайшее время.', 'success');
+        MessageBag::flashMessage('success', 'Ваш запрос отправлен! Мы рассмотрим его в ближайшее время.');
+        return $this->redirect('/');
     }
 
     // =========================================================================
-    // ОТПРАВКА EMAIL-УВЕДОМЛЕНИЙ
+    // ОТПРАВКА EMAIL-УВЕДОМЛЕНИЙ И УТИЛИТЫ
     // =========================================================================
 
-    /**
-     * Отправка email с приглашением указанному адресу.
-     * 
-     * Использует языковые шаблоны для формирования темы и тела письма.
-     */
     private function sendInvitationEmail(string $email, array $invitation): void
     {
         $siteName = app_name();
@@ -403,59 +332,33 @@ class InvitationsController extends BaseController
         $expiresAt = dt($invitation['expires_at']);
 
         $subject = Lang::format('email_invitation_subject', [e($siteName)]);
-        $htmlBody = Lang::format('email_invitation_body', [
-            e($siteName),
-            e($inviteUrl),
-            e($expiresAt)
-        ]);
+        $htmlBody = Lang::format('email_invitation_body', [e($siteName), e($inviteUrl), e($expiresAt)]);
 
         $this->mailer()->send($email, $subject, $htmlBody);
     }
 
-    /**
-     * Отправка email об одобрении запроса на приглашение.
-     * 
-     * Содержит код приглашения и ссылку на регистрацию.
-     */
     private function sendApprovedEmail(string $email, string $inviteCode, string $expiresAt): void
     {
         $siteName = app_name();
         $inviteUrl = route('home') . 'register/invite/' . $inviteCode;
 
         $subject = Lang::format('email_invitation_request_approved_subject', [e($siteName)]);
-        $htmlBody = Lang::format('email_invitation_request_approved_body', [
-            e($siteName),
-            e($inviteUrl),
-            e($expiresAt)
-        ]);
+        $htmlBody = Lang::format('email_invitation_request_approved_body', [e($siteName), e($inviteUrl), e($expiresAt)]);
 
         $this->mailer()->send($email, $subject, $htmlBody);
     }
 
-    /**
-     * Отправка email об отклонении запроса на приглашение.
-     */
     private function sendRejectedEmail(string $email): void
     {
         $siteName = app_name();
-
         $subject = Lang::format('email_invitation_request_rejected_subject', [e($siteName)]);
-        $htmlBody = Lang::format('email_invitation_request_rejected_body', [
-            e($siteName)
-        ]);
+        $htmlBody = Lang::format('email_invitation_request_rejected_body', [e($siteName)]);
 
         $this->mailer()->send($email, $subject, $htmlBody);
     }
 
-    // =========================================================================
-    // УТИЛИТЫ
-    // =========================================================================
-
     /**
      * Форматировать ошибки валидации в одну строку.
-     * 
-     * Объединяет все ошибки из всех полей в одну строку,
-     * разделённую <br> для отображения в flash-сообщении.
      */
     private function formatValidationErrors(): string
     {

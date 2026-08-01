@@ -41,9 +41,9 @@ class SavedController extends BaseController
         $totalStories = $savedModel->getUserSavedCount($userContext['id']);
         $totalPages = (int)ceil($totalStories / $perPage);
 
-        $storyIds = array_column($stories, 'id');
-        $filterService = $this->service(StoryFilterService::class);
-        $newCommentsMap = $filterService->getNewCommentsCounts($storyIds);
+		$storyIds = collect($stories)->pluck('id')->toArray();
+		$filterService = $this->service(StoryFilterService::class);
+		$newCommentsMap = $filterService->getNewCommentsCounts($storyIds);
 
         $currentVotes = [];
         if (!empty($storyIds)) {

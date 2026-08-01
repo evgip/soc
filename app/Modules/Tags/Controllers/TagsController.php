@@ -60,9 +60,9 @@ class TagsController extends BaseController
 
         $currentVotes = [];
         if ($userContext['isLoggedIn']) {
-            $storyIds = array_column($data['stories'], 'id');
-            $voteModel = $this->container->get(Vote::class);
-            $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+			$storyIds = collect($data['stories'])->pluck('id')->toArray();
+			$voteModel = $this->container->get(Vote::class);
+			$currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
         }
 
         return $this->render('categories-show', [

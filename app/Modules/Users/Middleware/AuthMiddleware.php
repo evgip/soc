@@ -5,25 +5,15 @@ declare(strict_types=1);
 namespace App\Modules\Users\Middleware;
 
 use W3a\Core\Contracts\UserIdProviderInterface;
-use W3a\Core\Exceptions\RedirectException;
+use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Http\Session;
 use W3a\Core\Http\Middleware\MiddlewareInterface;
 
 /**
  * Middleware для проверки факта авторизации пользователя.
- * 
- * Если пользователь не авторизован, перенаправляет его на страницу входа,
- * сохраняя текущий URL для возврата после успешной авторизации.
- * 
- * Примечание: Проверка на бан вынесена в отдельный BanCheckMiddleware,
- * который должен идти следом в цепочке middleware.
  */
 class AuthMiddleware implements MiddlewareInterface
 {
-    /**
-     * Конструктор с инъекцией зависимостей.
-     * Мы используем UserIdProviderInterface, чтобы не зависеть от статических вызовов.
-     */
     public function __construct(
         private readonly Session $session,
         private readonly UserIdProviderInterface $userIdProvider
@@ -32,28 +22,25 @@ class AuthMiddleware implements MiddlewareInterface
 
     /**
      * Обработка запроса.
-     *
-     * @param callable $next Следующий элемент в цепочке middleware
-     * @return mixed
+     * Возвращает Response (для прерывания) или результат следующего middleware.
      */
     public function handle(callable $next): mixed
     {
         $userId = $this->userIdProvider->getUserId();
 
-        // Если пользователь не авторизован (ID отсутствует или равен 0)
+        // Если пользователь не авторизован
         if ($userId === null || (int)$userId <= 0) {
             $this->session->flash('error', 'Необходима авторизация для доступа к этой странице.');
             
-            // Сохраняем URL, куда пользователь хотел попасть, 
-            // чтобы контроллер логина мог вернуть его туда после успеха
+            // Сохраняем URL для возврата после успешной авторизации
             $_SESSION['intended_url'] = $_SERVER['REQUEST_URI'] ?? '/';
             
-            // Выбрасываем исключение, которое перехватит Application
-            throw new RedirectException('/login');
+            // Возвращаем объект RedirectResponse вместо выбрасывания исключения
+            // Это корректно прерывает цепочку middleware и отправляет редирект
+            return new RedirectResponse('/login');
         }
 
-        // Пользователь авторизован, передаем управление следующему middleware 
-        // (например, BanCheckMiddleware) или контроллеру
+        // Пользователь авторизован, передаем управление дальше
         return $next();
     }
 }
