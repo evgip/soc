@@ -6,7 +6,12 @@ namespace App\Modules\Users\Controllers;
 
 use App\BaseController;
 use W3a\Core\Http\Session;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Exceptions\NotFoundException;
+use W3a\Core\Support\MessageBag;
+
 use App\Modules\Users\Services\UserService;
 use App\Modules\Users\Services\AvatarService;
 use App\Modules\Users\Models\User;
@@ -29,14 +34,18 @@ class UsersController extends BaseController
         return $this->service(AvatarService::class);
     }
 
-    public function index(): void
+    // =========================================================================
+    // ОСНОВНЫЕ ДЕЙСТВИЯ
+    // =========================================================================
+
+    public function index(): ViewResponse
     {
-        $this->render('index', [
+        return $this->render('index', [
             'title' => 'Участники',
         ]);
     }
 
-    public function profile(string $username): void
+    public function profile(string $username): ViewResponse
     {
         $user = $this->getUserByUsername(trim($username));
 
@@ -62,7 +71,7 @@ class UsersController extends BaseController
             $isMuted = $muteService->isMuted($userContext['id'], (int)$user['id']);
         }
 
-        $this->render('profile', [
+        return $this->render('profile', [
             'title' => 'Профиль пользователя ' . e($user['username']),
             'profileUser' => $user,
             'storiesCount' => $stats['stories_count'] ?? 0,
@@ -72,18 +81,25 @@ class UsersController extends BaseController
         ]);
     }
 
-    public function settings(): void
+    /**
+     * Используем общий Response, так как метод может вернуть 
+     * либо ViewResponse (успех), либо RedirectResponse (если пользователь не найден).
+     */
+    public function settings(): Response
     {
         $userContext = $this->getUserContext();
-        $user = $this->getUserWithProfileOrRedirect($userContext['id']);
+        
+        // Вспомогательный метод теперь сам вернет RedirectResponse, если пользователя нет
+        $userOrRedirect = $this->getUserWithProfileOrRedirect($userContext['id']);
 
-        if ($user === null) {
-            return;
+        if ($userOrRedirect instanceof RedirectResponse) {
+            return $userOrRedirect;
         }
-
+        
+        $user = $userOrRedirect;
         $settings = $this->getUserService()->getUserSettings($userContext['id']);
 
-        $this->render('settings', [
+        return $this->render('settings', [
             'title' => 'Настройки профиля',
             'user' => $user,
             'settings' => $settings,
@@ -91,21 +107,20 @@ class UsersController extends BaseController
         ]);
     }
 
-    /**
-     * Обработка обновления настроек профиля.
-     */
-    public function updateSettings(): \W3a\Core\Http\RedirectResponse
+    // =========================================================================
+    // ОБРАБОТКА ФОРМ (POST)
+    // =========================================================================
+
+    public function updateSettings(): RedirectResponse
     {
         $userContext = $this->getUserContext();
-        
-        // Получаем пользователя. Если его нет, вспомогательный метод вернет объект RedirectResponse
         $userOrRedirect = $this->getUserWithProfileOrRedirect($userContext['id']);
 
-        if ($userOrRedirect instanceof \W3a\Core\Http\RedirectResponse) {
+        if ($userOrRedirect instanceof RedirectResponse) {
             return $userOrRedirect;
         }
         
-        $user = $userOrRedirect; // Теперь мы точно знаем, что это массив
+        $user = $userOrRedirect;
 
         $email = trim($this->request->getParams('email', ''));
         $bio = trim($this->request->getParams('bio', ''));
@@ -149,34 +164,37 @@ class UsersController extends BaseController
         $targetUrl = route('account.settings');
         
         if ($errorMessage !== null) {
-            return $this->redirectWithMessage($targetUrl, $errorMessage, 'error');
+            MessageBag::flashMessage('error', $errorMessage);
+            return $this->redirect($targetUrl);
         }
         
-        return $this->redirectWithMessage($targetUrl, 'Настройки успешно сохранены.', 'success');
+        MessageBag::flashMessage('success', 'Настройки успешно сохранены.');
+        return $this->redirect($targetUrl);
     }
 
-    /**
-     * Обработка смены пароля.
-     */
-    public function updatePassword(): \W3a\Core\Http\RedirectResponse
+    public function updatePassword(): RedirectResponse
     {
         $userContext = $this->getUserContext();
         $currentPassword = $this->request->getParams('current_password', '');
         $newPassword = $this->request->getParams('new_password', '');
 
         if (strlen($newPassword) < 6) {
-            return $this->redirectWithMessage(route('account.settings'), 'Пароль должен быть не менее 6 символов.', 'error');
+            MessageBag::flashMessage('error', 'Пароль должен быть не менее 6 символов.');
+            return $this->redirect(route('account.settings'));
         }
 
         try {
             $this->getUserService()->changePassword($userContext['id'], $currentPassword, $newPassword);
-            return $this->redirectWithMessage(route('account.settings'), 'Пароль успешно изменён.', 'success');
+            MessageBag::flashMessage('success', 'Пароль успешно изменён.');
+            return $this->redirect(route('account.settings'));
             
         } catch (UserValidationException | UserNotFoundException $e) {
-            return $this->redirectWithMessage(route('account.settings'), $e->getMessage(), 'error');
+            MessageBag::flashMessage('error', $e->getMessage());
+            return $this->redirect(route('account.settings'));
         } catch (\Throwable $e) {
             $this->logError($e, 'Users.updatePassword');
-            return $this->redirectWithMessage(route('account.settings'), 'Произошла непредвиденная ошибка.', 'error');
+            MessageBag::flashMessage('error', 'Произошла непредвиденная ошибка.');
+            return $this->redirect(route('account.settings'));
         }
     }
 
@@ -197,7 +215,10 @@ class UsersController extends BaseController
         return $user;
     }
 
-    private function getUserWithProfileOrRedirect(int $userId): array|\W3a\Core\Http\RedirectResponse
+    /**
+     * Возвращает массив данных пользователя ИЛИ объект RedirectResponse для перенаправления.
+     */
+    private function getUserWithProfileOrRedirect(int $userId): array|RedirectResponse
     {
         $user = $this->getUserService()->getUserWithProfile($userId);
 
@@ -207,6 +228,4 @@ class UsersController extends BaseController
 
         return $user;
     }
-
-
 }

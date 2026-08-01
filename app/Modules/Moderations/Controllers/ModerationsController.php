@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Moderations\Controllers;
 
 use App\BaseController;
-use W3a\Core\Http\Session;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Support\MessageBag; // 🔥 Добавили использование MessageBag
+
 use App\Modules\Moderations\Models\ModNote;
 use App\Modules\Moderations\Models\ModActivity;
 use App\Modules\Admin\Models\AuditLog;
@@ -26,13 +30,7 @@ use App\Modules\Suggestions\Services\SuggestionService;
  */
 class ModerationsController extends BaseController
 {
-    /**
-     * Получить Session из контейнера
-     */
-    private function session(): Session
-    {
-        return $this->container->get(Session::class);
-    }
+    // 🔥 УДАЛЕНО: метод session() больше не нужен
 
     // =========================================================================
     // ПУБЛИЧНЫЙ ЛОГ МОДЕРАЦИИ
@@ -40,14 +38,8 @@ class ModerationsController extends BaseController
 
     /**
      * Публичный лог модерации (GET /mod/log).
-     * 
-     * Показывает историю всех модераторских действий (категория 'moderation').
-     * Доступен всем пользователям для прозрачности модерации.
-     * 
-     * Пагинация: 30 записей на странице.
-     * Для каждой записи декодируется JSON-поле payload.
      */
-    public function log(): void
+    public function log(): ViewResponse
     {
         $page = max(1, (int)$this->request->query('page', 1));
         $perPage = 30;
@@ -58,14 +50,13 @@ class ModerationsController extends BaseController
         $total = $auditLog->countByCategory('moderation');
         $pages = max(1, (int)ceil($total / $perPage));
 
-        // Декодируем JSON-поле payload для удобного отображения в шаблоне
         foreach ($items as &$item) {
             $item['decoded_payload'] = !empty($item['payload'])
                 ? json_decode($item['payload'], true)
                 : [];
         }
 
-        $this->render('log', [
+        return $this->render('log', [
             'title'        => 'Лог модерации',
             'items'        => $items,
             'total'        => $total,
@@ -80,13 +71,8 @@ class ModerationsController extends BaseController
 
     /**
      * Список приватных заметок модераторов (GET /mod/notes).
-     * 
-     * Заметки — это внутренний инструмент модераторов для фиксации
-     * информации о пользователях (предупреждения, история нарушений и т.д.).
-     * 
-     * Поддерживает фильтрацию по target_user_id через query-параметр.
      */
-    public function notes(): void
+    public function notes(): ViewResponse
     {
         $model = $this->service(ModNote::class);
         $notes = $model->getRecentNotes(100);
@@ -95,7 +81,7 @@ class ModerationsController extends BaseController
             ? (int)$this->request->query('user_id')
             : null;
 
-        $this->render('notes', [
+        return $this->render('notes', [
             'title'          => 'Модераторские заметки',
             'notes'          => $notes,
             'target_user_id' => $targetUserId,
@@ -105,7 +91,7 @@ class ModerationsController extends BaseController
     /**
      * Добавление новой заметки о пользователе.
      */
-    public function storeNote(): void
+    public function storeNote(): RedirectResponse
     {
         $userContext = $this->getUserContext();
 
@@ -116,43 +102,37 @@ class ModerationsController extends BaseController
                 (string)($this->request->post('note') ?? ''),
                 (int)($this->request->post('is_private') ?? 1)
             );
-            
         } catch (\App\Modules\Moderations\Exceptions\ModerationValidationException $e) {
-            $this->session()->flash('error', $e->getMessage());
-            $this->redirect('/mod/notes');
-            return; // Обязательно прерываем выполнение!
-            
+            MessageBag::flashMessage('error', $e->getMessage());
+            return $this->redirect('/mod/notes');
         } catch (\Throwable $e) {
             $this->logError($e, 'Moderations.storeNote');
-            $this->session()->flash('error', 'Произошла ошибка при добавлении заметки');
-            $this->redirect('/mod/notes');
-            return; // Обязательно прерываем выполнение!
+            MessageBag::flashMessage('error', 'Произошла ошибка при добавлении заметки');
+            return $this->redirect('/mod/notes');
         }
 
-        $this->session()->flash('success', 'Заметка добавлена');
-        $this->redirect('/mod/notes');
+        MessageBag::flashMessage('success', 'Заметка добавлена');
+        return $this->redirect('/mod/notes');
     }
 
     /**
      * Удаление заметки (POST /mod/notes/{id}/delete).
      */
-    public function deleteNote(string $id): void
+    public function deleteNote(string $id): RedirectResponse
     {
         try {
             $this->service(ModerationService::class)->deleteNote((int)$id);
         } catch (\App\Modules\Moderations\Exceptions\ModerationValidationException $e) {
-            $this->session()->flash('error', $e->getMessage());
-            $this->redirect('/mod/notes');
-            return;
+            MessageBag::flashMessage('error', $e->getMessage());
+            return $this->redirect('/mod/notes');
         } catch (\Throwable $e) {
             $this->logError($e, 'Moderations.deleteNote');
-            $this->session()->flash('error', 'Произошла ошибка при удалении заметки');
-            $this->redirect('/mod/notes');
-            return;
+            MessageBag::flashMessage('error', 'Произошла ошибка при удалении заметки');
+            return $this->redirect('/mod/notes');
         }
 
-        $this->session()->flash('success', 'Заметка удалена');
-        $this->redirect('/mod/notes');
+        MessageBag::flashMessage('success', 'Заметка удалена');
+        return $this->redirect('/mod/notes');
     }
 
     // =========================================================================
@@ -161,16 +141,12 @@ class ModerationsController extends BaseController
 
     /**
      * Статистика активности модераторов (GET /mod/stats).
-     * 
-     * Показывает:
-     * - Общую статистику действий за последние 30 дней
-     * - Таблицу лидеров (leaderboard) по количеству действий
      */
-    public function stats(): void
+    public function stats(): ViewResponse
     {
         $activity = $this->service(ModActivity::class);
 
-        $this->render('stats', [
+        return $this->render('stats', [
             'title'       => 'Активность модераторов',
             'stats'       => $activity->getStats(30),
             'leaderboard' => $activity->getLeaderboard(30),
@@ -183,14 +159,8 @@ class ModerationsController extends BaseController
 
     /**
      * Бан или разбан пользователя (POST /mod/ban/{id}).
-     * 
-     * Принимает параметр 'action' со значениями:
-     * - 'ban': заблокировать пользователя с указанием причины
-     * - 'unban': разблокировать пользователя
-     * 
-     * После успешного выполнения редиректит на профиль пользователя.
      */
-    public function banUser(string $id): \W3a\Core\Http\RedirectResponse
+    public function banUser(string $id): RedirectResponse
     {
         $targetUserId = (int)$id;
         $userContext = $this->getUserContext();
@@ -209,23 +179,21 @@ class ModerationsController extends BaseController
                 $result = $service->unbanUser($targetUserId, $userContext['id']);
                 $message = "Пользователь «{$result['username']}» разбанен";
             } else {
-                $this->session()->flash('error', 'Неизвестное действие');
+                MessageBag::flashMessage('error', 'Неизвестное действие');
                 return $this->redirectBack();
             }
         } catch (\App\Modules\Moderations\Exceptions\ModerationPermissionException | \InvalidArgumentException $e) {
-            $this->session()->flash('error', $e->getMessage());
+            MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Moderations.banUser');
-            $this->session()->flash('error', 'Произошла ошибка при выполнении действия');
+            MessageBag::flashMessage('error', 'Произошла ошибка при выполнении действия');
             return $this->redirectBack();
         }
 
-        $this->session()->flash('success', $message);
-		
+        MessageBag::flashMessage('success', $message);
         return $this->redirect('/user/' . $result['username']);
     }
-	
 
     // =========================================================================
     // РАССМОТРЕНИЕ ПРЕДЛОЖЕНИЙ
@@ -233,16 +201,8 @@ class ModerationsController extends BaseController
 
     /**
      * Список активных предложений на рассмотрении (GET /mod/suggestions).
-     * 
-     * Показывает предложения по изменению историй и комментариев,
-     * ожидающие решения модераторов.
-     * 
-     * Поддерживает фильтрацию по типу сущности (Story/Comment)
-     * и пагинацию (30 записей на странице).
-     * 
-     * Также показывает счётчики: общее количество, по историям, по комментариям.
      */
-    public function suggestions(): void
+    public function suggestions(): ViewResponse
     {
         $page = max(1, (int)$this->request->query('page', 1));
         $perPage = 30;
@@ -255,12 +215,11 @@ class ModerationsController extends BaseController
         $total = $suggestionService->countAllActiveSuggestions($filter);
         $pages = max(1, (int)ceil($total / $perPage));
 
-        // Счётчики для фильтров в шаблоне
         $totalCount = $suggestionService->countAllActiveSuggestions('');
         $storiesCount = $suggestionService->countAllActiveSuggestions('Story');
         $commentsCount = $suggestionService->countAllActiveSuggestions('Comment');
 
-        $this->render('suggestions', [
+        return $this->render('suggestions', [
             'title' => 'Предложения на рассмотрении',
             'suggestions' => $suggestions,
             'total' => $total,
@@ -275,49 +234,38 @@ class ModerationsController extends BaseController
 
     /**
      * Одобрение предложения (POST /mod/suggestions/{id}/approve).
-     * 
-     * Применяет предложенные изменения к сущности (истории или комментарию).
-     * Действие выполняется от имени текущего модератора и логируется.
-     * 
-     * При ошибке (например, если предложение уже обработано) показывает
-     * flash-сообщение с текстом ошибки.
      */
-    public function approveSuggestion(string $id): void
+    public function approveSuggestion(string $id): RedirectResponse
     {
         $suggestionId = (int)$id;
         $userContext = $this->getUserContext();
 
         try {
-            $this->service(SuggestionService::class)
-                ->approveSuggestion($suggestionId, $userContext['id']);
-
-            $this->redirectWithMessage('/mod/suggestions', 'Предложение одобрено и применено.', 'success');
+            $this->service(SuggestionService::class)->approveSuggestion($suggestionId, $userContext['id']);
+            MessageBag::flashMessage('success', 'Предложение одобрено и применено.');
+            return $this->redirect('/mod/suggestions');
         } catch (\Exception $e) {
-            $this->redirectWithMessage('/mod/suggestions', $e->getMessage(), 'error');
+            MessageBag::flashMessage('error', $e->getMessage());
+            return $this->redirect('/mod/suggestions');
         }
     }
 
     /**
      * Отклонение предложения (POST /mod/suggestions/{id}/reject).
-     * 
-     * Отклоняет предложение с указанием причины. Предложение остаётся в базе,
-     * но помечается как отклонённое.
-     * 
-     * Действие выполняется от имени текущего модератора и логируется.
      */
-    public function rejectSuggestion(string $id): void
+    public function rejectSuggestion(string $id): RedirectResponse
     {
         $suggestionId = (int)$id;
         $reason = trim($this->request->post('reason', ''));
         $userContext = $this->getUserContext();
 
         try {
-            $this->service(SuggestionService::class)
-                ->rejectSuggestion($suggestionId, $userContext['id'], $reason);
-
-            $this->redirectWithMessage('/mod/suggestions', 'Предложение отклонено.', 'success');
+            $this->service(SuggestionService::class)->rejectSuggestion($suggestionId, $userContext['id'], $reason);
+            MessageBag::flashMessage('success', 'Предложение отклонено.');
+            return $this->redirect('/mod/suggestions');
         } catch (\Exception $e) {
-            $this->redirectWithMessage('/mod/suggestions', $e->getMessage(), 'error');
+            MessageBag::flashMessage('error', $e->getMessage());
+            return $this->redirect('/mod/suggestions');
         }
     }
 }

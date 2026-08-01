@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Notifications\Controllers;
 
 use App\BaseController;
-use W3a\Core\Exceptions\JsonResponseException;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\JsonResponse;
 use App\Modules\Notifications\Services\NotificationService;
 
 /**
@@ -29,7 +30,7 @@ class NotificationsController extends BaseController
     /**
      * Страница списка уведомлений (GET /notifications).
      */
-    public function index(): void
+    public function index(): ViewResponse
     {
         $userContext = $this->getUserContext();
 
@@ -44,7 +45,7 @@ class NotificationsController extends BaseController
             $perPage
         );
 
-        $this->render('index', [
+        return $this->render('index', [
             'title' => 'Уведомления',
             'notifications' => $data['notifications'],
             'currentType' => $data['currentType'],
@@ -63,11 +64,8 @@ class NotificationsController extends BaseController
      * Отметка одного уведомления как прочитанного (POST /notifications/{id}/read).
      * 
      * AJAX endpoint. Возвращает JSON с результатом операции.
-     * 
-     * ВАЖНО: try-catch НЕ перехватывает JsonResponseException,
-     * чтобы он корректно обрабатывался в Application.
      */
-    public function markAsRead(string $id): void
+    public function markAsRead(string $id): JsonResponse
     {
         $userContext = $this->getUserContext();
         $notificationId = (int)$id;
@@ -75,18 +73,15 @@ class NotificationsController extends BaseController
         try {
             $success = $this->service(NotificationService::class)->markAsRead($notificationId, $userContext['id']);
 
-            $this->json([
+            return $this->json([
                 'success' => $success,
                 'message' => $success ? 'Отмечено как прочитанное' : 'Не удалось отметить'
             ]);
-        } catch (JsonResponseException $e) {
-            // НЕ перехватываем JsonResponseException — пусть Application обработает
-            throw $e;
         } catch (\Throwable $e) {
-            // Логируем реальную ошибку
-            $this->logError($e);
+            // Логируем реальную ошибку и возвращаем 500
+            $this->logError($e, 'Notifications.markAsRead');
             
-            $this->json([
+            return $this->json([
                 'success' => false, 
                 'message' => 'Ошибка сервера'
             ], 500);
@@ -100,23 +95,21 @@ class NotificationsController extends BaseController
     /**
      * Отметка всех уведомлений пользователя как прочитанных (POST /notifications/mark-all-read).
      */
-    public function markAllAsRead(): void
+    public function markAllAsRead(): JsonResponse
     {
         $userContext = $this->getUserContext();
 
         try {
             $success = $this->service(NotificationService::class)->markAllAsRead($userContext['id']);
 
-            $this->json([
+            return $this->json([
                 'success' => $success,
                 'message' => $success ? 'Все уведомления отмечены' : 'Ошибка'
             ]);
-        } catch (JsonResponseException $e) {
-            throw $e;
         } catch (\Throwable $e) {
-            $this->logError($e);
+            $this->logError($e, 'Notifications.markAllAsRead');
             
-            $this->json([
+            return $this->json([
                 'success' => false, 
                 'message' => 'Ошибка сервера'
             ], 500);
@@ -132,22 +125,18 @@ class NotificationsController extends BaseController
      * 
      * AJAX endpoint для обновления счётчика в шапке сайта.
      */
-    public function getCount(): void
+    public function getCount(): JsonResponse
     {
         $userContext = $this->getUserContext();
 
         try {
             $count = $this->service(NotificationService::class)->getUnreadCount($userContext['id']);
-            $this->json(['count' => $count]);
-        } catch (JsonResponseException $e) {
-            // НЕ перехватываем JsonResponseException
-            throw $e;
+            return $this->json(['count' => $count]);
         } catch (\Throwable $e) {
-            // Логируем реальную ошибку
-            $this->logError($e);
+            // Логируем реальную ошибку и возвращаем 0 с кодом 500
+            $this->logError($e, 'Notifications.getCount');
             
-            $this->json(['count' => 0], 500);
+            return $this->json(['count' => 0], 500);
         }
     }
-
 }

@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Modules\Flags\Controllers;
 
 use App\BaseController;
-use W3a\Core\Http\Session;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\JsonResponse;
 use W3a\Core\Support\Audit;
-use App\Modules\Flags\Models\Flag;
-use App\Modules\Comments\Models\Comment;
+use W3a\Core\Support\MessageBag;
 use W3a\Core\Exceptions\BadRequestException;
 use W3a\Core\Exceptions\NotFoundException;
-use W3a\Core\Exceptions\JsonResponseException;
+
+use App\Modules\Flags\Models\Flag;
+use App\Modules\Comments\Models\Comment;
 
 /**
  * Контроллер жалоб (flags) на контент.
@@ -24,14 +28,6 @@ use W3a\Core\Exceptions\JsonResponseException;
  */
 class FlagsController extends BaseController
 {
-    /**
-     * Получить Session из контейнера
-     */
-    private function session(): Session
-    {
-        return $this->container->get(Session::class);
-    }
-
     /**
      * Получить Audit из контейнера
      */
@@ -51,7 +47,7 @@ class FlagsController extends BaseController
     /**
      * GET /flags/report?type=story&id=123
      */
-    public function reportForm(string $type, string $id): void
+    public function reportForm(string $type, string $id): Response
     {
         $targetId = (int) $id;
 
@@ -60,20 +56,14 @@ class FlagsController extends BaseController
         }
 
         $flagModel = $this->flagModel();
-
         $userContext = $this->getUserContext();
 
         if ($flagModel->hasUserFlagged($userContext['id'], $type, $targetId)) {
-
-            $this->redirectWithMessage(
-                $this->buildTargetUrl($type, $targetId),
-                'Вы уже подавали жалобу на этот контент.',
-                'error'
-            );
-            return;
+            MessageBag::flashMessage('error', 'Вы уже подавали жалобу на этот контент.');
+            return $this->redirect($this->buildTargetUrl($type, $targetId));
         }
 
-        $this->render('report_form', [
+        return $this->render('report_form', [
             'title'    => 'Пожаловаться на контент',
             'type'     => $type,
             'targetId' => $targetId,
@@ -84,7 +74,7 @@ class FlagsController extends BaseController
     /**
      * POST /flags/report
      */
-    public function submit(): void
+    public function submit(): RedirectResponse
     {
         $this->request->validateCsrf();
 
@@ -94,18 +84,13 @@ class FlagsController extends BaseController
         $comment  = $this->request->getParams('comment');
 
         $userContext = $this->getUserContext();
-
         $flagModel = $this->flagModel();
+        
         $result = $flagModel->submit($userContext['id'], $type, $targetId, $reason, $comment);
 
         if (!$result['ok']) {
-
-            $this->redirectWithMessage(
-                $this->buildTargetUrl($type, $targetId),
-                $result['error'],
-                'error'
-            );
-            return;
+            MessageBag::flashMessage('error', $result['error']);
+            return $this->redirect($this->buildTargetUrl($type, $targetId));
         }
 
         // Логируем успешную жалобу
@@ -124,23 +109,20 @@ class FlagsController extends BaseController
             ]);
         }
 
-        $this->redirectWithMessage(
-            $this->buildTargetUrl($type, $targetId),
-            'Спасибо! Ваша жалоба принята. Модераторы рассмотрят её в ближайшее время.',
-            'success'
-        );
+        MessageBag::flashMessage('success', 'Спасибо! Ваша жалоба принята. Модераторы рассмотрят её в ближайшее время.');
+        return $this->redirect($this->buildTargetUrl($type, $targetId));
     }
 
     /**
      * GET /admin/flags
      */
-    public function adminIndex(): void
+    public function adminIndex(): ViewResponse
     {
         $flagModel = $this->flagModel();
         $pending = $flagModel->getPendingFlags();
         $recent  = $flagModel->getAllFlags(50);
 
-        $this->render('admin_index', [
+        return $this->render('admin_index', [
             'title'        => 'Жалобы пользователей',
             'pendingFlags' => $pending,
             'recentFlags'  => $recent,
@@ -153,12 +135,11 @@ class FlagsController extends BaseController
     /**
      * POST /admin/flags/{id}/resolve
      */
-    public function resolve(string $id): void
+    public function resolve(string $id): RedirectResponse
     {
         $this->request->validateCsrf();
 
         $action = $this->request->getParams('action') ?: 'hide';
-
         $userContext = $this->getUserContext();
 
         $flagModel = $this->flagModel();
@@ -172,23 +153,26 @@ class FlagsController extends BaseController
             $flagModel->dismiss((int) $id, $userContext['id']);
             $this->audit()->log('flag.dismissed', 'Модератор отклонил жалобу', 'flags', ['flag_id' => (int) $id]);
 
-            $this->redirectWithMessage('/admin/flags', 'Жалоба отклонена. Контент восстановлен.', 'success');
-            return;
+            MessageBag::flashMessage('success', 'Жалоба отклонена. Контент восстановлен.');
+            return $this->redirect('/admin/flags');
         }
 
         $flagModel->resolve((int) $id, $userContext['id']);
         $this->audit()->log('flag.resolved', 'Модератор подтвердил жалобу', 'flags', ['flag_id' => (int) $id]);
 
-        $this->redirectWithMessage('/admin/flags', 'Жалоба подтверждена. Контент скрыт.', 'success');
+        MessageBag::flashMessage('success', 'Жалоба подтверждена. Контент скрыт.');
+        return $this->redirect('/admin/flags');
     }
 
     /**
      * GET /admin/flags/count (AJAX)
      */
-    public function pendingCount(): void
+    public function pendingCount(): JsonResponse
     {
         $count = $this->flagModel()->getPendingCount();
-        throw new JsonResponseException(['count' => $count]);
+        
+        // 🔥 ИСПРАВЛЕНО: Просто возвращаем JSON, никаких исключений для нормального потока
+        return $this->json(['count' => $count]);
     }
 
     /**

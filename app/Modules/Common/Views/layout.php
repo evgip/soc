@@ -159,7 +159,33 @@
 		</div>
 	</header>
 
-	<?= render_flashes() ?>
+	 
+	<?php if (!empty($errors->allErrors())): ?>
+	    <!-- 1. Блок ошибок валидации -->
+		<div class="alert is-danger">
+			<strong>Ошибка валидации!</strong>
+			<ul class="validation-errors-list">
+				<?php foreach ($errors->allErrors() as $fieldErrors): ?>
+					<?php foreach ($fieldErrors as $err): ?>
+						<li><?= htmlspecialchars($err) ?></li>
+					<?php endforeach; ?>
+				<?php endforeach; ?>
+			</ul>
+		</div>
+	<?php endif; ?>
+
+	<!-- 2. Блок обычных flash-сообщений -->
+	<?php if ($flashError = $errors->getFlash('error')): ?>
+		<div class="alert is-danger"><strong>Ошибка!</strong> <?= htmlspecialchars($flashError) ?></div>
+	<?php endif; ?>
+
+	<?php if ($flashSuccess = $errors->getFlash('success')): ?>
+		<div class="alert is-success"><strong>Успех!</strong> <?= htmlspecialchars($flashSuccess) ?></div>
+	<?php endif; ?>
+
+	<?php if ($flashNotice = $errors->getFlash('notice')): ?>
+		<div class="alert is-notice"><strong>Информация!</strong> <?= htmlspecialchars($flashNotice) ?></div>
+	<?php endif; ?>
 
 	<main>
 		<?= $content ?>

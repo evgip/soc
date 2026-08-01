@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Messages\Controllers;
 
 use App\BaseController;
-use W3a\Core\Http\Session;
 use W3a\Core\Http\Response;
 use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Http\ViewResponse;
+use W3a\Core\Support\MessageBag; // 🔥 Добавили использование MessageBag
+
 use App\Modules\Messages\Services\ConversationService;
 use App\Modules\Messages\Services\MessageService;
 
@@ -17,13 +18,7 @@ use App\Modules\Messages\Services\MessageService;
  */
 class MessagesController extends BaseController
 {
-    /**
-     * Получить экземпляр Session из DI-контейнера.
-     */
-    private function session(): Session
-    {
-        return $this->container->get(Session::class);
-    }
+    // 🔥 УДАЛЕНО: метод session() больше не нужен
 
     // =========================================================================
     // СПИСОК ДИАЛОГОВ
@@ -114,12 +109,14 @@ class MessagesController extends BaseController
             $roomId = $this->service(ConversationService::class)->getOrCreateConversation($userContext['id'], $targetUid);
         } catch (\App\Modules\Messages\Exceptions\ConversationException $e) {
             // Ловим бизнес-ошибки (например, "Нельзя создать диалог с самим собой")
-            $this->session()->flash('error', $e->getMessage());
+            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
+            MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirect('/messages');
         } catch (\Throwable $e) {
             // Ловим реальные непредвиденные ошибки и логируем их
             $this->logError($e, 'Messages.startConversation');
-            $this->session()->flash('error', 'Произошла непредвиденная ошибка при создании диалога.');
+            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
+            MessageBag::flashMessage('error', 'Произошла непредвиденная ошибка при создании диалога.');
             return $this->redirect('/messages');
         }
 

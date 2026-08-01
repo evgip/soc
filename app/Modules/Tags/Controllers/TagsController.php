@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Tags\Controllers;
 
 use App\BaseController;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Support\MessageBag;
+
 use App\Modules\Tags\Services\CategoryService;
 use App\Modules\Tags\Services\TagFilterService;
 use App\Modules\Votes\Models\Vote;
@@ -12,7 +17,6 @@ use App\Modules\Votes\Models\Vote;
 /**
  * Контроллер модуля Tags.
  * Отвечает за отображение категорий тегов и управление фильтрами.
- * Вся бизнес-логика вынесена в сервисы CategoryService и TagFilterService.
  */
 class TagsController extends BaseController
 {
@@ -23,12 +27,12 @@ class TagsController extends BaseController
     /**
      * Страница со всеми категориями тегов (GET /categories)
      */
-    public function index(): void
+    public function index(): ViewResponse
     {
         $categories = $this->service(CategoryService::class)->getCategoriesWithTagsCount();
         $tagsByCategory = $this->service(CategoryService::class)->getTagsGroupedByCategory();
 
-        $this->render('index', [
+        return $this->render('index', [
             'title' => 'Категории тегов',
             'categories' => $categories,
             'tagsByCategory' => $tagsByCategory,
@@ -39,7 +43,7 @@ class TagsController extends BaseController
      * Страница историй, которые прикреплены к тегам конкретной категории
      * (GET /categories/{slug})
      */
-    public function categoriesShow(string $slug): void
+    public function categoriesShow(string $slug): Response
     {
         $currentPage = max(1, (int)$this->request->getParams('page', 1));
         $perPage = config('constants.pagination.stories_per_page', 15, 'int');
@@ -47,8 +51,8 @@ class TagsController extends BaseController
         $data = $this->service(CategoryService::class)->getCategoryWithStories($slug, $currentPage, $perPage);
 
         if (!$data) {
-            $this->redirectWithMessage('/categories', 'Категория не найдена.', 'error');
-            return;
+            MessageBag::flashMessage('error', 'Категория не найдена.');
+            return $this->redirect('/categories');
         }
 
         $userContext = $this->getUserContext();
@@ -61,7 +65,7 @@ class TagsController extends BaseController
             $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
         }
 
-        $this->render('categories-show', [
+        return $this->render('categories-show', [
             'title' => e($data['category']['name']),
             'category' => $data['category'],
             'stories' => $data['stories'],
@@ -82,12 +86,12 @@ class TagsController extends BaseController
     /**
      * Страница управления фильтрами тегов (GET /filters)
      */
-    public function filters(): void
+    public function filters(): ViewResponse
     {
         $userContext = $this->getUserContext();
         $data = $this->service(TagFilterService::class)->getFiltersData($userContext['id']);
 
-        $this->render('filters', [
+        return $this->render('filters', [
             'title' => 'Фильтры тегов',
             'filters' => $data['filters'],
             'allTags' => $data['allTags'],
@@ -98,10 +102,9 @@ class TagsController extends BaseController
     /**
      * Добавить тег в фильтры (POST /filters/add)
      */
-    public function addFilter(): void
+    public function addFilter(): RedirectResponse
     {
         $tagId = (int)$this->request->post('tag_id', 0);
-
         $userContext = $this->getUserContext();
 
         $result = $this->service(TagFilterService::class)->addFilter($userContext['id'], $tagId);
@@ -109,16 +112,16 @@ class TagsController extends BaseController
         $message = $result['message'] ?? ($result['success'] ? 'Фильтр добавлен' : 'Ошибка добавления фильтра');
         $type = $result['success'] ? 'success' : 'error';
 
-        $this->redirectWithMessage('/filters', $message, $type);
+        MessageBag::flashMessage($type, $message);
+        return $this->redirect('/filters');
     }
 
     /**
      * Удалить тег из фильтров (POST /filters/remove)
      */
-    public function removeFilter(): void
+    public function removeFilter(): RedirectResponse
     {
         $tagId = (int)$this->request->post('tag_id', 0);
-
         $userContext = $this->getUserContext();
 
         $result = $this->service(TagFilterService::class)->removeFilter($userContext['id'], $tagId);
@@ -126,6 +129,7 @@ class TagsController extends BaseController
         $message = $result['message'] ?? ($result['success'] ? 'Фильтр удалён' : 'Ошибка удаления фильтра');
         $type = $result['success'] ? 'success' : 'error';
 
-        $this->redirectWithMessage('/filters', $message, $type);
+        MessageBag::flashMessage($type, $message);
+        return $this->redirect('/filters');
     }
 }

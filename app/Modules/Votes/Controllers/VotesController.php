@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Votes\Controllers;
 
 use App\BaseController;
-use W3a\Core\Exceptions\JsonResponseException;
+use W3a\Core\Http\JsonResponse;
 use App\Modules\Votes\Services\VoteService;
 
 /**
@@ -27,17 +27,14 @@ class VotesController extends BaseController
 
     /**
      * Обработка голоса за историю или комментарий
-     * 
-     * @param string $type Тип сущности (story/comment)
-     * @param string $id ID сущности
-     * @param string $direction Направление голоса (up/down)
-     * 
-     * @throws JsonResponseException
      */
-    public function handle(string $type, string $id, string $direction): void
+    public function handle(string $type, string $id, string $direction): JsonResponse
     {
-        // 1. Быстрая валидация
-        $this->validateInput($type, $id, $direction);
+        // 1. Быстрая валидация (возвращает JsonResponse при ошибке или null при успехе)
+        $validationResponse = $this->validateInput($type, $id, $direction);
+        if ($validationResponse !== null) {
+            return $validationResponse;
+        }
 
         $userContext = $this->getUserContext();
         $userId = $userContext['id'];
@@ -48,24 +45,23 @@ class VotesController extends BaseController
         try {
             $result = $this->voteService()->handleVote($userId, $type, $targetId, $voteValue);
         } catch (\Throwable $e) {
-
             $this->logError($e, 'Votes.handle');
-
-            throw new JsonResponseException([
+            
+            return $this->json([
                 'status' => 'error',
                 'message' => 'Внутренняя ошибка сервера.',
             ], 500);
         }
 
         if (!$result['success']) {
-            throw new JsonResponseException([
+            return $this->json([
                 'status' => 'error',
                 'message' => $result['message'],
             ], 403);
         }
 
         // 3. Возвращаем актуальные данные
-        throw new JsonResponseException([
+        return $this->json([
             'status' => 'success',
             'new_score'  => $this->voteService()->getNewScore($type, $targetId),
             'vote_state' => $this->voteService()->getUserVote($userId, $type, $targetId),
@@ -73,31 +69,32 @@ class VotesController extends BaseController
     }
 
     /**
-     * Валидация входных параметров
-     * 
-     * @throws JsonResponseException Если параметры невалидны
+     * Валидация входных параметров.
+     * Возвращает JsonResponse с ошибкой, если параметры невалидны, иначе null.
      */
-    private function validateInput(string $type, string $id, string $direction): void
+    private function validateInput(string $type, string $id, string $direction): ?JsonResponse
     {
         if (!in_array($type, self::ALLOWED_TYPES, true)) {
-            throw new JsonResponseException([
+            return $this->json([
                 'status' => 'error',
                 'message' => 'Недопустимый тип сущности.',
             ], 400);
         }
 
         if (!ctype_digit($id) || (int)$id <= 0) {
-            throw new JsonResponseException([
+            return $this->json([
                 'status' => 'error',
                 'message' => 'Недопустимый ID.',
             ], 400);
         }
 
         if (!in_array($direction, self::ALLOWED_DIRECTIONS, true)) {
-            throw new JsonResponseException([
+            return $this->json([
                 'status' => 'error',
                 'message' => 'Недопустимое направление.',
             ], 400);
         }
+
+        return null;
     }
 }

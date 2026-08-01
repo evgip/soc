@@ -84,38 +84,6 @@ if (!function_exists('plural')) {
 	}
 }
 
-/**
- * Render flash messages by type (success, error, notice)
- * Вывод flash-сообщений по типу (успех, ошибка, информационное)
- */
-if (!function_exists('render_flashes')) {
-	function render_flashes(): void
-	{
-		$types = [
-			'success' => 'is-success',
-			'error'   => 'is-danger',
-			'notice'  => 'is-notice'
-		];
-
-		if (session_status() === PHP_SESSION_NONE) {
-			@session_start();
-		}
-
-		foreach ($types as $key => $class) {
-			if (isset($_SESSION['flash'][$key])) {
-				$message = htmlspecialchars($_SESSION['flash'][$key]);
-				unset($_SESSION['flash'][$key]); // Удаляем после получения
-
-				$title = $key === 'is-success' ? 'Успех' : ($key === 'error' ? 'Ошибка' : 'Информация');
-
-				echo '<div class="alert ' . $class . '">';
-				echo '<strong>' . $title . '!</strong> ' . $message;
-				echo '</div>';
-			}
-		}
-	}
-}
-
 
 /**
  * Retrieve application name

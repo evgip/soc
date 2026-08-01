@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Controllers;
 
 use App\BaseController;
-use W3a\Core\Http\Session;
 use W3a\Core\Http\Response;
 use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\JsonResponse;
+use W3a\Core\Support\MessageBag;
 
 use App\Modules\Stories\Services\StoryService;
 use App\Modules\Stories\Services\ReadRibbonService;
@@ -22,7 +23,6 @@ use App\Modules\Tags\Models\Tag;
 use App\Modules\Users\Models\User;
 use App\Modules\Content\Core\Markdown;
 use App\Modules\Wiki\Services\WikiService;
-use W3a\Core\Http\JsonResponse;
 
 class StoriesController extends BaseController
 {
@@ -33,10 +33,8 @@ class StoriesController extends BaseController
     {
         $userContext = $this->getUserContext();
 
-        // Получаем специфичные для страницы данные (wiki, tagInfo) и устанавливаем OG-теги
         $pageData = $this->buildIndexPageData($tagslug, $domain);
 
-        // Делегируем сборку ленты сервису
         $feed = $this->service(StoryFeedBuilder::class)->build(
             tagslug: $tagslug,
             domain: $domain,
@@ -122,18 +120,16 @@ class StoriesController extends BaseController
         try {
             $storyId = $this->service(StoryService::class)->createStory($data, $userContext['id']);
         } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
-            $this->session()->flash('error', $e->getMessage());
-
+            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
+            MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Stories.create');
-            $this->session()->flash('error', 'Произошла ошибка при создании публикации.');
-
+            MessageBag::flashMessage('error', 'Произошла ошибка при создании публикации.');
             return $this->redirectBack();
         }
 
-        $this->session()->flash('success', 'Ваша история успешно опубликована!');
-
+        MessageBag::flashMessage('success', 'Ваша история успешно опубликована!');
         return $this->redirect('/story/' . $storyId);
     }
 
@@ -151,7 +147,8 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
 
         if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
-            $this->container->get(Session::class)->flash('error', 'У вас нет прав для изменения этой публикации.');
+            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
+            MessageBag::flashMessage('error', 'У вас нет прав для изменения этой публикации.');
             return $this->redirectBack('/');
         }
 
@@ -176,8 +173,9 @@ class StoriesController extends BaseController
         $story = $storyModel->find($storyId);
         $userContext = $this->getUserContext();
 
-        if (!$story || !$this->service(StoryService::class)->canEditStory($story)) {
-            $this->session()->flash('error', 'У вас нет прав для изменения этой публикации.');
+        if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
+            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
+            MessageBag::flashMessage('error', 'У вас нет прав для изменения этой публикации.');
             return $this->redirectBack();
         }
 
@@ -192,16 +190,15 @@ class StoriesController extends BaseController
         try {
             $this->service(StoryService::class)->updateStory($storyId, $data);
         } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
-            $this->session()->flash('error', $e->getMessage());
+            MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirectBack();
         } catch (\Throwable $e) {
             $this->logError($e, 'Stories.update');
-            $this->session()->flash('error', 'Произошла ошибка при редактировании.');
+            MessageBag::flashMessage('error', 'Произошла ошибка при редактировании.');
             return $this->redirectBack();
         }
 
-        $this->session()->flash('success', 'Публикация успешно отредактирована.');
-
+        MessageBag::flashMessage('success', 'Публикация успешно отредактирована.');
         return $this->redirect('/story/' . $storyId);
     }
 
@@ -214,6 +211,7 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
         $this->service(StoryService::class)->deleteStory((int)$id, $userContext['id']);
 
+        MessageBag::flashMessage('success', 'История успешно удалена.');
         return $this->redirectBack();
     }
 
@@ -222,6 +220,7 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
         $this->service(StoryService::class)->restoreStory((int)$id, $userContext['id']);
 
+        MessageBag::flashMessage('success', 'История успешно восстановлена.');
         return $this->redirectBack();
     }
 
@@ -233,14 +232,10 @@ class StoriesController extends BaseController
         $storyId = (int)$id;
         $userContext = $this->getUserContext();
 
-        // Используем репозиторий для операций с данными
         $storyRepo = $this->container->get(StoryRepository::class);
-
-        // Выполняем переключение (внутри репозитория уже есть защита по user_id)
         $storyRepo->toggleFollow($storyId, $userContext['id']);
 
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            // Получаем актуальный статус через тот же репозиторий
             $isFollowing = $storyRepo->isFollowing($storyId, $userContext['id']);
 
             return $this->json([
@@ -374,7 +369,7 @@ class StoriesController extends BaseController
     // =========================================================================
     public function userStories(string $username): ViewResponse
     {
-        $validator = $this->container->get(\W3a\Core\Support\Validator::class); // Уточните неймспейс, если отличается (в оригинале AppCoreValidator::class)
+        $validator = $this->container->get(\W3a\Core\Support\Validator::class);
         $validator->validate(
             ['username' => $username],
             ['username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/']
@@ -401,7 +396,6 @@ class StoriesController extends BaseController
             'image' => config('config.app.url') . '/',
         ]);
 
-        // Делегируем сборку ленты сервису (автоматически применит sort='hot')
         $feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
             tagslug: '',
             domain: '',
@@ -427,17 +421,5 @@ class StoriesController extends BaseController
             'rssFeed' => $feed->rssFeed,
             'title' => $feed->pageTitle,
         ]);
-    }
-	
-    // =========================================================================
-    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
-    // =========================================================================
-
-    /**
-     * Получить экземпляр Session из DI-контейнера.
-     */
-    private function session(): Session
-    {
-        return $this->container->get(Session::class);
     }
 }

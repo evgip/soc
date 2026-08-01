@@ -34,12 +34,44 @@
             <div class="page-title"><strong><?= e($title ?? '') ?></strong></div>
             <div class="user-meta">
                 Добро пожаловать, <b><?= e($_SESSION['user_name'] ?? 'Администратор') ?></b> |
-                <a href="/logout" class="gray">Выйти</a>
+				
+							<form class="dropdown-menu-item" action="<?= route('auth.logout') ?>" method="POST">
+								<?= csrf_field() ?>
+								<button type="submit" class="is-link bold">🚪 <?= __('logout') ?></button>
+							</form>
             </div>
         </header>
 
         <main class="container">
-            <?= render_flashes() ?>
+
+			<?php if (!empty($errors->allErrors())): ?>
+				<!-- 1. Блок ошибок валидации -->
+				<div class="alert is-danger">
+					<strong>Ошибка валидации!</strong>
+					<ul class="validation-errors-list">
+						<?php foreach ($errors->allErrors() as $fieldErrors): ?>
+							<?php foreach ($fieldErrors as $err): ?>
+								<li><?= htmlspecialchars($err) ?></li>
+							<?php endforeach; ?>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php endif; ?>
+
+			<!-- 2. Блок обычных flash-сообщений -->
+			<?php if ($flashError = $errors->getFlash('error')): ?>
+				<div class="alert is-danger"><strong>Ошибка!</strong> <?= htmlspecialchars($flashError) ?></div>
+			<?php endif; ?>
+
+			<?php if ($flashSuccess = $errors->getFlash('success')): ?>
+				<div class="alert is-success"><strong>Успех!</strong> <?= htmlspecialchars($flashSuccess) ?></div>
+			<?php endif; ?>
+
+			<?php if ($flashNotice = $errors->getFlash('notice')): ?>
+				<div class="alert is-notice"><strong>Информация!</strong> <?= htmlspecialchars($flashNotice) ?></div>
+			<?php endif; ?>
+
+
             <?= $content ?>
         </main>
 

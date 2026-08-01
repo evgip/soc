@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Saved\Controllers;
 
 use App\BaseController;
-use W3a\Core\Http\Session;
+use W3a\Core\Http\Response;
+use W3a\Core\Http\RedirectResponse;
+use W3a\Core\Http\ViewResponse;
+use W3a\Core\Http\JsonResponse;
+use W3a\Core\Support\MessageBag;
+
 use App\Modules\Saved\Models\SavedStory;
 use App\Modules\Saved\Services\SavedService;
 use App\Modules\Stories\Services\StoryFilterService;
@@ -17,23 +22,14 @@ use App\Modules\Votes\Models\Vote;
 class SavedController extends BaseController
 {
     /**
-     * Получить экземпляр Session из DI-контейнера.
-     */
-    private function session(): Session
-    {
-        return $this->container->get(Session::class);
-    }
-
-    /**
      * Список сохранённых историй
      */
-    public function index(): void
+    public function index(): Response
     {
         $userContext = $this->getUserContext();
 
         if (!$userContext['isLoggedIn']) {
-            $this->redirect('/login');
-            return;
+            return $this->redirect('/login');
         }
 
         $currentPage = max(1, (int)$this->request->getParams('page', 1));
@@ -55,7 +51,7 @@ class SavedController extends BaseController
             $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
         }
 
-        $this->render('index', [
+        return $this->render('index', [
             'stories' => $stories,
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
@@ -73,17 +69,15 @@ class SavedController extends BaseController
     /**
      * AJAX / POST toggle закладки
      */
-    public function toggle(string $id): void
+    public function toggle(string $id): Response
     {
         $userContext = $this->getUserContext();
 
         if (!$userContext['isLoggedIn']) {
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-                $this->json(['error' => 'Необходима авторизация'], 401);
-                return;
+                return $this->json(['error' => 'Необходима авторизация'], 401);
             }
-            $this->redirect('/login');
-            return;
+            return $this->redirect('/login');
         }
 
         $storyId = (int)$id;
@@ -96,16 +90,15 @@ class SavedController extends BaseController
         $message = $isSaved ? 'История добавлена в закладки' : 'История удалена из закладок';
 
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-            $this->json([
+            return $this->json([
                 'success' => true,
                 'is_saved' => $isSaved,
                 'message' => $message // Фронтенд может использовать это для toast-уведомления
             ]);
-            return;
         }
 
-        $this->session()->flash('success', $message);
+        MessageBag::flashMessage('success', $message);
         $referer = $_SERVER['HTTP_REFERER'] ?? '/saved';
-        $this->redirectBack($referer);
+        return $this->redirectBack($referer);
     }
 }
