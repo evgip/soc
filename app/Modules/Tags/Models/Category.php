@@ -167,13 +167,12 @@ class Category extends Model
 
     /**
      * Удалить категорию.
-     * Если в таблице categories есть колонка deleted_at, используйте $this->delete($id)
+     * Если в таблице categories есть колонка deleted_at, используйте $this->softDelete($id)
      * Если нужно физическое удаление, используйте $this->forceDelete($id).
      */
     public function deleteCategory(int $id): bool
     {
-        // Замените на $this->delete($id), если поддерживаете мягкое удаление категорий
-        return $this->forceDelete($id);
+        return $this->softDelete($id);
     }
 
     /**

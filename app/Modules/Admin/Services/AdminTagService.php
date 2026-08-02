@@ -155,7 +155,7 @@ class AdminTagService
 
     public function softDeleteTag(int $id): bool
     {
-        return $this->tagModel->delete($id);
+        return $this->tagModel->softDelete($id);
     }
 
     public function restoreTag(int $id): bool

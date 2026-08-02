@@ -342,31 +342,4 @@ class WikiPage extends Model
             "SELECT COUNT(*) FROM {$this->table} WHERE deleted_at IS NOT NULL"
         );
     }
-
-    /**
-     * Мягкое удаление wiki страницы
-     */
-    public function softDelete($id): bool
-    {
-        $id = (int)$id;
-        
-        if ($id <= 0) {
-            return false;
-        }
-        
-        try {
-            $sql = "UPDATE {$this->table} 
-                    SET deleted_at = NOW() 
-                    WHERE id = :id AND deleted_at IS NULL";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
-            $stmt->execute();
-            
-            return $stmt->rowCount() > 0;
-            
-        } catch (\Throwable $e) {
-            return false;
-        }
-    }
 }

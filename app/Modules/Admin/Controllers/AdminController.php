@@ -91,7 +91,7 @@ class AdminController extends BaseController
         $user = $this->service(AdminUserService::class)->findUser((int)$id);
 
         if (!$user) {
-            return $this->redirectBack('/admin/users');
+            return $this->redirect('/admin/users');
         }
 
         return $this->render('user_edit_panel', [
@@ -109,7 +109,8 @@ class AdminController extends BaseController
             'bio' => $this->request->getParams('bio'),
         ]);
 
-        return $this->redirectWithMessage('/admin/users', 'Данные профиля пользователя успешно изменены администратором.', 'success');
+        MessageBag::flashMessage('success', 'Данные профиля пользователя успешно изменены администратором.');
+        return $this->redirect('/admin/users');
     }
 
     public function archiveUser(string $id): RedirectResponse
@@ -117,21 +118,21 @@ class AdminController extends BaseController
         $userContext = $this->getUserContext();
         try {
             $this->service(AdminUserService::class)->archiveUser((int)$id, $userContext['id']);
-            return $this->redirectWithMessage('/admin/users', 'Пользователь успешно отправлен в архив.', 'success');
+            MessageBag::flashMessage('success', 'Пользователь успешно отправлен в архив.');
         } catch (AdminUserException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage('/admin/users', $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.archiveUser');
             MessageBag::flashMessage('error', 'Произошла ошибка при архивации.');
-            return $this->redirectWithMessage('/admin/users', 'Произошла ошибка при архивации.', 'error');
         }
+        return $this->redirect('/admin/users');
     }
 
     public function restoreUser(string $id): RedirectResponse
     {
         $this->service(AdminUserService::class)->restoreUser((int)$id);
-        return $this->redirectWithMessage('/admin/users', 'Аккаунт пользователя успешно восстановлен из архива.', 'success');
+        MessageBag::flashMessage('success', 'Аккаунт пользователя успешно восстановлен из архива.');
+        return $this->redirect('/admin/users');
     }
 
     public function toggleUserStatus(string $id): RedirectResponse
@@ -141,18 +142,17 @@ class AdminController extends BaseController
             $result = $this->service(AdminUserService::class)->toggleUserStatus((int)$id, $userContext['id']);
             
             if ($result === 0) {
-                return $this->redirectWithMessage('/admin/users', 'Пользователь успешно заблокирован.', 'success');
+                MessageBag::flashMessage('success', 'Пользователь успешно заблокирован.');
             } else {
-                return $this->redirectWithMessage('/admin/users', 'Доступ для пользователя успешно восстановлен.', 'success');
+                MessageBag::flashMessage('success', 'Доступ для пользователя успешно восстановлен.');
             }
         } catch (AdminUserException | AdminValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage('/admin/users', $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.toggleUserStatus');
             MessageBag::flashMessage('error', 'Произошла ошибка.');
-            return $this->redirectWithMessage('/admin/users', 'Произошла ошибка.', 'error');
         }
+        return $this->redirect('/admin/users');
     }
 
     public function deleteUserAvatar(string $id): RedirectResponse
@@ -160,9 +160,8 @@ class AdminController extends BaseController
         $userId = (int)$id;
 
         if ($this->service(AdminUserService::class)->deleteUserAvatar($userId)) {
-            return $this->redirectWithMessage("/admin/users/{$userId}/edit", 'Аватар пользователя успешно удален.', 'success');
+            MessageBag::flashMessage('success', 'Аватар пользователя успешно удален.');
         }
-
         return $this->redirect("/admin/users/{$userId}/edit");
     }
 
@@ -196,16 +195,14 @@ class AdminController extends BaseController
                 'is_media' => $this->request->post('is_media') !== null ? 1 : 0,
                 'category_id' => $this->request->getParams('category_id'),
             ]);
-
-            return $this->redirectWithMessage('/admin/tags', 'Тег успешно добавлен.', 'success');
+            MessageBag::flashMessage('success', 'Тег успешно добавлен.');
         } catch (AdminValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage('/admin/tags/create', $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.createTag');
             MessageBag::flashMessage('error', 'Произошла ошибка при создании тега.');
-            return $this->redirectWithMessage('/admin/tags/create', 'Произошла ошибка при создании тега.', 'error');
         }
+        return $this->redirect('/admin/tags');
     }
 
     public function showTagEditForm(string $id): Response
@@ -213,7 +210,7 @@ class AdminController extends BaseController
         $tag = $this->service(AdminTagService::class)->getTagById((int)$id);
 
         if (!$tag) {
-            return $this->redirectBack('/admin/tags');
+            return $this->redirect('/admin/tags');
         }
 
         return $this->render('tag_edit', [
@@ -235,42 +232,36 @@ class AdminController extends BaseController
                 'category_id' => $this->request->getParams('category_id'),
                 'hotness_mod' => $this->request->getParams('hotness_mod'),
             ]);
-
-            return $this->redirectWithMessage('/admin/tags', 'Параметры тега сохранены.', 'success');
+            MessageBag::flashMessage('success', 'Параметры тега сохранены.');
         } catch (AdminValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage("/admin/tags/{$tagId}/edit", $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.updateTag');
             MessageBag::flashMessage('error', 'Произошла ошибка при обновлении.');
-            return $this->redirectWithMessage("/admin/tags/{$tagId}/edit", 'Произошла ошибка при обновлении.', 'error');
         }
+        return $this->redirect('/admin/tags');
     }
 
     public function deleteTag(string $id): RedirectResponse
     {
         $tagId = (int)$id;
-        $success = $this->service(AdminTagService::class)->softDeleteTag($tagId);
-
-        if ($success) {
-            return $this->redirectWithMessage('/admin/tags', 'Тег успешно удален (перемещен в архив).', 'success');
+        if ($this->service(AdminTagService::class)->softDeleteTag($tagId)) {
+            MessageBag::flashMessage('success', 'Тег успешно удален (перемещен в архив).');
+        } else {
+            MessageBag::flashMessage('error', 'Не удалось удалить тег.');
         }
-
-        MessageBag::flashMessage('error', 'Не удалось удалить тег.');
-        return $this->redirectWithMessage('/admin/tags', 'Не удалось удалить тег.', 'error');
+        return $this->redirect('/admin/tags');
     }
 
     public function restoreTag(string $id): RedirectResponse
     {
         $tagId = (int)$id;
-        $success = $this->service(AdminTagService::class)->restoreTag($tagId);
-
-        if ($success) {
-            return $this->redirectWithMessage('/admin/tags', 'Тег успешно восстановлен.', 'success');
+        if ($this->service(AdminTagService::class)->restoreTag($tagId)) {
+            MessageBag::flashMessage('success', 'Тег успешно восстановлен.');
+        } else {
+            MessageBag::flashMessage('error', 'Не удалось восстановить тег.');
         }
-
-        MessageBag::flashMessage('error', 'Не удалось восстановить тег.');
-        return $this->redirectWithMessage('/admin/tags', 'Не удалось восстановить тег.', 'error');
+        return $this->redirect('/admin/tags');
     }
 
     // =========================================================================
@@ -302,16 +293,14 @@ class AdminController extends BaseController
                 'description' => $this->request->getParams('description'),
                 'sort_order' => $this->request->getParams('sort_order'),
             ]);
-
-            return $this->redirectWithMessage('/admin/categories', 'Категория успешно создана.', 'success');
+            MessageBag::flashMessage('success', 'Категория успешно создана.');
         } catch (AdminValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage('/admin/categories/create', $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.createCategory');
             MessageBag::flashMessage('error', 'Произошла ошибка.');
-            return $this->redirectWithMessage('/admin/categories/create', 'Произошла ошибка.', 'error');
         }
+        return $this->redirect('/admin/categories');
     }
 
     public function showCategoryEditForm(string $id): Response
@@ -320,7 +309,7 @@ class AdminController extends BaseController
 
         if (!$category) {
             MessageBag::flashMessage('error', 'Категория не найдена.');
-            return $this->redirectBack('/admin/categories');
+            return $this->redirect('/admin/categories');
         }
 
         return $this->render('category_edit', [
@@ -340,31 +329,28 @@ class AdminController extends BaseController
                 'description' => $this->request->getParams('description'),
                 'sort_order' => $this->request->getParams('sort_order'),
             ]);
-
-            return $this->redirectWithMessage('/admin/categories', 'Категория успешно обновлена.', 'success');
+            MessageBag::flashMessage('success', 'Категория успешно обновлена.');
         } catch (AdminValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage("/admin/categories/{$categoryId}/edit", $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.updateCategory');
             MessageBag::flashMessage('error', 'Произошла ошибка.');
-            return $this->redirectWithMessage("/admin/categories/{$categoryId}/edit", 'Произошла ошибка.', 'error');
         }
+        return $this->redirect('/admin/categories');
     }
 
     public function deleteCategory(string $id): RedirectResponse
     {
         try {
             $this->service(AdminCategoryService::class)->deleteCategory((int)$id);
-            return $this->redirectWithMessage('/admin/categories', 'Категория успешно удалена.', 'success');
+            MessageBag::flashMessage('success', 'Категория успешно удалена.');
         } catch (AdminValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectWithMessage('/admin/categories', $e->getMessage(), 'error');
         } catch (\Throwable $e) {
             $this->logError($e, 'Admin.deleteCategory');
             MessageBag::flashMessage('error', 'Произошла ошибка при удалении.');
-            return $this->redirectWithMessage('/admin/categories', 'Произошла ошибка при удалении.', 'error');
         }
+        return $this->redirect('/admin/categories');
     }
 
     // =========================================================================
@@ -401,23 +387,22 @@ class AdminController extends BaseController
 
         if (!$page) {
             MessageBag::flashMessage('error', 'Wiki страница не найдена');
-            return $this->redirectBack('/admin/wiki');
+            return $this->redirect('/admin/wiki');
         }
 
         if ($wikiPage->softDelete((int)$id)) {
             $userContext = $this->getUserContext();
-
             $this->audit()->log('admin.wiki.deleted', 'Wiki страница удалена администратором', 'wiki', [
                 'page_id' => (int)$id,
                 'title' => $page['title'],
                 'admin_id' => $userContext['id'],
             ]);
-
-            return $this->redirectWithMessage('/admin/wiki', "Wiki страница «{$page['title']}» удалена", 'success');
+            MessageBag::flashMessage('success', "Wiki страница «{$page['title']}» удалена");
+        } else {
+            MessageBag::flashMessage('error', 'Ошибка при удалении wiki страницы');
         }
-
-        MessageBag::flashMessage('error', 'Ошибка при удалении wiki страницы');
-        return $this->redirectWithMessage('/admin/wiki', 'Ошибка при удалении wiki страницы', 'error');
+        
+        return $this->redirect('/admin/wiki');
     }
 
     public function restoreWikiPage(string $id): RedirectResponse
@@ -427,23 +412,22 @@ class AdminController extends BaseController
 
         if (!$page) {
             MessageBag::flashMessage('error', 'Wiki страница не найдена');
-            return $this->redirectBack('/admin/wiki');
+            return $this->redirect('/admin/wiki');
         }
 
         if ($wikiPage->restore((int)$id)) {
             $userContext = $this->getUserContext();
-
             $this->audit()->log('admin.wiki.restored', 'Wiki страница восстановлена администратором', 'wiki', [
                 'page_id' => (int)$id,
                 'title' => $page['title'],
                 'admin_id' => $userContext['id'],
             ]);
-
-            return $this->redirectWithMessage('/admin/wiki', "Wiki страница «{$page['title']}» восстановлена", 'success');
+            MessageBag::flashMessage('success', "Wiki страница «{$page['title']}» восстановлена");
+        } else {
+            MessageBag::flashMessage('error', 'Ошибка при восстановлении wiki страницы');
         }
 
-        MessageBag::flashMessage('error', 'Ошибка при восстановлении wiki страницы');
-        return $this->redirectWithMessage('/admin/wiki', 'Ошибка при восстановлении wiki страницы', 'error');
+        return $this->redirect('/admin/wiki');
     }
 
     // =========================================================================
@@ -526,15 +510,16 @@ class AdminController extends BaseController
 
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
             MessageBag::flashMessage('error', 'Указан некорректный IP-адрес.');
-            return $this->redirectWithMessage('/admin/firewall', 'Указан некорректный IP-адрес.', 'error');
+            return $this->redirect('/admin/firewall');
         }
 
         if ($this->service(AdminFirewallService::class)->banIp($ip, $reason)) {
-            return $this->redirectWithMessage('/admin/firewall', "IP-адрес {$ip} успешно внесен в черный список.", 'success');
+            MessageBag::flashMessage('success', "IP-адрес {$ip} успешно внесен в черный список.");
+        } else {
+            MessageBag::flashMessage('error', 'Этот IP-адрес уже заблокирован.');
         }
-
-        MessageBag::flashMessage('error', 'Этот IP-адрес уже заблокирован.');
-        return $this->redirectWithMessage('/admin/firewall', 'Этот IP-адрес уже заблокирован.', 'error');
+        
+        return $this->redirect('/admin/firewall');
     }
 
     public function unbanIp(string $id): RedirectResponse
@@ -542,10 +527,9 @@ class AdminController extends BaseController
         $ip = $this->service(AdminFirewallService::class)->unbanIp((int)$id);
 
         if ($ip) {
-            return $this->redirectWithMessage('/admin/firewall', "IP-адрес {$ip} успешно разблокирован.", 'success');
+            MessageBag::flashMessage('success', "IP-адрес {$ip} успешно разблокирован.");
         }
-
-        return $this->redirectBack('/admin/firewall');
+        return $this->redirect('/admin/firewall');
     }
 
     // =========================================================================
@@ -562,38 +546,42 @@ class AdminController extends BaseController
     public function compileAssets(): RedirectResponse
     {
         $this->service(AdminToolsService::class)->compileAssets();
-        return $this->redirectWithMessage('/admin/tools', 'Все CSS файлы модулей успешно найдены, объединены и сжаты силами PHP!', 'success');
+        MessageBag::flashMessage('success', 'Все CSS файлы модулей успешно найдены, объединены и сжаты силами PHP!');
+        return $this->redirect('/admin/tools');
     }
 
     public function clearFileLogs(): RedirectResponse
     {
         $count = $this->service(AdminToolsService::class)->clearFileLogs();
-        return $this->redirectWithMessage('/admin/tools', "Текстовые логи успешно очищены (обнулено файлов: {$count}).", 'success');
+        MessageBag::flashMessage('success', "Текстовые логи успешно очищены (обнулено файлов: {$count}).");
+        return $this->redirect('/admin/tools');
     }
 
     public function clearDbAudit(): RedirectResponse
     {
         if ($this->service(AdminAuditService::class)->clearAuditLogs()) {
             $this->audit()->log('admin.tools_clear_db', 'Администратор выполнил полную очистку (TRUNCATE) таблицы аудита в базе данных', 'admin');
-            return $this->redirectWithMessage('/admin/tools', 'Таблица логов аудита в базе данных успешно и полностью очищена.', 'success');
+            MessageBag::flashMessage('success', 'Таблица логов аудита в базе данных успешно и полностью очищена.');
+        } else {
+            MessageBag::flashMessage('error', 'Не удалось очистить таблицу в БД.');
         }
-
-        MessageBag::flashMessage('error', 'Не удалось очистить таблицу в БД.');
-        return $this->redirectWithMessage('/admin/tools', 'Не удалось очистить таблицу в БД.', 'error');
+        return $this->redirect('/admin/tools');
     }
 
     public function cacheRoutes(): RedirectResponse
     {
         $router = $this->router();
         $this->service(AdminToolsService::class)->cacheRoutes($router);
-        return $this->redirectWithMessage('/admin/tools', 'Маршруты всех модулей успешно оптимизированы и сохранены в кэш-файл.', 'success');
+        MessageBag::flashMessage('success', 'Маршруты всех модулей успешно оптимизированы и сохранены в кэш-файл.');
+        return $this->redirect('/admin/tools');
     }
 
     public function clearCacheRoutes(): RedirectResponse
     {
         $router = $this->router();
         $this->service(AdminToolsService::class)->clearCacheRoutes($router);
-        return $this->redirectWithMessage('/admin/tools', 'Кэш маршрутов успешно сброшен.', 'success');
+        MessageBag::flashMessage('success', 'Кэш маршрутов успешно сброшен.');
+        return $this->redirect('/admin/tools');
     }
 
     public function sendTestEmail(): RedirectResponse
@@ -602,17 +590,17 @@ class AdminController extends BaseController
 
         if (!$email) {
             MessageBag::flashMessage('error', 'Не удалось определить email администратора.');
-            return $this->redirectWithMessage('/admin/tools', 'Не удалось определить email администратора.', 'error');
+            return $this->redirect('/admin/tools');
         }
 
         $error = $this->service(AdminToolsService::class)->sendTestEmail($email);
 
         if ($error === null) {
-            return $this->redirectWithMessage('/admin/tools', 'Тестовое письмо отправлено успешно на ' . e($email), 'success');
+            MessageBag::flashMessage('success', 'Тестовое письмо отправлено успешно на ' . e($email));
+        } else {
+            MessageBag::flashMessage('error', $error);
         }
-
-        MessageBag::flashMessage('error', $error);
-        return $this->redirectWithMessage('/admin/tools', $error, 'error');
+        return $this->redirect('/admin/tools');
     }
 
     public function recalculateConfidenceScore(): JsonResponse
@@ -662,20 +650,20 @@ class AdminController extends BaseController
     public function approveInvitation(int $id): RedirectResponse
     {
         if ($this->service(AdminInvitationService::class)->approveRequest($id)) {
-            return $this->redirectWithMessage('/admin/invitations?status=pending', 'Запрос одобрен.', 'success');
+            MessageBag::flashMessage('success', 'Запрос одобрен.');
+        } else {
+            MessageBag::flashMessage('error', 'Не удалось одобрить запрос.');
         }
-
-        MessageBag::flashMessage('error', 'Не удалось одобрить запрос.');
-        return $this->redirectWithMessage('/admin/invitations?status=pending', 'Не удалось одобрить запрос.', 'error');
+        return $this->redirect('/admin/invitations?status=pending');
     }
 
     public function rejectInvitation(int $id): RedirectResponse
     {
         if ($this->service(AdminInvitationService::class)->rejectRequest($id)) {
-            return $this->redirectWithMessage('/admin/invitations?status=pending', 'Запрос отклонён.', 'success');
+            MessageBag::flashMessage('success', 'Запрос отклонён.');
+        } else {
+            MessageBag::flashMessage('error', 'Не удалось отклонить запрос.');
         }
-
-        MessageBag::flashMessage('error', 'Не удалось отклонить запрос.');
-        return $this->redirectWithMessage('/admin/invitations?status=pending', 'Не удалось отклонить запрос.', 'error');
+        return $this->redirect('/admin/invitations?status=pending');
     }
 }

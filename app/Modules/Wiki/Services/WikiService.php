@@ -183,7 +183,7 @@ class WikiService
             throw new \InvalidArgumentException('Wiki страница не найдена');
         }
 
-        $this->wikiPage->delete($pageId);
+        $this->wikiPage->softDelete($pageId);
 
         $this->audit->log('wiki.deleted', 'Пользователь удалил wiki страницу', 'wiki', [
             'page_id' => $pageId,

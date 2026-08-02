@@ -180,7 +180,7 @@ class StoryService
             throw new \InvalidArgumentException("Публикация не найдена.");
         }
 
-        $this->storyModel->delete($storyId);
+        $this->storyModel->softDelete($storyId);
         $this->eventDispatcher->dispatch(new StoryDeleted($storyId, $adminId, $reason));
         
         return true;

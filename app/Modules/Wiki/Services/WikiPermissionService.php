@@ -163,7 +163,7 @@ class WikiPermissionService
             throw new \InvalidArgumentException('Права не найдены');
         }
 
-        $result = $this->wikiPermission->delete((int)$permission['id']);
+        $result = $this->wikiPermission->softDelete((int)$permission['id']);
 
         $this->audit->log('wiki.permission_revoked', "Отозваны права на wiki для тега ID: {$tagId}", 'wiki', [
             'tag_id' => $tagId,

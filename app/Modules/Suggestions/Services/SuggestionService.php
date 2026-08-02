@@ -256,7 +256,7 @@ class SuggestionService
             throw new Exception("Предложение не найдено");
         }
 
-        $this->suggestionModel->delete($suggestionId);
+        $this->suggestionModel->softDelete($suggestionId);
 
         $this->logModeratorAction($moderatorId, 'rejected_suggestion', $suggestion, $reason);
 

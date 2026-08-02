@@ -120,7 +120,6 @@ class StoriesController extends BaseController
         try {
             $storyId = $this->service(StoryService::class)->createStory($data, $userContext['id']);
         } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
-            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
             MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirectBack();
         } catch (\Throwable $e) {
@@ -147,7 +146,6 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
 
         if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
-            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
             MessageBag::flashMessage('error', 'У вас нет прав для изменения этой публикации.');
             return $this->redirectBack('/');
         }
@@ -174,7 +172,6 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
 
         if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
-            // 🔥 ИСПРАВЛЕНО: Используем MessageBag
             MessageBag::flashMessage('error', 'У вас нет прав для изменения этой публикации.');
             return $this->redirectBack();
         }

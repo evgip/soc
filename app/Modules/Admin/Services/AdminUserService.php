@@ -52,7 +52,7 @@ class AdminUserService
             throw new AdminUserException('Вы не можете отправить в архив собственный аккаунт!');
         }
 
-        $this->userModel->delete($userId);
+        $this->userModel->softDelete($userId);
         return true;
     }
 
