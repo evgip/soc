@@ -51,6 +51,9 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
     // --- Подписки и прочтение ---
     $router->add('POST', '/story/{id}/follow', StoriesController::class . '@toggleFollow', 'story.toggle.follow');
     $router->add('POST', '/story/{id}/mark-read', StoriesController::class . '@markRead', 'story.markRead');
+
+   $router->add('GET', '/subscribed', StoriesController::class . '@subscribed', 'stories.subscribed');
+ 
 });
 
 // =========================================================================

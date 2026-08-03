@@ -45,6 +45,10 @@ class AppServiceProvider
          //   new \App\Modules\Users\Services\UniqueChecker($c->get(Database::class))
         //);
 
+        $container->singleton(ErrorHandlerInterface::class, function (Container $c) {
+            return new ErrorHandler($c);
+        });
+
         $container->singleton(ErrorHandlerInterface::class, fn($c) => 
             new \App\Modules\Errors\Services\ErrorHandler($c)
         );

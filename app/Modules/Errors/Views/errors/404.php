@@ -1,17 +1,19 @@
-<h1>404 — Страница не найдена</h1>
+<div class="alert is-notice">
+    <h2>🔍 Страница не найдена (404)</h2>
+    
+    <p class="hint mb1">
+        Страница, которую вы пытаетесь открыть, отсутствует по указанному URL-адресу 
+        или была удалена.
+    </p>
 
-<p>
-	<strong>💡 Что произошло?</strong>
-</p>
+    <?php if (!empty($message)): ?>  
+        <p class="mb1">
+            <span class="red bold">Детали:</span> <?= $message; ?>
+        </p>
+    <?php endif; ?>
 
-<?php if (!empty($message)): ?>  
-	<p>
-		<?= $message; ?>
-	</p>
-<?php endif; ?>
-
-<p>
-	Страница, которую вы пытается открыть, отсутствует по указанному URL-адресу или недоступна для отображения.
-</p>
-
-<a href="/" class="csrf-error__btn">🏠 Вернуться на главную</a>
+    <div class="flex gap">
+        <a href="/" class="tag-checkbox">🏠 Вернуться на главную</a>
+        <a href="/tags" class="tag-checkbox">🏷️ Популярные теги</a>
+    </div>
+</div>

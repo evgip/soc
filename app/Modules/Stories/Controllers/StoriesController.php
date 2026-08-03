@@ -419,4 +419,77 @@ class StoriesController extends BaseController
             'title' => $feed->pageTitle,
         ]);
     }
+
+    // =========================================================================
+    // ЛЕНТА ПОДПИСОК
+    // =========================================================================
+    public function subscribed(): ViewResponse
+    {
+        $userContext = $this->getUserContext();
+
+        if (!$userContext['isLoggedIn']) {
+            return $this->redirect('/');
+        }
+
+        $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+        $followedUserIds = $subscriptionService->getFollowedUserIds($userContext['id']);
+        $followedTagIds = $subscriptionService->getFollowedTagIds($userContext['id']);
+
+        // 1. Проверяем, есть ли вообще подписки
+        $isEmptyState = empty($followedUserIds) && empty($followedTagIds);
+
+        if ($isEmptyState) {
+            // Если подписок нет, сразу готовим пустые данные, не нагружая БД
+            $stories = [];
+            $currentPage = 1;
+            $totalPages = 0;
+            $newCommentsMap = [];
+        } else {
+            // 2. Если подписки есть, делаем запросы как раньше
+            $page = max(1, (int)$this->request->getParams('page', 1));
+            $limit = 20;
+            $offset = ($page - 1) * $limit;
+            $sort = $this->request->getParams('sort', 'new');
+
+            $storyModel = $this->container->get(Story::class);
+            $stories = $storyModel->getSubscribedFeed(
+                $userContext['id'], $followedUserIds, $followedTagIds, $limit, $offset, $sort
+            );
+            
+            $totalCount = $storyModel->getSubscribedTotalCount(
+                $userContext['id'], $followedUserIds, $followedTagIds
+            );
+            $totalPages = (int)ceil($totalCount / $limit);
+
+            $storyIds = array_column($stories, 'id');
+            $muteService = $this->service(\App\Modules\Muted\Services\MuteService::class);
+            $mutedUserIds = $muteService->getMutedUserIds($userContext['id']);
+            
+            $readRibbon = $this->container->get(\App\Modules\Stories\Models\ReadRibbon::class);
+            $newCommentsMap = $readRibbon->getNewCommentsCounts($userContext['id'], $storyIds, $mutedUserIds);
+        }
+
+        // 3. Передаем флаг isEmptyState в шаблон
+        return $this->render('index', [
+            'stories' => $stories,
+            'currentPage' => $currentPage ?? 1,
+            'totalPages' => $totalPages ?? 0,
+            'newCommentsMap' => $newCommentsMap,
+            'bannedDomainsCache' => [],
+            'sort' => $sort ?? 'new',
+            'domain' => '',
+            'author' => '',
+            'currentUserId' => $userContext['id'],
+            'isAdmin' => $userContext['isAdmin'],
+            'canUserDownvote' => $this->canUserDownvote($userContext['id']),
+            'currentVotes' => [],
+            'rssFeed' => '',
+            'title' => 'Мои подписки',
+            'tagInfo' => [],
+            'wikiPages' => false,
+            'primaryWikiPage' => false,
+            'wikiPagesCount' => false,
+            'isEmptyState' => $isEmptyState, // <-- НОВАЯ ПЕРЕМЕННАЯ
+        ]);
+    }
 }

@@ -114,6 +114,14 @@
 
 							<a href="<?= route('saved.index') ?>" class="dropdown-menu-item">🔖 <?= __('bookmarks') ?></a>
 
+
+							<a href="/subscribed" class="dropdown-menu-item">
+								<span>📡 Подписки</span>
+								<?php if (($newSubscribedCount ?? 0) > 0): ?>
+									<span class="nav-badge-counter"><?= (int)$newSubscribedCount ?></span>
+								<?php endif; ?>
+							</a>
+
 							<a href="/muted" class="dropdown-menu-item">🔇 <?= __('muted') ?></a>
 
 							<?php if (!empty($currentUser['isAdmin'])): ?>

@@ -3,7 +3,11 @@ $currentUserId = $currentUserId ?? 0;
 $isAdmin = $isAdmin ?? false;
 $canUserDownvote = $canUserDownvote ?? false;
 $voteModel = $voteModel ?? null;
+
+// Проверяем, это специальная страница подписок и там пусто?
+$isSubscribedEmpty = ($title === 'Мои подписки' && !empty($isEmptyState));
 ?>
+
 
 <?php
 $currentSort = $sort ?? 'hot';
@@ -51,7 +55,23 @@ $sortLinks = [
 </div>
 <?php endif; ?>
 
-<?php if (!empty($stories)): ?>
+
+
+<?php if ($isSubscribedEmpty): ?>
+    <!-- КРАСИВОЕ ПУСТОЕ СОСТОЯНИЕ (EMPTY STATE) -->
+    <div class="alert is-notice">
+        <h2>📭 У вас пока нет подписок</h2>
+        <p class="hint mb1">
+            Здесь будут появляться новые истории от авторов и по темам, на которые вы подпишетесь.<br>
+            Это лучший способ собрать персональную ленту без информационного шума.
+        </p>
+        <div class="flex gap">
+            <a href="/tags" class="tag-checkbox">🏷️ Посмотреть популярные теги</a>
+            <a href="/" class="tag-checkbox">🏠 Вернуться на главную</a>
+        </div>
+    </div>
+
+<?php elseif (!empty($stories)): ?>
     <ol class="stories">
         <?php foreach ($stories as $story): ?>
             <?php

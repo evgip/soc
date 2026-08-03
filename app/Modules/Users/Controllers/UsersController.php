@@ -69,6 +69,9 @@ class UsersController extends BaseController
         if ($userContext['isLoggedIn'] && (int)$user['id'] !== $userContext['id']) {
             $muteService = $this->service(\App\Modules\Muted\Services\MuteService::class);
             $isMuted = $muteService->isMuted($userContext['id'], (int)$user['id']);
+
+            $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+            $isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$user['id']);
         }
 
         return $this->render('profile', [
@@ -78,6 +81,7 @@ class UsersController extends BaseController
             'commentsCount' => $stats['comments_count'] ?? 0,
             'userKarma' => $userKarma ?? 0,
             'isMuted' => $isMuted,
+			'isFollowing' => $isFollowing,
         ]);
     }
 

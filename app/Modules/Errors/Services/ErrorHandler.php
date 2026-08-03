@@ -7,20 +7,17 @@ namespace App\Modules\Errors\Services;
 use W3a\Core\Contracts\ErrorHandlerInterface;
 use W3a\Core\Foundation\Container;
 
-/**
- * Реализация обработчика ошибок для основного приложения.
- * Связывает интерфейс ядра с существующим ErrorsController.
- */
 class ErrorHandler implements ErrorHandlerInterface
 {
     public function __construct(
         private readonly Container $container
-    ) {
-    }
+    ) {}
 
     public function render(int $code, string $message, array $context = []): void
     {
-        $controllerClass = "App\\Modules\\Errors\\Controllers\\ErrorsController";
+        http_response_code($code); // Гарантируем код ответа
+        
+        $controllerClass = \App\Modules\Errors\Controllers\ErrorsController::class;
         
         if (!class_exists($controllerClass)) {
             echo "<h1>Error $code</h1><p>" . htmlspecialchars($message) . "</p>";
@@ -30,25 +27,25 @@ class ErrorHandler implements ErrorHandlerInterface
         try {
             $controller = $this->container->make($controllerClass);
             
-            // Маппинг кодов на методы контроллера (адаптируйте под ваши реальные методы)
-            $method = match ($code) {
-                400 => 'badRequest',
-                403 => 'forbidden',
-                404 => 'notFound',
-                419 => 'csrf',
-                default => 'show',
+            $response = match ($code) {
+                400 => $controller->badRequest($message),
+                403 => $controller->forbidden($message),
+                404 => $controller->notFound($message),
+                419 => $controller->csrf($message),
+                429 => $controller->tooManyRequests($message),
+                default => $controller->show($code, $message),
             };
 
-            if ($method === 'show') {
-                $controller->show($code, $message);
-            } elseif (method_exists($controller, $method)) {
-                $controller->$method($message);
+            // Явно отправляем ответ, так как мы находимся вне стандартного цикла роутера
+            if (method_exists($response, 'send')) {
+                $response->send();
             } else {
-                $controller->show($code, $message); // Fallback внутри контроллера
+                echo $response;
             }
         } catch (\Throwable $controllerError) {
-            // Если контроллер упал, показываем минималистичную ошибку
-            echo "<h1>Critical Error</h1><p>Failed to render error page.</p>";
+            // Аварийный fallback, если даже модуль ошибок упал (например, не найден шаблон)
+            echo "<h1>Ошибка {$code}</h1><p>" . htmlspecialchars($message) . "</p>";
+            // Опционально: можно залогировать $controllerError
         }
     }
 }

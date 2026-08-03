@@ -305,4 +305,77 @@ class Story extends Model
             WHERE id = ?
         ", [$count, $storyId]);
     }
+
+    /**
+     * Получить ленту подписок пользователя
+     */
+    public function getSubscribedFeed(
+        int $userId, array $followedUserIds, array $followedTagIds,
+        int $limit, int $offset, string $sort = 'new', array $mutedUserIds = []
+    ): array {
+        $repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
+        
+        $repo->fromSubscribed($userId, $followedUserIds, $followedTagIds)
+             ->withAuthor()
+             ->withAvatar()
+             ->withTags()
+             ->addWhere('s.deleted_at IS NULL');
+
+        // На всякий случай исключаем замьюченных, если они вдруг оказались в подписках
+        if (!empty($mutedUserIds)) {
+            $inData = $this->db->buildInClause($mutedUserIds, 'muted_user');
+            $repo->addWhere("s.user_id NOT IN ({$inData['clause']})", $inData['bindings']);
+        }
+
+        // Для подписок логичнее сортировка по дате (new), но оставим выбор
+        $orderBy = match ($sort) {
+            'top' => 's.score DESC, s.created_at DESC',
+            'hot' => 's.hotness DESC',
+            default => 's.created_at DESC',
+        };
+
+        return $repo->setOrderBy($orderBy)
+                    ->paginate($limit, $offset)
+                    ->get();
+    }
+
+    /**
+     * Получить общее количество историй в ленте подписок (для пагинации)
+     */
+    public function getSubscribedTotalCount(
+        int $userId, array $followedUserIds, array $followedTagIds, array $mutedUserIds = []
+    ): int {
+        $repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
+        
+        $repo->fromSubscribed($userId, $followedUserIds, $followedTagIds)
+             ->withAuthor()
+             ->addWhere('s.deleted_at IS NULL');
+
+        if (!empty($mutedUserIds)) {
+            $inData = $this->db->buildInClause($mutedUserIds, 'muted_user');
+            $repo->addWhere("s.user_id NOT IN ({$inData['clause']})", $inData['bindings']);
+        }
+
+        return $repo->count();
+    }
+
+	/**
+	 * Подсчёт новых историй в подписках за последние 24 часа
+	 */
+	public function countNewSubscribed(int $userId, array $followedUserIds, array $followedTagIds): int
+	{
+		if (empty($followedUserIds) && empty($followedTagIds)) {
+			return 0;
+		}
+
+		$repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
+		
+		$repo->fromSubscribed($userId, $followedUserIds, $followedTagIds)
+			 ->addWhere('s.deleted_at IS NULL')
+			 ->addWhere('s.created_at >= :since', [
+				 'since' => date('Y-m-d H:i:s', strtotime('-24 hours'))
+			 ]);
+		
+		return $repo->count();
+	}
 }

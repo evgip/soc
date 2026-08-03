@@ -27,10 +27,10 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
             # <?= e($profileUser['username']) ?>
         </h2>
         
-        <span class="profile-status">Активный пользователь</span>
+        <span class="profile-status mb1">Активный пользователь</span>
 
 		<?php if (!$isOwnProfile && $currentUserId > 0): ?>
-			<div class="profile-actions">
+			<div class="flex gap">
 				<form action="<?= route('messages.start', ['userId' => $profileUser['id']]) ?>" method="POST" class="d-inline">
 					<?= csrf_field() ?>
 					<button type="submit">✉️ Написать сообщение</button>
@@ -41,6 +41,14 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
 					<button type="submit" class="btn btn-sm <?= $isMuted ? 'btn-warning' : 'btn-outline-secondary' ?>"
 							title="<?= $isMuted ? 'Читать' : 'Скрыть истории и комментарии этого пользователя' ?>">
 						<?= $isMuted ? '🔊 Читать' : '🔇 Игнорировать' ?>
+					</button>
+				</form>
+
+				<form action="/subscribe/user/<?= (int)$profileUser['id'] ?>" method="POST" class="d-inline">
+					<?= csrf_field() ?>
+					<button type="submit" class="btn btn-sm <?= $isFollowing ? 'btn-secondary' : 'btn-primary' ?>"
+							title="<?= $isFollowing ? 'Отписаться от новых историй этого пользователя' : 'Следить за новыми историями этого пользователя' ?>">
+						<?= $isFollowing ? '✓ Вы подписаны' : '➕ Подписаться' ?>
 					</button>
 				</form>
 			</div>

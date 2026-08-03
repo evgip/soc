@@ -392,4 +392,63 @@ class StoryRepository
             ]
         );
     }
+
+    /**
+     * Фильтрует ленту только по подпискам пользователя (авторы ИЛИ теги).
+     *
+     * @param int $userId ID пользователя
+     * @param array $followedUserIds Массив ID подписанных авторов
+     * @param array $followedTagIds Массив ID подписанных тегов
+     * @return self
+     */
+    public function fromSubscribed(int $userId, array $followedUserIds, array $followedTagIds): self
+    {
+        // Если подписок нет, возвращаем заведомо ложное условие, чтобы не грузить БД
+        if (empty($followedUserIds) && empty($followedTagIds)) {
+            $this->where[] = '1 = 0';
+            return $this;
+        }
+
+        $whereParts = [];
+        $bindings = [];
+
+        // 1. Условие по подписанным авторам
+        if (!empty($followedUserIds)) {
+            $userParams = [];
+            foreach ($followedUserIds as $i => $uid) {
+                $key = ":f_uid_$i";
+                $userParams[] = $key;
+                $bindings[$key] = $uid;
+            }
+            $whereParts[] = "s.user_id IN (" . implode(',', $userParams) . ")";
+        }
+
+        // 2. Условие по подписанным тегам
+        if (!empty($followedTagIds)) {
+            // Гарантируем наличие JOIN с taggings, если его еще нет
+            if (!isset($this->joinedTables['taggings'])) {
+                $this->joins[] = 'LEFT JOIN `taggings` tg ON s.id = tg.story_id';
+                $this->joinedTables['taggings'] = true;
+            }
+            
+            $tagParams = [];
+            foreach ($followedTagIds as $i => $tid) {
+                $key = ":f_tid_$i";
+                $tagParams[] = $key;
+                $bindings[$key] = $tid;
+            }
+            $whereParts[] = "tg.tag_id IN (" . implode(',', $tagParams) . ")";
+        }
+
+        // Объединяем условия через OR
+        $this->where[] = "(" . implode(" OR ", $whereParts) . ")";
+        $this->bindings = array_merge($this->bindings, $bindings);
+        
+        // GROUP BY обязателен, чтобы избежать дублирования строк, 
+        // если история одновременно и от подписанного автора, и содержит подписанный тег
+        $this->groupBy = 's.id';
+
+        return $this;
+    }
+
 }
