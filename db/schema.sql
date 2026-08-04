@@ -20,11 +20,13 @@ CREATE TABLE `audit_logs` (
 --
 
 INSERT INTO `audit_logs` (`id`, `user_id`, `username`, `role`, `ip_address`, `action`, `description`, `category`, `payload`, `created_at`) VALUES
-(4, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #libarea', 'general', NULL, '2026-06-18 14:47:20'),
-(5, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #php', 'general', NULL, '2026-06-18 14:47:29'),
-(6, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #security', 'general', NULL, '2026-06-18 14:47:39'),
-(7, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #show', 'general', NULL, '2026-06-18 14:47:51'),
-(8, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #video', 'general', NULL, '2026-06-18 14:47:59');
+(4, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #libarea', 'general', NULL, '2026-06-18 11:47:20'),
+(5, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #php', 'general', NULL, '2026-06-18 11:47:29'),
+(6, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #security', 'general', NULL, '2026-06-18 11:47:39'),
+(7, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #show', 'general', NULL, '2026-06-18 11:47:51'),
+(8, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #video', 'general', NULL, '2026-06-18 11:47:59'),
+(9, 1, 'Admin', 'admin', '127.0.0.1', 'auth.logout', 'Пользователь вышел из системы', 'auth', NULL, '2026-08-04 01:36:11'),
+(10, 1, 'Admin', 'admin', '127.0.0.1', 'auth.login_success', 'Пользователь вошел в систему', 'auth', NULL, '2026-08-04 01:36:19');
 
 -- --------------------------------------------------------
 
@@ -61,10 +63,10 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `slug`, `description`, `sort_order`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Языки программирования', 'languages', 'PHP, Python, JavaScript и другие', 10, '2026-06-15 22:10:39', '2026-06-15 22:10:39', NULL),
-(2, 'Практики', 'practices', 'Безопасность, архитектура, методологии', 20, '2026-06-15 22:10:39', '2026-06-15 22:10:39', NULL),
-(3, 'Формат', 'format', 'Видео, демонстрации проектов, подкасты', 30, '2026-06-15 22:10:39', '2026-06-15 22:10:39', NULL),
-(4, 'Разное', 'other', 'Общие темы и обсуждения', 99, '2026-06-15 22:10:39', '2026-06-15 22:10:39', NULL);
+(1, 'Языки программирования', 'languages', 'PHP, Python, JavaScript и другие', 10, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL),
+(2, 'Практики', 'practices', 'Безопасность, архитектура, методологии', 20, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL),
+(3, 'Формат', 'format', 'Видео, демонстрации проектов, подкасты', 30, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL),
+(4, 'Разное', 'other', 'Общие темы и обсуждения', 99, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL);
 
 -- --------------------------------------------------------
 
@@ -92,12 +94,12 @@ CREATE TABLE `comments` (
 --
 
 INSERT INTO `comments` (`id`, `story_id`, `user_id`, `parent_id`, `comment`, `score`, `flag_count`, `is_hidden_by_flags`, `created_at`, `updated_at`, `deleted_at`, `confidence_score`) VALUES
-(1, 1, 1, NULL, 'Отличная архитектура у фреймворка!', 1, 0, 0, '2026-06-07 10:20:16', '2026-06-21 05:48:02', NULL, 0.37844750),
-(2, 1, 1, 1, 'Согласен, один SQL-запрос на дерево — это быстро.', 1, 0, 0, '2026-06-07 10:20:16', '2026-06-21 05:48:02', NULL, 0.37844750),
-(3, 1, 1, 2, 'И рекурсия на анонимных функциях PHP выглядит лаконично.', 1, 0, 0, '2026-06-07 10:20:16', '2026-06-21 05:48:02', NULL, 0.37844750),
-(4, 1, 1, NULL, 'А когда мы добавим форму отправки нового комментария?', 1, 0, 0, '2026-06-07 10:20:16', '2026-06-21 05:48:02', NULL, 0.37844750),
-(5, 2, 1, NULL, 'Добавим первые комментарий 333', 1, 0, 0, '2026-06-07 10:51:00', '2026-06-21 05:48:02', NULL, 0.37844750),
-(6, 2, 1, 5, 'Добавим ответ Админу', 2, 0, 0, '2026-06-07 10:51:12', '2026-06-21 05:48:02', NULL, 0.54909237);
+(1, 1, 1, NULL, 'Отличная архитектура у фреймворка!', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
+(2, 1, 1, 1, 'Согласен, один SQL-запрос на дерево — это быстро.', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
+(3, 1, 1, 2, 'И рекурсия на анонимных функциях PHP выглядит лаконично.', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
+(4, 1, 1, NULL, 'А когда мы добавим форму отправки нового комментария?', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
+(5, 2, 1, NULL, 'Добавим первые комментарий 333', 1, 0, 0, '2026-06-07 07:51:00', '2026-06-21 02:48:02', NULL, 0.37844750),
+(6, 2, 1, 5, 'Добавим ответ Админу', 2, 0, 0, '2026-06-07 07:51:12', '2026-06-21 02:48:02', NULL, 0.54909237);
 
 -- --------------------------------------------------------
 
@@ -151,23 +153,6 @@ CREATE TABLE `conversations` (
 -- --------------------------------------------------------
 
 --
--- Структура таблицы `domains`
---
-
-CREATE TABLE `domains` (
-  `id` int UNSIGNED NOT NULL,
-  `domain` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` enum('banned','allowed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'banned',
-  `ban_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `banned_by` int UNSIGNED DEFAULT NULL COMMENT 'ID модератора/админа, забанившего домен',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
 -- Структура таблицы `email_activations`
 --
 
@@ -195,6 +180,32 @@ CREATE TABLE `flags` (
   `resolved_by` int UNSIGNED DEFAULT NULL,
   `resolved_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `followed_tags`
+--
+
+CREATE TABLE `followed_tags` (
+  `id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `tag_id` int UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `followed_users`
+--
+
+CREATE TABLE `followed_users` (
+  `id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `followed_user_id` int UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -314,13 +325,37 @@ CREATE TABLE `password_resets` (
 --
 
 CREATE TABLE `rate_limits` (
-  `identifier` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `identifier` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `endpoint_action` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `window_start` timestamp NOT NULL COMMENT 'Начало временного окна (например, округленное до минуты)',
-  `request_count` int UNSIGNED NOT NULL DEFAULT 1,
-  PRIMARY KEY (`identifier`, `endpoint_action`, `window_start`),
-  KEY `idx_cleanup` (`window_start`) -- Индекс только для редкой фоновой очистки
+  `request_count` int UNSIGNED NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Дамп данных таблицы `rate_limits`
+--
+
+INSERT INTO `rate_limits` (`id`, `identifier`, `endpoint_action`, `window_start`, `request_count`) VALUES
+(1, 'user:1', 'global.get', '2026-08-04 01:30:00', 7),
+(2, 'user:1', 'global.get', '2026-08-04 01:31:00', 7),
+(5, 'user:1', 'global.get', '2026-08-04 01:32:00', 6),
+(11, 'user:1', 'global.get', '2026-08-04 01:33:00', 8),
+(19, 'user:1', 'global.get', '2026-08-04 01:34:00', 6),
+(25, 'user:1', 'global.get', '2026-08-04 01:35:00', 16),
+(41, 'user:1', 'global.get', '2026-08-04 01:36:00', 16),
+(45, 'user:1', 'global.post', '2026-08-04 01:36:00', 1),
+(46, 'fingerprint:da54fac2d33f4d018311dc1fa2bf0158da10e818ad9655883292d8c5452a59b5', 'global.get', '2026-08-04 01:36:00', 4),
+(50, 'fingerprint:da54fac2d33f4d018311dc1fa2bf0158da10e818ad9655883292d8c5452a59b5', 'auth.submit', '2026-08-04 01:36:00', 1),
+(63, 'user:1', 'global.get', '2026-08-04 01:37:00', 6),
+(65, 'user:1', 'global.post', '2026-08-04 01:37:00', 1),
+(70, 'user:1', 'global.get', '2026-08-04 01:38:00', 13),
+(75, 'user:1', 'global.post', '2026-08-04 01:38:00', 1),
+(84, 'user:1', 'global.get', '2026-08-04 01:39:00', 10),
+(88, 'user:1', 'global.post', '2026-08-04 01:39:00', 1),
+(95, 'user:1', 'global.get', '2026-08-04 01:40:00', 1);
+
+-- --------------------------------------------------------
 
 --
 -- Структура таблицы `read_ribbons`
@@ -339,8 +374,8 @@ CREATE TABLE `read_ribbons` (
 --
 
 INSERT INTO `read_ribbons` (`id`, `user_id`, `story_id`, `last_read_comment_id`, `updated_at`) VALUES
-(1, 1, 2, 6, '2026-06-16 04:32:51'),
-(2, 1, 1, 4, '2026-06-18 14:48:40');
+(1, 1, 2, 6, '2026-06-16 01:32:51'),
+(2, 1, 1, 4, '2026-06-18 11:48:40');
 
 -- --------------------------------------------------------
 
@@ -382,9 +417,8 @@ CREATE TABLE `stories` (
   `id` int UNSIGNED NOT NULL,
   `user_id` int UNSIGNED NOT NULL,
   `title` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `domain` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `description_text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `description_json` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `score` int NOT NULL DEFAULT '1',
   `hotness` float NOT NULL DEFAULT '0',
   `flag_count` int UNSIGNED NOT NULL DEFAULT '0',
@@ -400,9 +434,9 @@ CREATE TABLE `stories` (
 -- Дамп данных таблицы `stories`
 --
 
-INSERT INTO `stories` (`id`, `user_id`, `title`, `url`, `domain`, `description`, `score`, `hotness`, `flag_count`, `is_hidden_by_flags`, `comments_count`, `created_at`, `updated_at`, `deleted_at`, `user_is_following`) VALUES
-(1, 1, 'Первый пост, написал статью про этот движок.', 'https://libarea.ru/articles/2222/reshil-napisat-lobsters-na-php', 'libarea.ru', 'Редирект будет на LibArea, а если нажать на домен, то сортировка публикаций тут по этому домену.', 15, 14376.8, 0, 0, 4, '2026-06-07 09:53:33', '2026-06-21 23:53:51', NULL, 1),
-(2, 1, 'Это второй пост для теста', NULL, NULL, 'Заполните, если это чисто текстовый пост, либо как дополнение к ссылке. 333', 2, 14375.9, 0, 0, 2, '2026-06-07 10:14:37', '2026-06-21 23:53:51', NULL, 0);
+INSERT INTO `stories` (`id`, `user_id`, `title`, `description_text`, `description_json`, `score`, `hotness`, `flag_count`, `is_hidden_by_flags`, `comments_count`, `created_at`, `updated_at`, `deleted_at`, `user_is_following`) VALUES
+(1, 1, 'Первая статья (будет заголовком)', 'Первая статья (будет заголовком)\n\nПросто тестовый пост с фото\n\nТекст продолжается.', '{\"time\":1785807517723,\"blocks\":[{\"id\":\"BOKfOZY_5W\",\"type\":\"header\",\"data\":{\"text\":\"Первая статья (будет заголовком)\",\"level\":2}},{\"id\":\"wif3npeMuz\",\"type\":\"paragraph\",\"data\":{\"text\":\"Просто тестовый пост с фото\"}},{\"id\":\"v0Njc-Vu3M\",\"type\":\"image\",\"data\":{\"file\":{\"url\":\"/uploads/stories/2026/08/a3791280731a4a60962c300d04cf61d0.jpg\"},\"caption\":\"подпись под картинкой\",\"withBorder\":false,\"stretched\":false,\"withBackground\":false}},{\"id\":\"Q73C0CMXBg\",\"type\":\"paragraph\",\"data\":{\"text\":\"Текст продолжается.\"}}],\"version\":\"2.30.7\"}', 15, 14367.8, 0, 0, 4, '2026-06-07 06:53:33', '2026-08-04 01:38:38', NULL, 1),
+(2, 1, 'Второй пост для тест', 'Второй пост для тест\n\nА это продолжение статьи.... короткий обзац.', '{\"time\":1785807575811,\"blocks\":[{\"id\":\"sdMJfQACVz\",\"type\":\"header\",\"data\":{\"text\":\"Второй пост для тест\",\"level\":2}},{\"id\":\"4D0ReSQ3EJ\",\"type\":\"paragraph\",\"data\":{\"text\":\"А это продолжение статьи.... короткий обзац.\"}}],\"version\":\"2.30.7\"}', 2, 14367, 0, 0, 2, '2026-06-07 07:14:37', '2026-08-04 01:39:35', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -421,9 +455,9 @@ CREATE TABLE `taggings` (
 --
 
 INSERT INTO `taggings` (`id`, `story_id`, `tag_id`) VALUES
-(5, 1, 3),
-(4, 2, 1),
-(3, 2, 4);
+(6, 1, 3),
+(7, 2, 1),
+(8, 2, 4);
 
 -- --------------------------------------------------------
 
@@ -448,11 +482,11 @@ CREATE TABLE `tags` (
 --
 
 INSERT INTO `tags` (`id`, `name`, `hotness_mod`, `slug`, `description`, `is_media`, `created_at`, `deleted_at`, `category_id`) VALUES
-(1, 'php', 0, 'php', 'Язык1 программирования PHP и фреймворки', 1, '2026-06-07 13:08:44', NULL, 1),
-(2, 'безопасность', 0, 'security', 'Уязвимости, безопасность и CSP политики', 1, '2026-06-07 13:08:44', NULL, 2),
-(3, 'личное', 0, 'show', 'Демонстрация личных проектов разработчиков', 1, '2026-06-07 13:08:44', NULL, 3),
-(4, 'видео', 0, 'video', 'Материал содержит видеоролик', 1, '2026-06-07 13:08:44', NULL, 3),
-(5, 'libarea', 0, 'libarea', 'Обсуждение сайта...', 1, '2026-06-07 13:46:26', NULL, 4);
+(1, 'php', 0, 'php', 'Язык1 программирования PHP и фреймворки', 1, '2026-06-07 10:08:44', NULL, 1),
+(2, 'безопасность', 0, 'security', 'Уязвимости, безопасность и CSP политики', 1, '2026-06-07 10:08:44', NULL, 2),
+(3, 'личное', 0, 'show', 'Демонстрация личных проектов разработчиков', 1, '2026-06-07 10:08:44', NULL, 3),
+(4, 'видео', 0, 'video', 'Материал содержит видеоролик', 1, '2026-06-07 10:08:44', NULL, 3),
+(5, 'libarea', 0, 'libarea', 'Обсуждение сайта...', 1, '2026-06-07 10:46:26', NULL, 4);
 
 -- --------------------------------------------------------
 
@@ -491,8 +525,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`, `updated_at`, `deleted_at`, `is_active`, `last_read_comments_at`) VALUES
-(1, 'Admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', '2026-06-07 02:28:55', '2026-06-15 22:15:11', NULL, 1, NULL),
-(2, 'test', 'test@test.ru', '$2y$10$xKEu8vvztJ/yoA2yaHHque9z4el8tdWKZDI4SY/AvX3HyyojdHFva', 'user', '2026-06-12 12:31:51', '2026-06-15 22:15:14', NULL, 1, NULL);
+(1, 'Admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', '2026-06-06 23:28:55', '2026-06-15 19:15:11', NULL, 1, NULL),
+(2, 'test', 'test@test.ru', '$2y$10$xKEu8vvztJ/yoA2yaHHque9z4el8tdWKZDI4SY/AvX3HyyojdHFva', 'user', '2026-06-12 09:31:51', '2026-06-15 19:15:14', NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -548,8 +582,8 @@ CREATE TABLE `user_profiles` (
 --
 
 INSERT INTO `user_profiles` (`user_id`, `bio`, `avatar`, `updated_at`) VALUES
-(1, 'О себе я расскажуыва ыва ыва 3', 'a6fa1e10b80411629030d4079a5d2253.jpg', '2026-06-15 22:15:11'),
-(2, 'sdfsdfsdf', NULL, '2026-06-15 22:15:14');
+(1, 'О себе я расскажуыва ыва ыва 3', 'a6fa1e10b80411629030d4079a5d2253.jpg', '2026-06-15 19:15:11'),
+(2, 'sdfsdfsdf', NULL, '2026-06-15 19:15:14');
 
 -- --------------------------------------------------------
 
@@ -572,8 +606,8 @@ CREATE TABLE `user_settings` (
 --
 
 INSERT INTO `user_settings` (`user_id`, `notify_on_reply`, `notify_on_story_comment`, `notify_on_mention`, `notify_on_message`, `email_notifications`, `updated_at`) VALUES
-(1, 1, 1, 1, 1, 1, '2026-06-15 22:15:11'),
-(2, 1, 1, 1, 1, 1, '2026-06-15 22:15:14');
+(1, 1, 1, 1, 1, 1, '2026-06-15 19:15:11'),
+(2, 1, 1, 1, 1, 1, '2026-06-15 19:15:14');
 
 -- --------------------------------------------------------
 
@@ -595,8 +629,8 @@ CREATE TABLE `votes` (
 --
 
 INSERT INTO `votes` (`id`, `user_id`, `votable_type`, `votable_id`, `vote_type`, `created_at`) VALUES
-(5, 1, 'comment', 6, 1, '2026-06-07 11:28:01'),
-(6, 1, 'story', 2, 1, '2026-06-07 11:28:05');
+(5, 1, 'comment', 6, 1, '2026-06-07 08:28:01'),
+(6, 1, 'story', 2, 1, '2026-06-07 08:28:05');
 
 -- --------------------------------------------------------
 
@@ -720,16 +754,6 @@ ALTER TABLE `conversations`
   ADD KEY `fk_conv_user_two` (`user_two`);
 
 --
--- Индексы таблицы `domains`
---
-ALTER TABLE `domains`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uk_domains_domain` (`domain`),
-  ADD KEY `idx_domains_status` (`status`),
-  ADD KEY `idx_domains_deleted_at` (`deleted_at`),
-  ADD KEY `fk_domains_banned_by` (`banned_by`);
-
---
 -- Индексы таблицы `email_activations`
 --
 ALTER TABLE `email_activations`
@@ -748,6 +772,22 @@ ALTER TABLE `flags`
   ADD KEY `fk_flags_user` (`user_id`),
   ADD KEY `fk_flags_resolved_by` (`resolved_by`),
   ADD KEY `idx_flags_deleted_at` (`deleted_at`);
+
+--
+-- Индексы таблицы `followed_tags`
+--
+ALTER TABLE `followed_tags`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_user_followed_tag` (`user_id`,`tag_id`),
+  ADD KEY `idx_followed_tag_id` (`tag_id`);
+
+--
+-- Индексы таблицы `followed_users`
+--
+ALTER TABLE `followed_users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_user_followed` (`user_id`,`followed_user_id`),
+  ADD KEY `idx_followed_user_id` (`followed_user_id`);
 
 --
 -- Индексы таблицы `invitations`
@@ -812,6 +852,14 @@ ALTER TABLE `password_resets`
   ADD KEY `idx_reset_email_token` (`email`,`token`);
 
 --
+-- Индексы таблицы `rate_limits`
+--
+ALTER TABLE `rate_limits`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_rate_limit` (`identifier`,`endpoint_action`,`window_start`),
+  ADD KEY `idx_cleanup` (`window_start`);
+
+--
 -- Индексы таблицы `read_ribbons`
 --
 ALTER TABLE `read_ribbons`
@@ -847,7 +895,7 @@ ALTER TABLE `stories`
   ADD KEY `idx_stories_created_at` (`created_at` DESC),
   ADD KEY `idx_stories_hotness` (`hotness`),
   ADD KEY `idx_stories_deleted_hotness` (`deleted_at`,`hotness`);
-ALTER TABLE `stories` ADD FULLTEXT KEY `idx_stories_search` (`title`,`description`);
+ALTER TABLE `stories` ADD FULLTEXT KEY `idx_stories_search` (`title`,`description_text`);
 
 --
 -- Индексы таблицы `taggings`
@@ -950,7 +998,7 @@ ALTER TABLE `wiki_revisions`
 -- AUTO_INCREMENT для таблицы `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT для таблицы `banned_ips`
@@ -989,12 +1037,6 @@ ALTER TABLE `conversations`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT для таблицы `domains`
---
-ALTER TABLE `domains`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT для таблицы `email_activations`
 --
 ALTER TABLE `email_activations`
@@ -1004,6 +1046,18 @@ ALTER TABLE `email_activations`
 -- AUTO_INCREMENT для таблицы `flags`
 --
 ALTER TABLE `flags`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `followed_tags`
+--
+ALTER TABLE `followed_tags`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `followed_users`
+--
+ALTER TABLE `followed_users`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -1049,6 +1103,12 @@ ALTER TABLE `password_resets`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT для таблицы `rate_limits`
+--
+ALTER TABLE `rate_limits`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+
+--
 -- AUTO_INCREMENT для таблицы `read_ribbons`
 --
 ALTER TABLE `read_ribbons`
@@ -1076,7 +1136,7 @@ ALTER TABLE `stories`
 -- AUTO_INCREMENT для таблицы `taggings`
 --
 ALTER TABLE `taggings`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT для таблицы `tags`
@@ -1152,12 +1212,6 @@ ALTER TABLE `conversations`
   ADD CONSTRAINT `fk_conv_user_two` FOREIGN KEY (`user_two`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Ограничения внешнего ключа таблицы `domains`
---
-ALTER TABLE `domains`
-  ADD CONSTRAINT `fk_domains_banned_by` FOREIGN KEY (`banned_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
 -- Ограничения внешнего ключа таблицы `email_activations`
 --
 ALTER TABLE `email_activations`
@@ -1169,6 +1223,20 @@ ALTER TABLE `email_activations`
 ALTER TABLE `flags`
   ADD CONSTRAINT `fk_flags_resolved_by` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_flags_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `followed_tags`
+--
+ALTER TABLE `followed_tags`
+  ADD CONSTRAINT `fk_followed_tags_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_followed_tags_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `followed_users`
+--
+ALTER TABLE `followed_users`
+  ADD CONSTRAINT `fk_followed_target` FOREIGN KEY (`followed_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_followed_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `invitations`
@@ -1303,92 +1371,8 @@ DELIMITER $$
 --
 CREATE DEFINER=`root`@`%` EVENT `cleanup_audit_logs` ON SCHEDULE EVERY 1 DAY STARTS '2026-07-08 14:00:40' ON COMPLETION NOT PRESERVE ENABLE DO DELETE FROM audit_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL 90 DAY)$$
 
-CREATE EVENT `cleanup_rate_limits` 
-ON SCHEDULE EVERY 1 HOUR 
-ON COMPLETION NOT PRESERVE 
-ENABLE 
-DO 
-  -- Удаляем окна старше 24 часов (с запасом, чтобы не задеть текущие)
+CREATE DEFINER=`root`@`%` EVENT `cleanup_rate_limits` ON SCHEDULE EVERY 1 HOUR STARTS '2026-08-04 04:31:44' ON COMPLETION NOT PRESERVE ENABLE DO -- Удаляем окна старше 24 часов (с запасом, чтобы не задеть текущие)
   DELETE FROM `rate_limits` 
   WHERE `window_start` < NOW() - INTERVAL 24 HOUR$$
 
 DELIMITER ;
-
-
-ALTER TABLE `rate_limits` MODIFY `identifier` varchar(255) NOT NULL;
-ALTER TABLE `rate_limits` DROP PRIMARY KEY, ADD `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;
-ALTER TABLE `rate_limits` ADD UNIQUE KEY `unique_rate_limit` (`identifier`, `endpoint_action`, `window_start`);
-
-
-
---
--- Структура таблицы `followed_users`
---
-
-CREATE TABLE `followed_users` (
-  `id` int UNSIGNED NOT NULL,
-  `user_id` int UNSIGNED NOT NULL,
-  `followed_user_id` int UNSIGNED NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Структура таблицы `followed_tags`
---
-
-CREATE TABLE `followed_tags` (
-  `id` int UNSIGNED NOT NULL,
-  `user_id` int UNSIGNED NOT NULL,
-  `tag_id` int UNSIGNED NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Индексы таблицы `followed_users`
---
-ALTER TABLE `followed_users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uniq_user_followed` (`user_id`,`followed_user_id`),
-  ADD KEY `idx_followed_user_id` (`followed_user_id`);
-
---
--- Индексы таблицы `followed_tags`
---
-ALTER TABLE `followed_tags`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_user_followed_tag` (`user_id`,`tag_id`),
-  ADD KEY `idx_followed_tag_id` (`tag_id`);
-
--- --------------------------------------------------------
-
---
--- AUTO_INCREMENT для таблицы `followed_users`
---
-ALTER TABLE `followed_users`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT для таблицы `followed_tags`
---
-ALTER TABLE `followed_tags`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
--- --------------------------------------------------------
-
---
--- Ограничения внешнего ключа таблицы `followed_users`
---
-ALTER TABLE `followed_users`
-  ADD CONSTRAINT `fk_followed_target` FOREIGN KEY (`followed_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_followed_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Ограничения внешнего ключа таблицы `followed_tags`
---
-ALTER TABLE `followed_tags`
-  ADD CONSTRAINT `fk_followed_tags_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_followed_tags_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
