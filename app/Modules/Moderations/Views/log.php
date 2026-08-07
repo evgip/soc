@@ -36,7 +36,7 @@
                         <?php if (!empty($item['decoded_payload'])): ?>
                             <details>
                                 <summary class="text-primary">Показать</summary>
-                                <pre class="bg-light p-2 mt-2 rounded small"><?= e(json_encode($item['decoded_payload'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
+                                <pre><?= e(json_encode($item['decoded_payload'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
                             </details>
                         <?php else: ?>
                             <span class="text-muted">—</span>

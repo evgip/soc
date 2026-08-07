@@ -6,8 +6,6 @@
 
 <h1>🎟️ Управление приглашениями</h1>
 
-<?= render_flashes() ?>
-
 <?php if (!$hasEnoughKarma): ?>
     <div role="alert" class="alert is-danger">
         <strong>⚠️ Недостаточно кармы!</strong><br>

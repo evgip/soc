@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\Stories\Services;
 
 use App\Modules\Stories\DTO\StoryFeedDTO;
@@ -21,11 +23,11 @@ class StoryFeedBuilder
     }
 
     /**
-     * Собирает данные для ленты историй (главной, по тегу, домену или автору).
+     * Собирает данные для ленты статей (главной, по тегу или автору).
+     * Параметр $domain полностью удален (Medium-стиль).
      */
     public function build(
         string $tagslug = '',
-        string $domain = '',
         string $author = '',
         array $userContext = [],
         bool $canUserDownvote = false,
@@ -43,11 +45,22 @@ class StoryFeedBuilder
         // В оригинальном userStories сортировка жестко задана как 'hot'
         $actualSort = $author !== '' ? 'hot' : $sort;
 
-        $stories = $this->filterService->getFilteredStories($perPage, $offset, $tagslug, $domain, $actualSort, $author);
-        $totalStories = $this->filterService->getTotalCount($tagslug, $domain, $author);
+        // 1. Получаем статьи (без domain)
+        $stories = $this->filterService->getFilteredStories(
+            $perPage, 
+            $offset, 
+            $tagslug, 
+            $actualSort, 
+            $author
+        );
+        
+        // 2. Получаем общее количество (без domain)
+        $totalStories = $this->filterService->getTotalCount(
+            $tagslug, 
+            $author
+        );
         $totalPages = (int)ceil($totalStories / $perPage);
 
-        $bannedDomainsCache = $this->filterService->getBannedDomains();
         $storyIds = array_column($stories, 'id');
         $newCommentsMap = $this->filterService->getNewCommentsCounts($storyIds);
 
@@ -59,21 +72,20 @@ class StoryFeedBuilder
 
         $rssFeed = $this->buildRssFeed($tagslug, $author, $pageData);
 
+        // 3. Возвращаем DTO
         return new StoryFeedDTO(
             stories: $stories,
             currentPage: $currentPage,
             totalPages: $totalPages,
             newCommentsMap: $newCommentsMap,
-            bannedDomainsCache: $bannedDomainsCache,
             sort: $sort,
-            domain: $domain,
             author: $author !== '' ? $author : null,
             currentUserId: $userContext['id'] ?? 0,
             isAdmin: $userContext['isAdmin'] ?? false,
             canUserDownvote: $canUserDownvote,
             currentVotes: $currentVotes,
             rssFeed: $rssFeed,
-            pageTitle: $pageData['title'] ?? 'Лента историй',
+            pageTitle: $pageData['title'] ?? 'Лента статей',
             extraData: $pageData
         );
     }
@@ -95,7 +107,7 @@ class StoryFeedBuilder
         }
 
         return [
-            'title' => 'Новые истории',
+            'title' => 'Новые статьи',
             'url' => '/rss',
         ];
     }

@@ -11,7 +11,7 @@
     <h3>⚡ Компиляция ресурсов (Asset Pipeline)</h3>
     <p class="hint">
         Автоматический рекурсивный поиск файлов <code>.css</code> и <code>.js</code> внутри всех папок <code>app/Modules/</code>. 
-        PHP склеит их, очистит от комментариев/пробелов и перезапишет финальные продакшен-бандлы в <code>public/css/app.min.css</code> и <code>public/js/app.min.js</code>.
+        PHP склеит их, очистит от комментариев/пробелов и перезапишет финальные продакшен-бандлы в <code>public/assets/css/app.min.css</code> и <code>public/assets/js/app.min.js</code>.
     </p>
     
     <form action="<?= route('admin.tools.compile_assets') ?>" method="POST">
@@ -108,9 +108,9 @@
         Обработка идет пакетами по 1000 записей для предотвращения таймаутов.
     </p>
     
-    <div id="confidence-progress">
+    <div id="reading-progress">
         <div class="progress-bar">
-            <div id="confidence-progress-bar" class="confidence-progress-bar">
+            <div id="reading-progress__bar" class="confidence-progress-bar">
                 <span id="confidence-progress-text">0%</span>
             </div>
         </div>
@@ -131,8 +131,8 @@ document.getElementById('recalculate-confidence-form').addEventListener('submit'
     
     const form = this;
     const submitBtn = document.getElementById('confidence-submit-btn');
-    const progressDiv = document.getElementById('confidence-progress');
-    const progressBar = document.getElementById('confidence-progress-bar');
+    const progressDiv = document.getElementById('reading-progress');
+    const progressBar = document.getElementById('reading-progress__bar');
     const progressText = document.getElementById('confidence-progress-text');
     const statusText = document.getElementById('confidence-status');
     

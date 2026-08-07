@@ -1376,3 +1376,54 @@ CREATE DEFINER=`root`@`%` EVENT `cleanup_rate_limits` ON SCHEDULE EVERY 1 HOUR S
   WHERE `window_start` < NOW() - INTERVAL 24 HOUR$$
 
 DELIMITER ;
+
+
+-- Добавляем поля для Staff Picks
+ALTER TABLE `stories` 
+  ADD COLUMN `is_staff_pick` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_is_following`,
+  ADD COLUMN `picked_at` TIMESTAMP NULL DEFAULT NULL AFTER `is_staff_pick`,
+  ADD INDEX `idx_staff_picks` (`is_staff_pick`, `picked_at` DESC);
+
+-- Таблица для отслеживания чтений (для рекомендаций)
+CREATE TABLE `story_views` (
+  `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT UNSIGNED NOT NULL,
+  `story_id` INT UNSIGNED NOT NULL,
+  `read_seconds` INT UNSIGNED DEFAULT 0 COMMENT 'Время чтения в секундах',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `uniq_user_story` (`user_id`, `story_id`),
+  INDEX `idx_user_created` (`user_id`, `created_at`),
+  INDEX `idx_story_reads` (`story_id`),
+  CONSTRAINT `fk_story_views_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_story_views_story` FOREIGN KEY (`story_id`) REFERENCES `stories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Таблица для кэширования трендов (опционально, для производительности)
+CREATE TABLE `trending_cache` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `story_id` INT UNSIGNED NOT NULL,
+  `score` FLOAT NOT NULL DEFAULT 0,
+  `calculated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_score` (`score` DESC),
+  CONSTRAINT `fk_trending_story` FOREIGN KEY (`story_id`) REFERENCES `stories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE `votes` ADD INDEX `idx_votes_created` (`created_at`);
+ALTER TABLE `votes` ADD INDEX `idx_votes_type_id_created` (`votable_type`, `votable_id`, `created_at`);
+ALTER TABLE `comments` ADD INDEX `idx_comments_created` (`created_at`);
+
+-- Флаг наличия paywall в статье (для быстрой фильтрации в ленте)
+ALTER TABLE `stories` 
+  ADD COLUMN `has_paywall` TINYINT(1) NOT NULL DEFAULT 0 
+  COMMENT 'Есть ли в статье закрытая часть' AFTER `user_is_following`;
+
+-- Опционально: тип доступа
+ALTER TABLE `stories`
+  ADD COLUMN `paywall_type` ENUM('none', 'members', 'subscribers') NOT NULL DEFAULT 'none'
+  COMMENT 'none=все видят, members=только залогиненные, subscribers=только подписчики автора'
+  AFTER `has_paywall`;
+  
+  ALTER TABLE `rate_limits` 
+MODIFY COLUMN `window_start` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Начало временного окна (например, округленное до минуты)';

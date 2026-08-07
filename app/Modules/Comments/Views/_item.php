@@ -32,24 +32,8 @@ if ($context->lastReadCommentId !== null) {
     data-comment-id="<?= $commentId ?>" 
     id="comment-block-<?= $commentId ?>">
 
-    <!-- Голосование -->
-    <?php if (!$isDeleted): ?>
-        <div class="comment_votes">
-            <?php partial('Votes::_voters', [
-                'type' => 'comment',
-                'id' => $commentId,
-                'score' => (int)$comment['score'],
-                'currentVoteState' => $currentVote ?? null,
-                'canDownvote' => $context->canDownvote,
-                'isLoggedIn' => $context->currentUserId > 0,
-                'contentOwnerId' => false, // Для комментариев владельца определяем внутри _voters или передаем отдельно если нужно
-            ]); ?>
-        </div>
-    <?php else: ?>
-        <div class="comment_votes">
-            <span class="score"><?= (int)$comment['score'] ?></span>
-        </div>
-    <?php endif; ?>
+
+
 
     <div class="comment_body">
         <div class="comment-header">
@@ -82,6 +66,27 @@ if ($context->lastReadCommentId !== null) {
             </div>
 
             <div class="comment_actions">
+			    <?php if (!$isDeleted): ?>
+					<div class="comment_votes">
+						<?php partial('Votes::_voters', [
+							'type' => 'comment',
+							'id' => $commentId,
+							'score' => (int)$comment['score'],
+							'currentVoteState' => $currentVote ?? null,
+							'canDownvote' => $context->canDownvote,
+							'isLoggedIn' => $context->currentUserId > 0,
+							'contentOwnerId' => (int)$comment['user_id'], // Для комментариев владельца определяем внутри _voters или передаем отдельно если нужно
+							'inline' => true
+						]); ?>
+					</div>
+				<?php else: ?>
+					<div class="comment_votes">
+						<span class="score"><?= (int)$comment['score'] ?></span>
+					</div>
+				<?php endif; ?>
+			
+			
+			
                 <?php if ($context->currentUserId > 0): ?>
                     <?php if ($showStoryContext): ?>
                         <a href="<?= route('story.show', ['id' => $comment['story_id']]) ?>#reply-to-<?= $commentId ?>" 

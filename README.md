@@ -1,405 +1,330 @@
-# 🌐 W3A — News Aggregator in the Style of Hacker News and Lobsters
+# W3A
 
 🇬🇧 English | 🇷🇺 [Русский](README.ru.md)
 
-A modern, lightweight news aggregator built with **PHP 8.1+** and **MySQL**, inspired by [Hacker News](https://news.ycombinator.com) and [Lobste.rs](https://lobste.rs). Features modular HMVC architecture, custom DI container, event-driven system, RSS feeds, bookmarks, user muting, and comprehensive moderation tools.
+
+**Open-source Medium-style platform for authors and readers**
+
+Publish articles, discuss, follow authors — no ads, no algorithmic traps.
+
+[![PHP](https://img.shields.io/badge/PHP-8.1+-8892BF.svg)](https://php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-5.7+-4479A1.svg)](https://mysql.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Editor.js](https://img.shields.io/badge/Editor.js-2.30-FF6B6B.svg)](https://editorjs.io)
+
+[Demo](https://w3a.ru) · [Installation](#-installation) · [Structure](#-project-structure) · [Contributing](#-contributing)
+
+---
+
+## 📖 About
+
+**W3A** is an independent platform where authors publish in-depth articles, share experience, and engage in meaningful discussions.
+
+The project focuses on:
+
+- 🎯 **Content quality** over virality
+- 👤 **Reader control** over their own feed
+- 🔒 **Privacy** without trackers and data selling
+- 🏗️ **Open source** and extensible architecture
+
+---
+
+## ✨ Key Features
+
+### 📰 For Readers
+- **Smart feed** with four sections: recommendations, trending, staff picks, new publications
+- **Personalization** through subscriptions to authors and tags
+- **Bookmarks** and reading history
+- **Dark theme** with automatic system preference detection
+- **RSS feeds** for any section
+
+### ✍️ For Authors
+- **Block editor** based on Editor.js (headings, lists, quotes, code, images)
+- **Paywall** — hide part of an article for subscribers only
+- **Statistics** on views and reading time
+- **Subscribers** and notifications about new comments
+
+### 💬 Discussions
+- **Threaded comments** sorted by Wilson Score
+- **Voting** on articles and comments
+- **Karma** system and moderation
+- **Reports** and edit suggestions
+
+### 🛡️ Moderation
+- **Staff Picks** — curated collections
+- **Flag system** for reports
+- **Moderation log** with full history
+- **Edit suggestions** from the community
+
+---
+
+## 🖼 Screenshots
 
 ![W3A home](https://raw.githubusercontent.com/evgip/soc/main/public/github-home.png)
 
 ![W3A admin](https://raw.githubusercontent.com/evgip/soc/main/public/github-admin.png)
 
-![W3A setting](https://raw.githubusercontent.com/evgip/soc/main/public/github-setting.png)
-
 ---
 
-## 🚀 Features
+## 🏗 Architecture
 
-### Core Functionality
-- **Stories** — Submit news with URL or text content
-- **Threaded Comments** — Nested comments with unlimited depth
-- **Global Comments Feed** — `/comments` page showing all recent comments across the site (Lobsters-style)
-- **User Comments** — `/user/{username}/comments` page showing all comments by a user
-- **User Stories** — `/user/{username}/stories` page showing user's publication history
-- **Voting System** — Upvote/downvote; downvoting requires minimum karma
-- **Authentication** — Registration, login, "Remember me", email activation, password recovery
-- **User Profiles** — Bio, avatar, karma, activity feed
-- **Private Messages** — Direct messaging between users
-- **Notifications** — Internal notifications for replies, story comments, mentions, moderator actions
-- **Tag Wiki** — Wiki pages linked to tags with edit history and editing permissions
-- **Edit Suggestions** — Users can suggest changes to stories (tags, title) that go through moderation
+The project is built on a **custom MVC framework [w3a-core](https://github.com/evgip/w3a-core)** with a modular architecture.
 
-### Personalization & Tracking
-- **Read Ribbons** — Track read comments in each story; "+N new" badges in the feed
-- **New Comment Highlighting** — Visual highlighting of unread comments in stories
-- **Global Comment Tracking** — "↑ New comments ↓" divider on `/comments` page
-- **Saved Stories (Bookmarks)** — Save stories to a personal "read later" list at `/saved`
-- **User Muting** — Hide stories, comments, and notifications from muted users
-- **Tag Filters** — Users can hide stories by uninteresting tags
-- **Story Following** — Get notifications for new comments in followed stories
-- **Notification Settings** — Granular control: email, internal notifications, by event type
+### Tech Stack
 
-### RSS Feeds
-- `/rss` — All new stories
-- `/t/{tag}/rss` — Stories by specific tag
-- `/u/{username}/rss` — Stories by user
-- `/comments/rss` — All new comments
-- Browser auto-discovery via `<link rel="alternate">`
+| Component | Technology |
+|---|---|
+| **Backend** | PHP 8.1+ |
+| **Framework** | w3a-core (custom, PSR-compliant) |
+| **Database** | MySQL 5.7+ / MariaDB 10.3+ |
+| **Frontend** | Vanilla JS (no heavy libraries) |
+| **Editor** | Editor.js 2.30+ |
+| **Caching** | FileCache (custom, no Redis) |
+| **Styles** | Custom CSS framework (Medium-style) |
 
-### Ranking & Search
-- **Hotness Algorithm** — Custom formula considering score, age, and tag weight modifier
-- **Wilson Score Interval** — Statistically sound comment ranking by confidence
-- **Tag System** — Stories are tagged; tags are organized into categories
-- **Full-Text Search** — Search across stories and comments
+### Project Modules
 
-### Moderation & Trust
-- **Invitation System** — Can disable open registration; only users with sufficient karma can invite
-- **Flag System** — Users can flag content (spam, abuse, duplicates, etc.); content auto-hidden at threshold
-- **Domain Management** — Ban entire domains; stories from banned domains auto-rejected
-- **User Bans** — Temporary or permanent bans with reason
-- **IP Bans** — Block abusive IP addresses
-- **Moderator Notes** — Private notes on user accounts, visible only to staff
-- **Moderation Activity Log** — Daily statistics of moderator actions
-- **Audit Log** — Complete trail of every administrative action
-- **Public Moderation Log** — Transparency of moderator actions for all users
-
-### Architecture & Developer Experience
-- **DI Container** — Lightweight dependency injection container
-- **Event Dispatcher** — Observer pattern: `StoryCreated`, `CommentCreated`, `CommentUpdated`, `UserBanned`, `FlagResolved`, etc.
-- **Middleware Pipeline** — HTTP middleware for auth, CSRF, rate limiting, security headers
-- **Modular HMVC** — Each feature is a self-contained module (Controllers / Models / Views / Services / routes)
-- **Service Providers** — Per-module service registration
-- **Separation of Concerns** — Comments, bookmarks, muting, RSS, wiki — in separate modules
-
-### Security
-- **Password Hashing** — bcrypt with automatic salting
-- **CSRF Protection** — Token verification on every state-changing form
-- **SQL Injection Protection** — Prepared PDO statements everywhere
-- **XSS Protection** — Output escaping via `htmlspecialchars()`
-- **Rate Limiting** — Configurable limits per action and IP
-- **Session Security** — HTTP-only cookies, session regeneration
-- **Input Validation** — Server-side validation on every endpoint
-- **Security Headers** — Strict-Transport-Security, X-Frame-Options, etc.
-- **CAPTCHA** — Built-in CAPTCHA for sensitive actions
-- **Firewall** — Request filtering and IP reputation checking
-
-### User Experience
-- **Responsive Design** — Mobile-friendly interface
-- **Light & Dark Themes** — Auto-detection from system settings + manual toggle via `localStorage`
-- **CSS Variables** — Unified theming system via `:root` and `[data-theme="dark"]`
-- **Keyboard Shortcuts** — `C` to collapse comments and others
-- **Markdown Support** — Text formatting in comments and stories (via Parsedown)
-- **Comment Thread Collapsing** — With state persistence in `localStorage`
-- **Markdown Toolbar** — Formatting buttons with live preview
-
----
-
-## 🛠️ Tech Stack
-
-| Component       | Technology                                       |
-|-----------------|--------------------------------------------------|
-| **Backend**     | PHP 8.1+ (no framework, custom HMVC + DI)        |
-| **Database**    | MySQL 8.0+ with PDO                              |
-| **Frontend**    | Vanilla JavaScript, CSS3 with CSS Variables      |
-| **Architecture**| Modular HMVC, Event Dispatcher, Service Provider |
-| **Email**       | PHPMailer 7.x                                    |
-| **Markdown**    | Parsedown 1.8+                                   |
-| **Security**    | CSRF tokens, rate limiting, bcrypt, CAPTCHA      |
-| **Server**      | Apache / Nginx with URL rewriting                |
-
----
-
-## 📦 Installation
-
-Install via Composer:
-
-```bash
-composer create-project evgip/w3a
+```
+app/Modules/
+├── Stories/          # Articles: CRUD, recommendations, trending, Staff Picks
+├── Comments/         # Comments: tree, Wilson Score, editing
+├── Votes/            # Voting for articles and comments
+├── Users/            # Profiles, settings, karma
+├── Auth/             # Registration, login, password recovery
+├── Subscriptions/    # Subscriptions to authors and tags
+├── Notifications/    # Real-time notifications
+├── Messages/         # Private messages
+├── Saved/            # Bookmarks
+├── Muted/            # Mute lists
+├── Flags/            # Content reports
+├── Suggestions/      # Edit suggestions
+├── Tags/             # Tags and categories
+├── Wiki/             # Wiki pages for tags
+├── Search/           # Full-text search
+├── Stats/            # Statistics
+├── Mod/              # Moderation tools
+├── Admin/            # Admin panel
+├── Invitations/      # Invitation system
+├── Rss/              # RSS feeds
+└── Common/           # Common components (Layout, CacheHelper)
 ```
 
-### Requirements
-- PHP 8.1 or higher
-- MySQL 8.0 or higher
-- Apache / Nginx with URL rewriting enabled
-- Composer (optional, for development)
+---
 
-### Step 1 — Clone the Repository
+## 🚀 Installation
+
+### Requirements
+
+- PHP 8.1+ with extensions: `pdo_mysql`, `mbstring`, `json`, `fileinfo`
+- MySQL 5.7+ or MariaDB 10.3+
+- Composer
+- Web server (Apache/Nginx)
+
+### Installation Steps
+
+**1. Clone the repository**
 
 ```bash
-git clone https://github.com/evgip/w3a.git
+git clone https://github.com/your-username/w3a.git
 cd w3a
 ```
 
-### Step 2 — Create Database
+**2. Install dependencies**
 
-1. Create a MySQL database:
+```bash
+composer install
+```
+
+**3. Configure the environment**
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+APP_NAME=W3A
+APP_URL=http://localhost
+APP_ENV=development
+
+DB_HOST=127.0.0.1
+DB_NAME=w3a
+DB_USER=root
+DB_PASS=
+
+INVITATIONS_ENABLED=false
+```
+
+**4. Create the database**
 
 ```sql
 CREATE DATABASE w3a CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-2. Import the schema:
+**5. Import the schema**
 
 ```bash
-mysql -u your_username -p w3a < db/schema.sql
+mysql -u root -p w3a < database/schema.sql
 ```
 
-### Step 3 — Configure Application
-
-Rename `.env.example` to `.env` and fill in your settings.
-
-### Step 4 — Set Permissions
+**6. Create required directories**
 
 ```bash
-chmod -R 755 storage/
-chmod -R 755 public/
+mkdir -p storage/cache/data
+mkdir -p storage/logs
+mkdir -p public/uploads/avatars
+chmod -R 755 storage public/uploads
 ```
 
-### Step 5 — Configure Web Server
+**7. Configure the web server**
 
-**Apache** (`.htaccess` included):
+The document root should point to `public/`:
 
-```apache
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
-```
-
-**Nginx**:
-
+**Nginx:**
 ```nginx
-location / {
-    try_files $uri $uri/ /index.php?$query_string;
+server {
+    listen 80;
+    server_name w3a.local;
+    root /path/to/w3a/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
 }
 ```
 
-### Step 6 — Default Accounts
+**8. Open the website**
 
-| Role           | Email              | Password  |
-|----------------|--------------------|-----------| 
-| Administrator  | admin@example.com  | password  |
-| User           | test@test.ru       | password  |
-
-> ⚠️ Change these passwords immediately after first login.
+Go to `http://localhost` and register the first user — they will automatically receive administrator privileges.
 
 ---
 
-## 📁 Project Structure
+## ⚙️ Configuration
 
-```
-w3a/
-├── app/
-│   ├── Config/
-│   │   └── config.php              # Application settings
-│   ├── Core/
-│   │   ├── Container.php           # DI container
-│   │   ├── Router.php              # URL routing
-│   │   ├── Controller.php          # Base controller
-│   │   ├── Model.php               # Base model
-│   │   ├── Database.php            # PDO wrapper
-│   │   ├── Session.php             # Session management
-│   │   ├── Request.php             # HTTP request handling
-│   │   ├── Security.php            # Security headers
-│   │   ├── View.php                # Template rendering
-│   │   ├── Validator.php           # Input validation
-│   │   ├── Audit.php               # Audit log
-│   │   ├── RateLimiter.php         # Rate limiting
-│   │   ├── Captcha.php             # CAPTCHA generator
-│   │   ├── Firewall.php            # Request firewall
-│   │   ├── Logger.php              # Application logger
-│   │   ├── Benchmark.php           # Performance measurement
-│   │   ├── SvgChart.php            # SVG chart generator
-│   │   ├── ModuleServiceProvider.php
-│   │   ├── Events/                 # Event system
-│   │   │   ├── Event.php
-│   │   │   ├── EventDispatcher.php
-│   │   │   ├── StoryCreated.php
-│   │   │   ├── StoryDeleted.php
-│   │   │   ├── CommentCreated.php
-│   │   │   ├── CommentUpdated.php
-│   │   │   ├── CommentDeleted.php
-│   │   │   ├── CommentRestored.php
-│   │   │   ├── UserBanned.php
-│   │   │   ├── FlagResolved.php
-│   │   │   └── ...
-│   │   └── Middleware/             # HTTP middleware
-│   │
-│   ├── Providers/
-│   │   └── EventServiceProvider.php
-│   │
-│   ├── Lang/                       # Localization files
-│   │
-│   ├── Modules/                    # Feature modules (HMVC)
-│   │   ├── Admin/                  # Admin panel
-│   │   ├── Auth/                   # Authentication
-│   │   ├── Captcha/                # CAPTCHA generation
-│   │   ├── Comments/               # Comments (global feed, CRUD)
-│   │   ├── Common/                 # Shared views, base CSS
-│   │   ├── Content/                # Markdown processor
-│   │   ├── Errors/                 # Error handling
-│   │   ├── Flags/                  # Content flags
-│   │   ├── Invitations/            # Invitation system
-│   │   ├── Mail/                   # Email sending
-│   │   ├── Messages/               # Private messages
-│   │   ├── Moderations/            # Moderation tools
-│   │   ├── Muted/                  # User muting
-│   │   ├── Notifications/          # User notifications
-│   │   ├── Origins/                # Domain management
-│   │   ├── Pages/                  # Static pages
-│   │   ├── Rss/                    # RSS feeds
-│   │   ├── Saved/                  # Bookmarks (saved stories)
-│   │   ├── Search/                 # Full-text search
-│   │   ├── Stories/                # Stories and feed
-│   │   ├── Suggestions/            # Edit suggestions
-│   │   ├── Tags/                   # Tags and categories
-│   │   ├── Users/                  # User profiles and settings
-│   │   ├── Votes/                  # Voting system
-│   │   └── Wiki/                   # Tag wiki pages
-│   │
-│   └── helpers.php                 # Global helper functions
-│
-├── public/                         # Web root
-│   ├── index.php                   # Entry point
-│   ├── css/
-│   ├── js/
-│   └── images/
-│
-├── storage/                        # Writable storage
-│   ├── logs/                       # Application logs
-│   └── cache/                      # Cache files
-│
-├── db/
-│   └── schema.sql                  # Database schema
-│
-├── composer.json
-└── README.md
-```
+### Main Config Files
+
+| File | Purpose |
+|---|---|
+| `app/Config/app.php` | General application settings |
+| `app/Config/database.php` | Database connection |
+| `app/Config/cache.php` | Caching settings |
+| `app/Config/storage.php` | File storage disks |
+| `app/Config/security.php` | Rate limiting, CSRF |
+| `app/Config/invitations.php` | Invitation system |
+
+### Rate Limiting
+
+Spam protection is enabled by default:
+
+- **Global:** 100 requests/min per IP
+- **For authenticated users:** 300 requests/min
+- **Registration:** 5 attempts/hour
+- **Comments:** 30/min
+
+Settings in `app/Config/security.php`.
 
 ---
 
-## 📊 Database Schema
+## 📚 Usage
 
-### Content
-| Table           | Description                                        |
-|-----------------|----------------------------------------------------|
-| `stories`       | Stories (URL or text), with hotness score          |
-| `comments`      | Threaded comments with confidence score            |
-| `votes`         | Polymorphic up/down votes                          |
-| `tags`          | Tag definitions with hotness modifier              |
-| `taggings`      | Many-to-many relationship between stories and tags |
-| `categories`    | Tag categories                                     |
-| `tag_filters`   | User tag exclusions                                |
-| `wiki_pages`    | Wiki pages linked to tags                          |
-| `wiki_revisions`| Wiki page edit history                             |
-| `wiki_permissions`| Wiki editing permissions by tag                  |
-| `suggestions`   | Story edit suggestions (tags, titles)              |
+### Writing an Article
 
-### Users & Authentication
-| Table                | Description                                    |
-|----------------------|------------------------------------------------|
-| `users`              | User accounts (role: user / moderator / admin) |
-| `user_profiles`      | Bio, avatar                                    |
-| `user_settings`      | Notification settings                          |
-| `user_bans`          | Temporary / permanent bans                     |
-| `banned_ips`         | IP blocks                                      |
-| `password_resets`    | Password recovery tokens                       |
-| `email_activations`  | Email confirmation tokens                      |
-| `invitations`        | Invitation codes                               |
-| `invitation_requests`| Public invitation requests                     |
+1. Log in to your account
+2. Click **"➕ Create"** in the header
+3. Start with a heading (H1 or H2)
+4. Add content via the block editor:
+   - `/` — block menu
+   - `Ctrl+Shift+C` — inline code
+   - `Ctrl+Shift+K` — code block
+5. Select tags
+6. Click **"Publish"**
 
-### Social & Personalization
-| Table                | Description                                    |
-|----------------------|------------------------------------------------|
-| `conversations`      | Private message conversations                  |
-| `messages`           | Individual messages                            |
-| `user_notifications` | Internal notifications                         |
-| `read_ribbons`       | Last read comment in a story                   |
-| `saved_stories`      | User bookmarks (saved stories)                 |
-| `muted_users`        | Muted/ignored users                            |
+### Paywall (Restricted Content)
 
-### Moderation
-| Table          | Description                                         |
-|----------------|-----------------------------------------------------|
-| `flags`        | Content flags (spam, abuse, etc.)                   |
-| `domains`      | Banned / allowed domains                            |
-| `mod_notes`    | Private moderator notes about users                 |
-| `mod_activity` | Daily moderator action counts                       |
-| `audit_logs`   | Complete administrative action log                  |
+1. In the editor, add a **"🔒 Lock"** block
+2. Everything below the lock will only be available to:
+   - Authenticated users (`members`)
+   - Or only the author's subscribers (`subscribers`)
 
-### Infrastructure
-| Table          | Description                                         |
-|----------------|-----------------------------------------------------|
-| `sessions`     | Active user sessions                                |
-| `rate_limits`  | Rate limit counters                                 |
+### Staff Picks
 
-Full schema with indexes and foreign keys — in `db/schema.sql`.
+Administrators can feature the best articles:
+
+1. Open an article
+2. Menu **⋯** → **"⭐ Add to Staff Picks"**
+3. The article will appear in the sidebar on the home page
 
 ---
 
-## 🗺️ URL Map
+## 🗺 Roadmap
 
-### Public Pages
-| URL                            | Description                             |
-|--------------------------------|-----------------------------------------|
-| `/`                            | Main story feed                         |
-| `/story/{id}`                  | View story with comments                |
-| `/comments`                    | Global comments feed                    |
-| `/comments/rss`                | RSS of all new comments                 |
-| `/rss`                         | RSS of all new stories                  |
-| `/t/{tag}`                     | Stories with specific tag               |
-| `/t/{tag}/rss`                 | RSS of stories by tag                   |
-| `/t/{tag}/wiki`                | Wiki pages for tag                      |
-| `/t/{tag}/wiki/{slug}`         | Specific wiki page                      |
-| `/u/{username}`                | User profile                            |
-| `/u/{username}/stories`        | User's publications                     |
-| `/u/{username}/comments`       | User's comments                         |
-| `/u/{username}/rss`            | RSS of user's publications              |
-| `/search`                      | Full-text search                        |
-| `/tags`                        | List of all tags                        |
-| `/stats`                       | Site statistics                         |
-
-### Authenticated Pages
-| URL                            | Description                             |
-|--------------------------------|-----------------------------------------|
-| `/saved`                       | User bookmarks                          |
-| `/muted`                       | List of muted users                     |
-| `/notifications`               | Internal notifications                  |
-| `/messages`                    | Private messages                        |
-| `/settings`                    | Account settings                        |
-| `/tags/filters`                | User tag filters                        |
-| `/story/create`                | Create new story                        |
+- [x] Editor.js block editor
+- [x] Karma and voting system
+- [x] Subscriptions to authors and tags
+- [x] Staff Picks (editorial selection)
+- [x] Paywall for restricted content
+- [x] Recommendations and trending
+- [x] Dark theme
+- [x] Caching
+- [ ] Email digest of the best articles
+- [ ] PWA support
+- [ ] Push notifications
+- [ ] Two-factor authentication
+- [ ] Export articles to Markdown/PDF
+- [ ] Collaborative editing
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
+We welcome contributions! Here's how to get started:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork** the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'feat: add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a **Pull Request**
+
+### Code Style
+
+- PSR-12 for PHP
+- Comments in Russian or English
+- Tests for new features (PHPUnit)
 
 ---
 
-## 📝 License
+## 🛡 Security
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+If you find a vulnerability, **do not create a public Issue**. Write to `budo@narod.ru` — we will respond within 48 hours.
+
+---
+
+## 📄 License
+
+Distributed under the [MIT](LICENSE) license.
+
+---
 
 ## 🙏 Acknowledgments
 
-- Inspired by the functionality and design of **Hacker News** and **Lobste.rs**
-- Speed and simplicity philosophy from [**HLEB**](https://github.com/phphleb/hleb) framework
-- Built with pure PHP — no heavy frameworks
-- Modular HMVC architecture with DI and events
-
-## 📧 Contact
-
-- **Author**: Evgeny Konchik (Evg)
-- **Repository**: https://github.com/evgip/w3a
-- **Bugs & Suggestions**: https://github.com/evgip/w3a/issues
+- [Editor.js](https://editorjs.io) — block editor
+- [Medium](https://medium.com) — design inspiration
+- [Lobste.rs](https://lobste.rs) — open architecture
+- The PHP community for great tools
 
 ---
 
-**⭐ If you find this project useful, please star it on GitHub!**
+
+
+**Made with ❤️ for the community**
+
+[Report a bug](https://github.com/your-username/w3a/issues) · [Suggest an idea](https://github.com/your-username/w3a/issues/new) · [Discuss](https://github.com/your-username/w3a/discussions)
+

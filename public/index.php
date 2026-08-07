@@ -7,7 +7,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // 1. Загрузка переменных окружения
 \W3a\Core\Foundation\Env::load(dirname(__DIR__) . '/.env');
 
-// 2. 🔥 ИНИЦИАЛИЗАЦИЯ СЕССИИ (Вернули, так как это критично для CSRF и авторизации)
+// 2. ИНИЦИАЛИЗАЦИЯ СЕССИИ
 if (session_status() === PHP_SESSION_NONE) {
     $isProduction = \W3a\Core\Foundation\Env::get('APP_ENV', 'development') === 'production';
     

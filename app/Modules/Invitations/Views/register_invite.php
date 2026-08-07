@@ -9,8 +9,6 @@
                     <h4 class="mb-0">🎟️ Регистрация по приглашению</h4>
                 </div>
                 <div class="card-body">
-                    <?= render_flashes() ?>
-
                     <div class="alert alert-info">
                         <strong>Отлично!</strong> Вас пригласили в закрытое сообщество.
                         Заполните форму ниже, чтобы завершить регистрацию.

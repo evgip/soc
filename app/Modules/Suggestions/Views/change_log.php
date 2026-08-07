@@ -4,13 +4,11 @@ $logs = $changeLog ?? [];
 ?>
 
 <?php if (!empty($logs)): ?>
-
-	<div class="story_content">
 		<details>
 			<summary>
 				<b>История изменений</b>
 			</summary>
-			<div class="suggestions-container">
+			<div class="summary-content">
 
 				<?php foreach ($logs as $log): ?>
 					<strong class="<?= $log['is_community_action'] ? 'comment-link' : '' ?>">
@@ -24,6 +22,4 @@ $logs = $changeLog ?? [];
 
 			</div>
 		</details>
-	</div>
-
 <?php endif; ?>

@@ -45,45 +45,54 @@ class UsersController extends BaseController
         ]);
     }
 
-    public function profile(string $username): ViewResponse
-    {
-        $user = $this->getUserByUsername(trim($username));
+	public function profile(string $username): ViewResponse
+	{
+		$user = $this->getUserByUsername(trim($username));
 
-        $profile = $user['profile'] ?? [];
-        $user['bio'] = $profile['bio'] ?? null;
-        $user['avatar'] = $profile['avatar'] ?? null;
+		$profile = $user['profile'] ?? [];
+		$user['bio'] = $profile['bio'] ?? null;
+		$user['avatar'] = $profile['avatar'] ?? null;
 
-        $userModel = $this->container->get(User::class);
-        $banInfo = $userModel->getBanInfo((int)$user['id']);
-        $user['is_banned'] = $banInfo !== null;
-        $user['ban_reason'] = $banInfo['reason'] ?? null;
-        $user['banned_at'] = $banInfo['created_at'] ?? null;
-        $user['expires_at'] = $banInfo['expires_at'] ?? null;
+		$userModel = $this->container->get(User::class);
+		$banInfo = $userModel->getBanInfo((int)$user['id']);
+		$user['is_banned'] = $banInfo !== null;
+		
+		$stats = $userModel->getProfileStats((int)$user['id']);
+		$userKarma = $userModel->getUserKarma((int)$user['id']);
 
-        $stats = $userModel->getProfileStats((int)$user['id']);
-        $userKarma = $userModel->getUserKarma((int)$user['id']);
+		$userContext = $this->getUserContext();
 
-        $userContext = $this->getUserContext();
+		$isMuted = false;
+		$isFollowing = false;
+		if ($userContext['isLoggedIn'] && (int)$user['id'] !== $userContext['id']) {
+			$muteService = $this->service(\App\Modules\Muted\Services\MuteService::class);
+			$isMuted = $muteService->isMuted($userContext['id'], (int)$user['id']);
 
-        $isMuted = false;
-        if ($userContext['isLoggedIn'] && (int)$user['id'] !== $userContext['id']) {
-            $muteService = $this->service(\App\Modules\Muted\Services\MuteService::class);
-            $isMuted = $muteService->isMuted($userContext['id'], (int)$user['id']);
+			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+			$isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$user['id']);
+		}
 
-            $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
-            $isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$user['id']);
-        }
+		$feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
+			tagslug: '',
+			author: $username,
+			userContext: $userContext,
+			canUserDownvote: $this->canUserDownvote($userContext['id'] ?? 0),
+			pageData: ['title' => 'Публикации ' . e($username)]
+		);
 
-        return $this->render('profile', [
-            'title' => 'Профиль пользователя ' . e($user['username']),
-            'profileUser' => $user,
-            'storiesCount' => $stats['stories_count'] ?? 0,
-            'commentsCount' => $stats['comments_count'] ?? 0,
-            'userKarma' => $userKarma ?? 0,
-            'isMuted' => $isMuted,
+		return $this->render('profile', [
+			'title' => 'Профиль пользователя ' . e($user['username']),
+			'profileUser' => $user,
+			'userKarma' => $userKarma ?? 0,
+			'isMuted' => $isMuted,
 			'isFollowing' => $isFollowing,
-        ]);
-    }
+			'storiesCount' => $stats['stories_count'] ?? count($feed->stories),
+			'commentsCount' => $stats['comments_count'] ?? 0,
+			'stories' => $feed->stories,
+			'currentPage' => $feed->currentPage,
+			'totalPages' => $feed->totalPages,
+		]);
+	}
 
     /**
      * Используем общий Response, так как метод может вернуть 

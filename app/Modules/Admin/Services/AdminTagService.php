@@ -57,7 +57,7 @@ class AdminTagService
      */
     public function createTag(array $data): int
     {
-        $tagName = strtolower(trim($data['name'] ?? ''));
+        $tagName = trim($data['name'] ?? '');
         $tagSlug = strtolower(trim($data['slug'] ?? ''));
         $description = trim($data['description'] ?? '');
         $isMedia = isset($data['is_media']) ? 1 : 0;
@@ -106,7 +106,7 @@ class AdminTagService
             throw new AdminValidationException('Тег не найден.');
         }
 
-        $tagName = strtolower(trim($data['name'] ?? ''));
+        $tagName = trim($data['name'] ?? '');
         $tagSlug = strtolower(trim($data['slug'] ?? ''));
         $description = trim($data['description'] ?? '');
         $isMedia = isset($data['is_media']) ? 1 : 0;

@@ -1,3 +1,12 @@
+<?php
+declare(strict_types=1);
+
+use App\Modules\Common\Support\Layout;
+
+// Читаем layout, установленный контроллером
+$layoutClass = Layout::getClass();
+$bodyClass = Layout::getBodyClass();
+?>
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -30,10 +39,10 @@
 		})();
 	</script>
     
-	<link rel="stylesheet" href="/css/app.min.css">
+	<link rel="stylesheet" href="/assets/css/app.min.css">
 </head>
 
-<body>
+<body class="<?= $bodyClass ?>">
 
 	<header>
 		<div class="navbar-container">
@@ -134,9 +143,7 @@
 								<a href="/mod/log" class="dropdown-menu-item dropdown-item-mod">📋 <?= __('moderation_log') ?></a>
 								<a href="/mod/notes" class="dropdown-menu-item dropdown-item-mod">🔒 <?= __('notes') ?></a>
 								<a href="/mod/stats" class="dropdown-menu-item dropdown-item-mod">📈 <?= __('activity') ?></a>
-								<a href="/admin/domains" class="dropdown-menu-item dropdown-item-mod">🌐 <?= __('domains') ?></a>
-								<a href="<?= route('domains.index') ?>" class="dropdown-menu-item dropdown-item-mod">🚫 <?= __('ban') ?></a>
-
+				
 								<a href="/mod/suggestions" class="dropdown-menu-item dropdown-item-mod">
 									💡 <?= __('suggestions') ?>
 									<?php if (($activeSuggestionsCount ?? 0) > 0): ?>
@@ -160,62 +167,65 @@
 					<?php if (config('invitations.config.invitations_enabled')): ?>
 						<a class="nav-link" href="<?= route('home') ?>invite/request"><?= __('request_invitation') ?></a>
 					<?php else: ?>
-						<a class="btn-nav-create mb-none" href="<?= route('auth.register') ?>"><?= __('register') ?></a>
+						<a class="mb-none" href="<?= route('auth.register') ?>"><?= __('register') ?></a>
 					<?php endif; ?>
 				<?php endif; ?>
 			</nav>
 		</div>
 	</header>
 
-	 
-	<?php if (!empty($errors->allErrors())): ?>
-	    <!-- 1. Блок ошибок валидации -->
-		<div class="alert is-danger">
-			<strong>Ошибка валидации!</strong>
-			<ul class="validation-errors-list">
-				<?php foreach ($errors->allErrors() as $fieldErrors): ?>
-					<?php foreach ($fieldErrors as $err): ?>
-						<li><?= htmlspecialchars($err) ?></li>
-					<?php endforeach; ?>
-				<?php endforeach; ?>
-			</ul>
+	<main> 
+	     <div class="content <?= $layoutClass ?>">
+			<?php if (!empty($errors->allErrors())): ?>
+				<div class="alert is-danger">
+					<strong>Ошибка валидации!</strong>
+					<ul class="validation-errors-list">
+						<?php foreach ($errors->allErrors() as $fieldErrors): ?>
+							<?php foreach ($fieldErrors as $err): ?>
+								<li><?= htmlspecialchars($err) ?></li>
+							<?php endforeach; ?>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			<?php endif; ?>
+
+			<?php if ($flashError = $errors->getFlash('error')): ?>
+				<div class="alert is-danger"><strong>Ошибка!</strong> <?= htmlspecialchars($flashError) ?></div>
+			<?php endif; ?>
+
+			<?php if ($flashSuccess = $errors->getFlash('success')): ?>
+				<div class="alert is-success"><strong>Успех!</strong> <?= htmlspecialchars($flashSuccess) ?></div>
+			<?php endif; ?>
+
+			<?php if ($flashNotice = $errors->getFlash('notice')): ?>
+				<div class="alert is-notice"><strong>Информация!</strong> <?= htmlspecialchars($flashNotice) ?></div>
+			<?php endif; ?>
+
+	    
+		   <?= $content ?>
 		</div>
-	<?php endif; ?>
-
-	<!-- 2. Блок обычных flash-сообщений -->
-	<?php if ($flashError = $errors->getFlash('error')): ?>
-		<div class="alert is-danger"><strong>Ошибка!</strong> <?= htmlspecialchars($flashError) ?></div>
-	<?php endif; ?>
-
-	<?php if ($flashSuccess = $errors->getFlash('success')): ?>
-		<div class="alert is-success"><strong>Успех!</strong> <?= htmlspecialchars($flashSuccess) ?></div>
-	<?php endif; ?>
-
-	<?php if ($flashNotice = $errors->getFlash('notice')): ?>
-		<div class="alert is-notice"><strong>Информация!</strong> <?= htmlspecialchars($flashNotice) ?></div>
-	<?php endif; ?>
-
-	<main>
-		<?= $content ?>
 	</main>
 
 	<footer>
-		<div></div>
-		<div>
+		 
+		 
 			<nav>
 				<a href="<?= route('home') ?>"><?= __('home') ?></a>
 				<a href="/t/meta/wiki/about"><?= __('about') ?></a>
+				
+				<a href="<?= route('stories.staffPicks') ?>">Выбор редакции</a>
+				
 				<a href="<?= route('stats.index') ?>"><?= __('statistics') ?></a>
 				<?php if (!empty($currentUser['isLoggedIn'])): ?>
 					<a href="<?= route('tags.filters') ?>"><?= __('filters') ?></a>
 				<?php endif; ?>
 
 				<a href="/rss" title="RSS лента">RSS</a>
-			</nav>
+			<br>
 			<?php if (!empty($currentUser['isAdmin'])): ?>
 				<?= \W3a\Core\Support\Benchmark::renderStats() ?>
 			<?php endif; ?>	
-		</div>
+		 </nav>
 	</footer>
 
 	<script src="<?= \W3a\Core\View\Asset::js() ?>"></script>

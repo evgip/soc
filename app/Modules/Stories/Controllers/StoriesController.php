@@ -11,9 +11,13 @@ use W3a\Core\Http\ViewResponse;
 use W3a\Core\Http\JsonResponse;
 use W3a\Core\Support\MessageBag;
 
+use W3a\Core\Storage\StorageManager;
+use W3a\Core\Storage\UploadedFile;
+use W3a\Core\Storage\FileValidator;
+use W3a\Core\Storage\Exceptions\ValidationException;
+
 use App\Modules\Stories\Services\StoryService;
 use App\Modules\Stories\Services\ReadRibbonService;
-use App\Modules\Stories\Services\UrlFetcherService;
 use App\Modules\Stories\Services\StoryPageService;
 use App\Modules\Stories\Services\StoryFeedBuilder;
 use App\Modules\Stories\Repositories\StoryRepository;
@@ -23,50 +27,124 @@ use App\Modules\Tags\Models\Tag;
 use App\Modules\Users\Models\User;
 use App\Modules\Content\Core\Markdown;
 use App\Modules\Wiki\Services\WikiService;
+use App\Modules\Stories\Exceptions\StoryValidationException;
+
+use App\Modules\Common\Support\Layout; 
 
 class StoriesController extends BaseController
 {
+	// =========================================================================
+	// ЛЕНТА СТАТЕЙ (4 секции)
+	// =========================================================================
+	public function index(string $tagslug = ''): ViewResponse
+	{
+		$userContext = $this->getUserContext();
+		
+		// Если это фильтр по тегу или автору — используем старую логику
+		if ($tagslug !== '') {
+			return $this->renderTagFilter($tagslug, $userContext);
+		}
+
+		$pageData = $this->buildIndexPageData($tagslug);
+
+		// 1. Собираем Medium-секции
+		$forYou = [];
+		$trending = [];
+		$staffPicks = [];
+		$hasPersonalization = false;
+
+		if ($userContext['isLoggedIn']) {
+			$recommendationService = $this->service(\App\Modules\Stories\Services\RecommendationService::class);
+			$forYou = $recommendationService->getForYouFeed($userContext['id'], 6);
+			
+			// Есть ли персонализация?
+			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+			$followedUsers = $subscriptionService->getFollowedUserIds($userContext['id']);
+			$followedTags = $subscriptionService->getFollowedTagIds($userContext['id']);
+			$hasPersonalization = !empty($followedUsers) || !empty($followedTags);
+		}
+
+		$trendingService = $this->service(\App\Modules\Stories\Services\TrendingService::class);
+		$trending = $trendingService->getTrending(5);
+
+		$staffPicksService = $this->service(\App\Modules\Stories\Services\StaffPicksService::class);
+		$staffPicks = $staffPicksService->getStaffPicks(3);
+
+		// 2. Основная лента (Hot/New/Top) — существующая логика
+		$feed = $this->service(StoryFeedBuilder::class)->build(
+			tagslug: $tagslug,
+			author: '',
+			userContext: $userContext,
+			canUserDownvote: $this->canUserDownvote($userContext['id']),
+			pageData: $pageData
+		);
+
+		// 3. Формируем ViewModel
+		$viewModel = new \App\Modules\Stories\ViewModels\HomeFeedViewModel(
+			stories: $feed->stories,
+			currentPage: $feed->currentPage,
+			totalPages: $feed->totalPages,
+			newCommentsMap: $feed->newCommentsMap,
+			sort: $feed->sort,
+			currentUserId: $feed->currentUserId,
+			isAdmin: $feed->isAdmin,
+			canUserDownvote: $feed->canUserDownvote,
+			currentVotes: $feed->currentVotes,
+			forYou: $forYou,
+			trending: $trending,
+			staffPicks: $staffPicks,
+			isLoggedIn: $userContext['isLoggedIn'],
+			hasPersonalization: $hasPersonalization,
+			pageTitle: $feed->pageTitle,
+			rssFeed: $feed->rssFeed,
+		);
+
+        // 🔑 Устанавливаем широкий макет для главной
+        Layout::set(Layout::WIDE);
+
+		return $this->render('index', [
+			'viewModel' => $viewModel,
+			'title' => $feed->pageTitle,
+			'rssFeed' => $feed->rssFeed,
+		]);
+	}
+
+	/**
+	 * Отдельный метод для фильтров по тегу (использует старую логику)
+	 */
+	private function renderTagFilter(string $tagslug, array $userContext): ViewResponse
+	{
+		$pageData = $this->buildIndexPageData($tagslug);
+
+		$feed = $this->service(StoryFeedBuilder::class)->build(
+			tagslug: $tagslug,
+			author: '',
+			userContext: $userContext,
+			canUserDownvote: $this->canUserDownvote($userContext['id']),
+			pageData: $pageData
+		);
+
+		return $this->render('index', [
+			'stories' => $feed->stories,
+			'currentPage' => $feed->currentPage,
+			'totalPages' => $feed->totalPages,
+			'newCommentsMap' => $feed->newCommentsMap,
+			'sort' => $feed->sort,
+			'currentUserId' => $feed->currentUserId,
+			'isAdmin' => $feed->isAdmin,
+			'canUserDownvote' => $feed->canUserDownvote,
+			'currentVotes' => $feed->currentVotes,
+			'rssFeed' => $feed->rssFeed,
+			'title' => $feed->pageTitle,
+			'tagInfo' => $feed->extraData['tagInfo'] ?? '',
+			'wikiPages' => $feed->extraData['wikiPages'] ?? false,
+			'primaryWikiPage' => $feed->extraData['primaryWikiPage'] ?? false,
+			'wikiPagesCount' => $feed->extraData['wikiPagesCount'] ?? false,
+		]);
+	}
+
     // =========================================================================
-    // ЛЕНТА ИСТОРИЙ
-    // =========================================================================
-    public function index(string $tagslug = '', string $domain = ''): ViewResponse
-    {
-        $userContext = $this->getUserContext();
-
-        $pageData = $this->buildIndexPageData($tagslug, $domain);
-
-        $feed = $this->service(StoryFeedBuilder::class)->build(
-            tagslug: $tagslug,
-            domain: $domain,
-            author: '',
-            userContext: $userContext,
-            canUserDownvote: $this->canUserDownvote($userContext['id']),
-            pageData: $pageData
-        );
-
-        return $this->render('index', [
-            'stories' => $feed->stories,
-            'currentPage' => $feed->currentPage,
-            'totalPages' => $feed->totalPages,
-            'newCommentsMap' => $feed->newCommentsMap,
-            'bannedDomainsCache' => $feed->bannedDomainsCache,
-            'sort' => $feed->sort,
-            'domain' => $feed->domain,
-            'currentUserId' => $feed->currentUserId,
-            'isAdmin' => $feed->isAdmin,
-            'canUserDownvote' => $feed->canUserDownvote,
-            'currentVotes' => $feed->currentVotes,
-            'rssFeed' => $feed->rssFeed,
-            'title' => $feed->pageTitle,
-            'tagInfo' => $feed->extraData['tagInfo'] ?? '',
-            'wikiPages' => $feed->extraData['wikiPages'] ?? false,
-            'primaryWikiPage' => $feed->extraData['primaryWikiPage'] ?? false,
-            'wikiPagesCount' => $feed->extraData['wikiPagesCount'] ?? false,
-        ]);
-    }
-
-    // =========================================================================
-    // ПРОСМОТР ОДНОЙ ИСТОРИИ
+    // ПРОСМОТР ОДНОЙ СТАТЬИ
     // =========================================================================
     public function show(string $id): ViewResponse
     {
@@ -79,15 +157,25 @@ class StoriesController extends BaseController
             'description' => $viewModel->story['seo_description'] ?? '',
             'image' => $viewModel->story['og_image'] ?? '',
         ]);
+		
+		
+        $userContext = $this->getUserContext();
+
+        $isFollowing = false;
+        if ($userContext['isLoggedIn'] && (int)$viewModel->story['user_id'] !== $userContext['id']) {
+            $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+            $isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$viewModel->story['user_id']);
+        }
 
         return $this->render('show', [
             'title' => $viewModel->story['title'],
             'viewModel' => $viewModel,
+			'isFollowing' => $isFollowing,
         ]);
     }
 
     // =========================================================================
-    // СОЗДАНИЕ ИСТОРИИ
+    // СОЗДАНИЕ СТАТЬИ
     // =========================================================================
 
     public function showCreateForm(): ViewResponse
@@ -95,31 +183,37 @@ class StoriesController extends BaseController
         $tagModel = $this->container->get(Tag::class);
         $availableTags = $tagModel->getAllTags(false);
 
+        // 🔑 Устанавливаем широкий макет для главной
+        Layout::set(Layout::WIDE);
+
         return $this->render('create', [
-            'title' => 'Поделиться интересным',
+            'title' => 'Написать статью',
             'availableTags' => $availableTags,
             'request' => $this->request
         ]);
     }
 
     /**
-     * Обработка создания новой истории.
+     * Обработка создания новой статьи.
+     * Заголовок извлекается из JSON автоматически в StoryService.
      */
     public function create(): RedirectResponse
     {
+        // Надежное получение массива тегов
+        $rawTags = $this->request->post('tags');
+        $tagsArray = is_array($rawTags) ? $rawTags : [];
+
         $data = [
-            'title' => $this->request->getParams('title'),
-            'url' => $this->request->getParams('url') ?: null,
-            'description' => $this->request->getParams('description') ?: null,
-            'tags' => $this->request->getParams('tags') ?? [],
-            'user_is_following' => is_numeric($this->request->getParams('user_is_following')) ? 1 : 0,
+            'description' => $this->request->post('description') ?: null,
+            'tags'        => $tagsArray,
+            'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
         ];
 
         $userContext = $this->getUserContext();
 
         try {
             $storyId = $this->service(StoryService::class)->createStory($data, $userContext['id']);
-        } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
+        } catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirectBack();
         } catch (\Throwable $e) {
@@ -128,12 +222,12 @@ class StoriesController extends BaseController
             return $this->redirectBack();
         }
 
-        MessageBag::flashMessage('success', 'Ваша история успешно опубликована!');
+        MessageBag::flashMessage('success', 'Ваша статья успешно опубликована!');
         return $this->redirect('/story/' . $storyId);
     }
 
     // =========================================================================
-    // РЕДАКТИРОВАНИЕ ИСТОРИИ
+    // РЕДАКТИРОВАНИЕ СТАТЬИ
     // =========================================================================
 
     public function showEditForm(string $id): Response
@@ -152,6 +246,9 @@ class StoriesController extends BaseController
 
         $tagModel = $this->container->get(Tag::class);
 
+        // 🔑 Устанавливаем широкий макет для главной
+        Layout::set(Layout::WIDE);
+
         return $this->render('edit', [
             'title' => 'Редактирование публикации',
             'story' => $story,
@@ -162,7 +259,7 @@ class StoriesController extends BaseController
     }
 
     /**
-     * Обработка обновления существующей истории.
+     * Обработка обновления существующей статьи.
      */
     public function update(string $id): RedirectResponse
     {
@@ -176,17 +273,19 @@ class StoriesController extends BaseController
             return $this->redirectBack();
         }
 
+        // Надежное получение массива тегов
+        $rawTags = $this->request->post('tags');
+        $tagsArray = is_array($rawTags) ? $rawTags : [];
+
         $data = [
-            'title' => $this->request->getParams('title'),
-            'url' => $this->request->getParams('url') ?: null,
-            'description' => $this->request->getParams('description') ?: null,
-            'tags' => $this->request->post('tags', []),
-            'user_is_following' => $this->request->post('user_is_following') !== null ? 1 : 0,
+            'description' => $this->request->post('description') ?: null,
+            'tags'        => $tagsArray,
+            'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
         ];
 
         try {
             $this->service(StoryService::class)->updateStory($storyId, $data);
-        } catch (\App\Modules\Stories\Exceptions\StoryValidationException | \App\Modules\Stories\Exceptions\BannedDomainException $e) {
+        } catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
             MessageBag::flashMessage('error', $e->getMessage());
             return $this->redirectBack();
         } catch (\Throwable $e) {
@@ -200,7 +299,7 @@ class StoriesController extends BaseController
     }
 
     // =========================================================================
-    // АДМИНИСТРИРОВАНИЕ ИСТОРИЙ
+    // АДМИНИСТРИРОВАНИЕ СТАТЕЙ
     // =========================================================================
 
     public function adminDelete(string $id): RedirectResponse
@@ -208,7 +307,7 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
         $this->service(StoryService::class)->deleteStory((int)$id, $userContext['id']);
 
-        MessageBag::flashMessage('success', 'История успешно удалена.');
+        MessageBag::flashMessage('success', 'Статья успешно удалена.');
         return $this->redirectBack();
     }
 
@@ -217,7 +316,7 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
         $this->service(StoryService::class)->restoreStory((int)$id, $userContext['id']);
 
-        MessageBag::flashMessage('success', 'История успешно восстановлена.');
+        MessageBag::flashMessage('success', 'Статья успешно восстановлена.');
         return $this->redirectBack();
     }
 
@@ -258,20 +357,6 @@ class StoriesController extends BaseController
     // AJAX ENDPOINTS
     // =========================================================================
 
-    public function fetchUrlTitle(): JsonResponse
-    {
-        $url = $this->request->getParams('url');
-
-        if (empty($url)) {
-            return $this->json(['title' => '', 'url' => '']);
-        }
-
-        $fetcher = $this->container->get(UrlFetcherService::class);
-        $attributes = $fetcher->fetchAttributes($url);
-
-        return $this->json($attributes);
-    }
-
     public function preview(): JsonResponse
     {
         if (!$this->request->isCsrfValid()) {
@@ -293,10 +378,11 @@ class StoriesController extends BaseController
     // =========================================================================
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     // =========================================================================
-    private function buildIndexPageData(string $tagslug, string $domain): array
+    
+    private function buildIndexPageData(string $tagslug): array
     {
         $data = [
-            'title' => 'Лента историй',
+            'title' => 'Лента статей',
             'tagInfo' => '',
             'wikiPages' => false,
             'primaryWikiPage' => false,
@@ -324,14 +410,6 @@ class StoriesController extends BaseController
                 $data['primaryWikiPage'] = $wikiService->getPrimaryPageForTag($data['tagInfo']['id']);
                 $data['wikiPagesCount'] = count($wikiPages);
             }
-        } elseif ($domain) {
-            $data['title'] = "Публикации с домена " . e($domain);
-            $this->setOpenGraph([
-                'type' => 'article',
-                'title' => $data['title'],
-                'description' => null,
-                'image' => config('config.app.url') . '/',
-            ]);
         }
 
         return $data;
@@ -393,9 +471,8 @@ class StoriesController extends BaseController
             'image' => config('config.app.url') . '/',
         ]);
 
-        $feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
+        $feed = $this->service(StoryFeedBuilder::class)->build(
             tagslug: '',
-            domain: '',
             author: $username,
             userContext: $userContext,
             canUserDownvote: $this->canUserDownvote($userContext['id']),
@@ -407,9 +484,7 @@ class StoriesController extends BaseController
             'currentPage' => $feed->currentPage,
             'totalPages' => $feed->totalPages,
             'newCommentsMap' => $feed->newCommentsMap,
-            'bannedDomainsCache' => $feed->bannedDomainsCache,
             'sort' => $feed->sort,
-            'domain' => $feed->domain,
             'author' => $feed->author,
             'currentUserId' => $feed->currentUserId,
             'isAdmin' => $feed->isAdmin,
@@ -435,17 +510,15 @@ class StoriesController extends BaseController
         $followedUserIds = $subscriptionService->getFollowedUserIds($userContext['id']);
         $followedTagIds = $subscriptionService->getFollowedTagIds($userContext['id']);
 
-        // 1. Проверяем, есть ли вообще подписки
         $isEmptyState = empty($followedUserIds) && empty($followedTagIds);
 
         if ($isEmptyState) {
-            // Если подписок нет, сразу готовим пустые данные, не нагружая БД
             $stories = [];
             $currentPage = 1;
             $totalPages = 0;
             $newCommentsMap = [];
+            $sort = 'new';
         } else {
-            // 2. Если подписки есть, делаем запросы как раньше
             $page = max(1, (int)$this->request->getParams('page', 1));
             $limit = 20;
             $offset = ($page - 1) * $limit;
@@ -469,27 +542,278 @@ class StoriesController extends BaseController
             $newCommentsMap = $readRibbon->getNewCommentsCounts($userContext['id'], $storyIds, $mutedUserIds);
         }
 
-        // 3. Передаем флаг isEmptyState в шаблон
         return $this->render('index', [
             'stories' => $stories,
             'currentPage' => $currentPage ?? 1,
             'totalPages' => $totalPages ?? 0,
             'newCommentsMap' => $newCommentsMap,
-            'bannedDomainsCache' => [],
             'sort' => $sort ?? 'new',
-            'domain' => '',
-            'author' => '',
             'currentUserId' => $userContext['id'],
             'isAdmin' => $userContext['isAdmin'],
             'canUserDownvote' => $this->canUserDownvote($userContext['id']),
             'currentVotes' => [],
             'rssFeed' => '',
             'title' => 'Мои подписки',
-            'tagInfo' => [],
-            'wikiPages' => false,
-            'primaryWikiPage' => false,
-            'wikiPagesCount' => false,
-            'isEmptyState' => $isEmptyState, // <-- НОВАЯ ПЕРЕМЕННАЯ
+            'isEmptyState' => $isEmptyState,
         ]);
     }
+    
+    // =========================================================================
+    // МИГРАЦИЯ ДАННЫХ (Временный метод, можно удалить после миграции)
+    // =========================================================================
+    public function migration(): JsonResponse
+    {
+        $userContext = $this->getUserContext();
+        if (empty($userContext['isAdmin'])) {
+            return $this->json(['error' => 'Доступ запрещен.'], 403);
+        }
+
+        $isDryRun = (string) $this->request->getParams('dry_run', '1') === '1'; 
+        $limit = max(1, (int) $this->request->getParams('limit', 10));
+
+        $db = $this->container->get(\W3a\Core\Database\Database::class);
+        $logger = $this->container->get(\W3a\Core\Support\Logger::class);
+        
+        $sanitizer = null;
+        if (method_exists($this->container, 'has') && $this->container->has(\W3a\Core\Support\HtmlSanitizer::class)) {
+            $sanitizer = $this->container->get(\W3a\Core\Support\HtmlSanitizer::class);
+        }
+
+        $migrator = new \App\Modules\Stories\Models\StoryMigrator($db, $logger, $sanitizer);
+
+        try {
+            $result = $migrator->processOldStories(dryRun: $isDryRun, limit: $limit);
+
+            if ($isDryRun) {
+                return $this->json([
+                    'success' => true,
+                    'mode' => 'DRY_RUN',
+                    'message' => 'Тестовый режим. Данные не сохранены.',
+                    'limit' => $limit,
+                    'results' => $result
+                ]);
+            } else {
+                return $this->json([
+                    'success' => true,
+                    'mode' => 'REAL_MIGRATION',
+                    'message' => "Успешно мигрировано записей: " . ($result['migrated_count'] ?? 0),
+                    'migrated_count' => $result['migrated_count'] ?? 0
+                ]);
+            }
+        } catch (\Throwable $e) {
+            $this->logError($e, 'Stories.migration');
+            return $this->json(['error' => 'Ошибка миграции: ' . $e->getMessage()], 500);
+        }
+    }
+	
+    /**
+     * Загрузка изображения для Editor.js с сохранением по папкам с датами.
+     */
+    public function uploadImage(): JsonResponse
+    {
+        // 1. Проверка авторизации
+        $userContext = $this->getUserContext();
+        if (empty($userContext['isLoggedIn'])) {
+            return $this->json(['success' => 0, 'message' => 'Требуется авторизация'], 401);
+        }
+
+        try {
+            // 2. Получаем файл из запроса
+            $file = UploadedFile::fromRequest('image');
+
+            // 3. Валидируем файл (MIME, расширение, размер до 5 МБ)
+            $validator = new FileValidator([
+                'mimes'      => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+                'extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+                'max_size'   => 5 * 1024 * 1024, 
+            ]);
+            $validator->validateOrFail($file);
+
+            // 4. Сохраняем на диск с группировкой по дате
+            $storage = $this->container->get(StorageManager::class);
+            
+            // Формируем путь вида "2026/08" (год/месяц)
+            $datePath = date('Y/m'); 
+            
+            // putFile() автоматически:
+            // 1. Создаст папку public/uploads/stories/2026/08/, если её нет
+            // 2. Сгенерирует безопасное уникальное имя (например, a3f2b1c4.jpg)
+            // 3. Переместит файл через move_uploaded_file()
+            $path = $storage->disk('stories')->putFile($file, $datePath);
+
+            // 5. Получаем публичный URL
+            $url = $storage->disk('stories')->url($path);
+
+            // 6. Возвращаем ответ в формате Editor.js
+            return $this->json([
+                'success' => 1,
+                'file' => [
+                    'url' => $url,
+                ]
+            ]);
+
+        } catch (ValidationException $e) {
+            return $this->json([
+                'success' => 0,
+                'message' => $e->getMessage()
+            ], 400);
+            
+        } catch (\Throwable $e) {
+            $this->logError($e, 'Stories.uploadImage');
+            return $this->json([
+                'success' => 0,
+                'message' => 'Ошибка при загрузке изображения'
+            ], 500);
+        }
+    }
+	
+	// =========================================================================
+	// API: Трекинг времени чтения (для рекомендаций)
+	// =========================================================================
+	public function trackReadingTime(): JsonResponse
+	{
+		// 1. Проверка авторизации
+		$userContext = $this->getUserContext();
+		if (empty($userContext['isLoggedIn'])) {
+			return $this->json(['success' => false], 401);
+		}
+
+		// 2. Валидация входных данных
+		$storyId = (int)$this->request->post('story_id', 0);
+		$seconds = (int)$this->request->post('seconds', 0);
+
+		if ($storyId <= 0 || $seconds <= 0 || $seconds > 3600) {
+			return $this->json(['success' => false, 'error' => 'Invalid data'], 400);
+		}
+
+		// 3. Защита: пользователь не может читать чужую статью от своего имени больше реального времени
+		// (простая проверка — не более 60 секунд за один запрос)
+		if ($seconds > 60) {
+			$seconds = 60;
+		}
+
+		// 4. Проверяем существование статьи
+		$storyModel = $this->container->get(Story::class);
+		$story = $storyModel->find($storyId);
+		if (!$story || !empty($story['deleted_at'])) {
+			return $this->json(['success' => false, 'error' => 'Story not found'], 404);
+		}
+
+		// 5. Трекаем время
+		try {
+			$storyView = $this->container->get(\App\Modules\Stories\Models\StoryView::class);
+			$storyView->trackReadTime($userContext['id'], $storyId, $seconds);
+			
+			return $this->json(['success' => true]);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.trackReadingTime');
+			return $this->json(['success' => false, 'error' => 'Server error'], 500);
+		}
+	}
+	
+	// =========================================================================
+	// STAFF PICKS (Выбор редакции)
+	// =========================================================================
+
+	/**
+	 * Переключить статус "Выбор редакции" для статьи.
+	 * Доступно только администраторам.
+	 */
+	public function toggleStaffPick(string $id): RedirectResponse
+	{
+		$userContext = $this->getUserContext();
+		
+		// Двойная проверка прав (middleware + явная проверка)
+		if (empty($userContext['isAdmin'])) {
+			MessageBag::flashMessage('error', 'Доступ запрещён.');
+			return $this->redirectBack();
+		}
+
+		$storyId = (int)$id;
+		
+		// Проверяем существование статьи
+		$storyModel = $this->container->get(Story::class);
+		$story = $storyModel->find($storyId);
+		
+		if (!$story || !empty($story['deleted_at'])) {
+			MessageBag::flashMessage('error', 'Статья не найдена.');
+			return $this->redirectBack();
+		}
+
+		try {
+			$service = $this->service(\App\Modules\Stories\Services\StaffPicksService::class);
+			$result = $service->toggleStaffPick($storyId);
+			
+			if ($result) {
+				// Определяем новое состояние для сообщения
+				$newStatus = empty($story['is_staff_pick']); // toggle
+				$message = $newStatus 
+					? 'Статья добавлена в "Выбор редакции" ⭐' 
+					: 'Статья убрана из "Выбор редакции"';
+				MessageBag::flashMessage('success', $message);
+			} else {
+				MessageBag::flashMessage('error', 'Не удалось изменить статус.');
+			}
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.toggleStaffPick');
+			MessageBag::flashMessage('error', 'Произошла ошибка при изменении статуса.');
+		}
+
+		return $this->redirectBack();
+	}
+	
+	// =========================================================================
+	// STAFF PICKS: ОТДЕЛЬНАЯ СТРАНИЦА
+	// =========================================================================
+
+	/**
+	 * Страница "Выбор редакции" — все статьи с пометкой Staff Pick.
+	 */
+	public function staffPicks(): ViewResponse
+	{
+		// Широкий макет для красивой сетки
+		Layout::set(Layout::WIDE);
+
+		$currentPage = max(1, (int)$this->request->getParams('page', 1));
+		$perPage = 12; // 12 статей на страницу (3 колонки × 4 ряда)
+		$offset = ($currentPage - 1) * $perPage;
+
+		$service = $this->service(\App\Modules\Stories\Services\StaffPicksService::class);
+		
+		$stories = $service->getAllStaffPicks($perPage, $offset);
+		$totalCount = $service->getTotalStaffPicksCount();
+		$totalPages = (int)ceil($totalCount / $perPage);
+
+		// Получаем голоса пользователя (если авторизован)
+		$userContext = $this->getUserContext();
+		$currentVotes = [];
+		if ($userContext['isLoggedIn'] && !empty($stories)) {
+			$storyIds = array_column($stories, 'id');
+			$voteModel = $this->container->get(\App\Modules\Votes\Models\Vote::class);
+			$currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+		}
+
+		// Новые комментарии для прочитанных статей
+		$newCommentsMap = [];
+		if ($userContext['isLoggedIn'] && !empty($stories)) {
+			$storyIds = array_column($stories, 'id');
+			$mutedUserIds = $this->service(\App\Modules\Muted\Services\MuteService::class)
+				->getMutedUserIds($userContext['id']);
+			$readRibbon = $this->container->get(\App\Modules\Stories\Models\ReadRibbon::class);
+			$newCommentsMap = $readRibbon->getNewCommentsCounts($userContext['id'], $storyIds, $mutedUserIds);
+		}
+
+		return $this->render('staff_picks', [
+			'title' => 'Выбор редакции',
+			'stories' => $stories,
+			'currentPage' => $currentPage,
+			'totalPages' => $totalPages,
+			'totalCount' => $totalCount,
+			'currentUserId' => $userContext['id'],
+			'isAdmin' => $userContext['isAdmin'],
+			'canUserDownvote' => $this->canUserDownvote($userContext['id']),
+			'currentVotes' => $currentVotes,
+			'newCommentsMap' => $newCommentsMap,
+		]);
+	}
 }

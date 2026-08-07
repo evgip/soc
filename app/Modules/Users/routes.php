@@ -33,7 +33,7 @@ $router->add(
  */
 $router->add(
     'GET', 
-    '/user/{username}', 
+    '/@{username}', 
     UsersController::class . '@profile', 
     'user.profile'
 );

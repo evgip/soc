@@ -36,8 +36,8 @@ $suggestions = $activeSuggestions ?? [];
                             <br><strong>Теги:</strong> изменены
                         <?php endif; ?>
                     </div>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: <?= min((count($group['users']) / 3) * 100, 100) ?>%">
+                    <div class="reading-progress">
+                        <div class="reading-progress__bar" style="width: <?= min((count($group['users']) / 3) * 100, 100) ?>%">
                             <?= count($group['users']) ?> из 3
                         </div>
                     </div>

@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\Stories\DTO;
 
+/**
+ * DTO для передачи данных ленты статей в шаблон (Medium-стиль).
+ */
 class StoryFeedDTO
 {
     public function __construct(
@@ -9,9 +14,7 @@ class StoryFeedDTO
         public int $currentPage,
         public int $totalPages,
         public array $newCommentsMap,
-        public array $bannedDomainsCache,
         public string $sort,
-        public string $domain,
         public ?string $author,
         public int $currentUserId,
         public bool $isAdmin,
@@ -20,5 +23,6 @@ class StoryFeedDTO
         public array $rssFeed,
         public string $pageTitle,
         public array $extraData = []
-    ) {}
+    ) {
+    }
 }

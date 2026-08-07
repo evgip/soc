@@ -11,5 +11,12 @@ return [
             'visibility' => 'public',
             'url' => '/uploads/avatars',
         ],
+		
+		'stories' => [
+            'driver'     => 'local',
+            'root'       => $basePath . '/public/uploads/stories',
+            'visibility' => 'public',
+			'url' => '/uploads/stories',
+		],	
     ],
 ];

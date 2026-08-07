@@ -8,176 +8,194 @@ use W3a\Core\Support\Validator;
 use W3a\Core\Support\Audit;
 use W3a\Core\Events\EventDispatcher;
 use W3a\Core\Security\UserContext;
+use W3a\Core\Support\HtmlSanitizer;
 
 use App\Modules\Stories\Models\Story;
-use App\Modules\Origins\Models\Domain;
 use App\Modules\Stories\Events\StoryDeleted;
 use App\Modules\Stories\Events\StoryRestored;
 use App\Modules\Stories\Exceptions\StoryValidationException;
-use App\Modules\Stories\Exceptions\BannedDomainException;
 
 /**
- * Сервис для управления бизнес-логикой историй.
+ * Сервис для управления бизнес-логикой статей (Medium-стиль).
+ * 
  * Отвечает за валидацию, создание, обновление и удаление публикаций.
+ * НЕ содержит SQL — вся работа с БД через модель Story.
  */
 class StoryService
 {
     private Story $storyModel;
-    private Domain $domainModel;
     private StoryValidator $storyValidator;
     private Validator $validator;
     private Audit $audit;
     private EventDispatcher $eventDispatcher;
     private UserContext $currentUser;
+    private HtmlSanitizer $sanitizer;
 
     public function __construct(
         Story $storyModel,
-        Domain $domainModel,
         StoryValidator $storyValidator,
         Validator $validator,
         Audit $audit,
         EventDispatcher $eventDispatcher,
-        UserContext $currentUser
+        UserContext $currentUser,
+        HtmlSanitizer $sanitizer
     ) {
         $this->storyModel = $storyModel;
-        $this->domainModel = $domainModel;
         $this->storyValidator = $storyValidator;
         $this->validator = $validator;
         $this->audit = $audit;
         $this->eventDispatcher = $eventDispatcher;
         $this->currentUser = $currentUser;
+        $this->sanitizer = $sanitizer;
     }
 
     /**
-     * Создаёт новую историю.
+     * Создаёт новую статью.
+     * Заголовок извлекается из первого H1/H2 блока Editor.js.
      *
      * @throws StoryValidationException Если данные не прошли валидацию
-     * @throws BannedDomainException Если домен заблокирован
      */
     public function createStory(array $data, int $userId): int
     {
-        $validation = $this->storyValidator->validate($data, false);
-        if (!$validation['valid']) {
-            throw new StoryValidationException(implode(' ', $validation['errors']));
+        $editorJsJson = $data['description'] ?? '';
+
+        // 1. Проверяем, что JSON не пустой
+        if (empty(trim($editorJsJson))) {
+            throw new StoryValidationException('Статья не может быть пустой.');
         }
 
-        $domain = !empty($data['url']) ? parse_url($data['url'], PHP_URL_HOST) : null;
-        $this->checkBannedDomain($domain, $userId, $data['url'] ?? '');
+        // 2. Извлекаем заголовок из первого H1/H2 блока
+        $title = $this->storyModel->extractTitleFromJson($editorJsJson);
+        if (empty($title)) {
+            throw new StoryValidationException('Статья должна начинаться с заголовка (H1 или H2).');
+        }
 
+        // 3. Обрабатываем JSON: очищаем HTML и извлекаем текст для поиска
+        $processedContent = $this->storyModel->processEditorJsData($editorJsJson);
+
+        // 4. Определяем тип paywall (по умолчанию 'members' для закрытых частей)
+        $paywallType = $data['paywall_type'] ?? 'members';
+        if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
+            $paywallType = 'members';
+        }
+
+        // 5. Формируем данные для сохранения
         $storyData = [
-            'user_id' => $userId,
-            'title' => $data['title'],
-            'url' => $data['url'] ?? null,
-            'domain' => $domain,
-            'description' => $data['description'] ?? null,
-            'score' => 1,
-            'comments_count' => 0,
-            'user_is_following' => isset($data['user_is_following']) ? 1 : 0,
+            'user_id'            => $userId,
+            'title'              => mb_substr($title, 0, 150),
+            'description_json'   => $processedContent['description_json'],
+            'description_text'   => $processedContent['description_text'],
+            'score'              => 1,
+            'comments_count'     => 0,
+            'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
+            'paywall_type'       => $paywallType,
         ];
 
+        // 6. Создаём статью через модель
         $storyId = $this->storyModel->create($storyData);
 
+        // 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
+        if ($storyId > 0) {
+            $this->storyModel->updatePaywallFlags($storyId, $paywallType);
+        }
+
+        // 8. Привязываем теги и пересчитываем hotness
         if ($storyId > 0 && !empty($data['tags'])) {
             $this->storyModel->syncTags($storyId, $data['tags']);
             $this->storyModel->recalculateHotness($storyId);
         }
 
-        $this->audit->log('story.created', 'Пользователь создал новую публикацию', 'story', [
+        // 9. Логируем в аудит
+        $this->audit->log('story.created', 'Пользователь создал новую статью', 'story', [
             'story_id' => $storyId,
-            'user_id' => $userId
+            'user_id'  => $userId
         ]);
 
         return $storyId;
     }
 
     /**
-     * Обновляет существующую историю.
+     * Обновляет существующую статью.
+     * Заголовок извлекается из первого H1/H2 блока Editor.js.
      *
-     * @throws \InvalidArgumentException Если история не найдена
+     * @throws \InvalidArgumentException Если статья не найдена
      * @throws StoryValidationException Если данные не прошли валидацию
-     * @throws BannedDomainException Если новый домен заблокирован
      */
     public function updateStory(int $storyId, array $data): bool
     {
         $story = $this->storyModel->find($storyId);
         if (!$story) {
-            throw new \InvalidArgumentException("Публикация не найдена.");
+            throw new \InvalidArgumentException("Статья не найдена.");
         }
 
-        $validation = $this->storyValidator->validate($data, true);
-        if (!$validation['valid']) {
-            throw new StoryValidationException(implode(' ', $validation['errors']));
+        $editorJsJson = $data['description'] ?? '';
+
+        // 1. Проверяем, что JSON не пустой
+        if (empty(trim($editorJsJson))) {
+            throw new StoryValidationException('Статья не может быть пустой.');
         }
 
-        $domain = !empty($data['url']) ? parse_url($data['url'], PHP_URL_HOST) : null;
-        $this->checkBannedDomain($domain, (int)$story['user_id'], $data['url'] ?? '');
-        
+        // 2. Извлекаем новый заголовок из JSON
+        $newTitle = $this->storyModel->extractTitleFromJson($editorJsJson);
+        if (empty($newTitle)) {
+            throw new StoryValidationException('Статья должна начинаться с заголовка (H1 или H2).');
+        }
+
+        // 3. Обрабатываем JSON: очищаем HTML и извлекаем текст для поиска
+        $processedContent = $this->storyModel->processEditorJsData($editorJsJson);
+
+        // 4. Определяем тип paywall
+        $paywallType = $data['paywall_type'] ?? 'members';
+        if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
+            $paywallType = 'members';
+        }
+
+        // 5. Формируем данные для обновления
         $updateData = [
-            'title' => $data['title'] ?? $story['title'],
-            'url' => $data['url'] ?? $story['url'],
-            'description' => $data['description'] ?? $story['description'],
-            'domain' => $domain,
-            'user_is_following' => isset($data['user_is_following']) ? 1 : 0,
+            'title'              => mb_substr($newTitle, 0, 150),
+            'description_json'   => $processedContent['description_json'],
+            'description_text'   => $processedContent['description_text'],
+            'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
+            'paywall_type'       => $paywallType,
         ];
 
+        // 6. Обновляем статью через модель
         $this->storyModel->update($storyId, $updateData);
 
+        // 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
+        $this->storyModel->updatePaywallFlags($storyId, $paywallType);
+
+        // 8. Синхронизируем теги, если они переданы
         if (isset($data['tags'])) {
             $this->storyModel->syncTags($storyId, $data['tags']);
+            $this->storyModel->recalculateHotness($storyId);
         }
+
+        // 9. Логируем обновление
+        $this->audit->log('story.updated', 'Пользователь отредактировал статью', 'story', [
+            'story_id' => $storyId,
+        ]);
 
         return true;
     }
 
     /**
-     * Проверяет наличие прав на редактирование истории.
+     * Проверяет наличие прав на редактирование статьи.
      */
-    public function canEditStory(array $story): bool
+    public function canEditStory(array $story, int $userId): bool
     {
-        $isAuthor = (int)$story['user_id'] === $this->currentUser->id;
+        $isAuthor = (int)$story['user_id'] === $userId;
         return $isAuthor || $this->currentUser->canModerate();
     }
 
     /**
-     * Проверяет статус домена и логирует попытки публикации с заблокированных доменов.
-     *
-     * @throws BannedDomainException
+     * Скрывает статью (мягкое удаление).
      */
-    private function checkBannedDomain(?string $domain, int $userId, string $url): void
-    {
-        if (empty($domain)) {
-            return;
-        }
-
-        if (!$this->domainModel->isBanned($domain)) {
-            return;
-        }
-
-        $banInfo = $this->domainModel->getBanInfo($domain);
-        $reason = $banInfo['ban_reason'] ?? 'Домен заблокирован администрацией';
-
-        $this->audit->log('story.rejected_banned_domain', "Попытка публикации с забаненного домена", 'story', [
-            'domain' => $domain,
-            'user_id' => $userId,
-            'url' => $url,
-            'reason' => $reason,
-        ]);
-
-        throw new BannedDomainException(
-            "Публикация отклонена: домен **" . e($domain) . "** заблокирован. Причина: " . e($reason)
-        );
-    }
-
-    /**
-     * Скрывает историю.
-     *
-     * @throws \InvalidArgumentException Если история не найдена
-     */
-    public function deleteStory(int $storyId, int $adminId, string $reason = 'История скрыта модератором'): bool
+    public function deleteStory(int $storyId, int $adminId, string $reason = 'Статья скрыта модератором'): bool
     {
         $story = $this->storyModel->find($storyId);
         if (!$story) {
-            throw new \InvalidArgumentException("Публикация не найдена.");
+            throw new \InvalidArgumentException("Статья не найдена.");
         }
 
         $this->storyModel->softDelete($storyId);
@@ -187,15 +205,13 @@ class StoryService
     }
 
     /**
-     * Восстанавливает скрытую историю.
-     *
-     * @throws \InvalidArgumentException Если история не найдена
+     * Восстанавливает скрытую статью.
      */
     public function restoreStory(int $storyId, int $adminId): bool
     {
         $story = $this->storyModel->find($storyId, withTrashed: true);
         if (!$story) {
-            throw new \InvalidArgumentException("Публикация не найдена.");
+            throw new \InvalidArgumentException("Статья не найдена.");
         }
 
         $this->storyModel->restore($storyId);

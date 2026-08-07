@@ -94,23 +94,22 @@ $paginationBaseUrl = route('categories.show', ['slug' => $category['slug']]);
                         <?php endif; ?>
                     </div>
 
-                    <div class="story_content">
                         <?php if ($needsTruncation): ?>
                             <details>
                                 <summary>
                                     <?= truncateDescription($fullHtml, 300) ?>
                                 </summary>
-                                <div class="full-content">
+                                <div class="summary-content">
                                     <?= $fullHtml ?>
                                 </div>
                             </details>
                         <?php else: ?>
                             <?= $fullHtml ?>
                         <?php endif; ?>
-                    </div>
+                  
 
                     <!-- Метаданные -->
-                    <?php partial('Users::_story_meta', [
+                    <?php partial('Stories::_story_meta', [
                         'story' => $story,
                         'currentUserId' => $currentUserId,
                         'isAdmin' => $isAdmin,

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Services;
 
 use App\Modules\Tags\Services\TagValidator;
-use App\Modules\Origins\Models\Domain;
 
 /**
- * Валидатор данных истории.
+ * Валидатор данных статьи (Medium-стиль).
  * 
  * Используется в StoryService (create/update) и SuggestionService.
  * Отвечает только за проверку данных, не работает с БД напрямую.
@@ -16,24 +15,21 @@ use App\Modules\Origins\Models\Domain;
 class StoryValidator
 {
     private TagValidator $tagValidator;
-    private Domain $domainModel;
 
     /**
      * Конструктор с инъекцией зависимостей.
      * 
      * @param TagValidator $tagValidator Валидатор тегов
-     * @param Domain $domainModel Модель доменов
      */
-    public function __construct(
-        TagValidator $tagValidator,
-        Domain $domainModel
-    ) {
+    public function __construct(TagValidator $tagValidator)
+    {
         $this->tagValidator = $tagValidator;
-        $this->domainModel = $domainModel;
     }
 
     /**
-     * Полная валидация данных истории.
+     * Полная валидация данных статьи.
+     * В Medium-стиле заголовок извлекается из JSON в StoryService, 
+     * поэтому здесь мы проверяем в основном наличие контента и теги.
      * 
      * @param array $data Данные для проверки
      * @param bool $isUpdate true если это обновление (некоторые поля опциональны)
@@ -43,31 +39,25 @@ class StoryValidator
     {
         $errors = [];
 
-        // 1. Валидация заголовка
-        $titleError = $this->validateTitle($data['title'] ?? '', $isUpdate);
-        if ($titleError) {
-            $errors[] = $titleError;
+        // 1. Проверка наличия контента (JSON от Editor.js)
+        if (empty(trim($data['description'] ?? ''))) {
+            $errors[] = 'Содержание статьи не может быть пустым.';
         }
 
-        // 2. Валидация URL
-        if (!empty($data['url'])) {
-            $urlError = $this->validateUrl($data['url']);
-            if ($urlError) {
-                $errors[] = $urlError;
-            }
-
-            // 3. Проверка забаненных доменов
-            $domainError = $this->validateDomain($data['url']);
-            if ($domainError) {
-                $errors[] = $domainError;
-            }
-        }
-
-        // 4. Валидация тегов
+        // 2. Валидация тегов (если они переданы)
         if (isset($data['tags'])) {
             $tagValidation = $this->tagValidator->validateForStory($data['tags']);
             if (!$tagValidation['valid']) {
                 $errors[] = $tagValidation['error'];
+            }
+        }
+
+        // 3. Валидация заголовка (Опционально: на случай, если он передается отдельно, 
+        // например, через систему предложений изменений)
+        if (!empty($data['title'])) {
+            $titleError = $this->validateTitle($data['title']);
+            if ($titleError) {
+                $errors[] = $titleError;
             }
         }
 
@@ -78,69 +68,25 @@ class StoryValidator
     }
 
     /**
-     * Валидация заголовка.
+     * Валидация заголовка (на случай, если он передается отдельной строкой).
      * 
      * @param string $title Заголовок
-     * @param bool $isUpdate true если обновление (заголовок опционален)
      * @return string|null Сообщение об ошибке или null
      */
-    public function validateTitle(string $title, bool $isUpdate = false): ?string
+    public function validateTitle(string $title): ?string
     {
         $minLength = config('validation.title_min_length', 5, 'int');
-
-        if (empty($title)) {
-            return $isUpdate ? null : 'Заголовок обязателен.';
-        }
+        $maxLength = config('validation.title_max_length', 150, 'int');
 
         if (mb_strlen($title) < $minLength) {
             return "Заголовок должен содержать как минимум {$minLength} символов.";
         }
 
-        $maxLength = config('validation.title_max_length', 150, 'int');
         if (mb_strlen($title) > $maxLength) {
             return "Заголовок слишком длинный. Максимум {$maxLength} символов.";
         }
 
         return null;
-    }
-
-    /**
-     * Валидация URL.
-     * 
-     * @param string $url URL для проверки
-     * @return string|null Сообщение об ошибке или null
-     */
-    public function validateUrl(string $url): ?string
-    {
-        if (!isValidUrl($url)) {
-            return 'Пожалуйста, укажите корректный URL-адрес.';
-        }
-
-        return null;
-    }
-
-    /**
-     * Проверка забаненных доменов.
-     * 
-     * @param string $url URL для проверки
-     * @return string|null Сообщение об ошибке или null
-     */
-    public function validateDomain(string $url): ?string
-    {
-        $domain = parse_url($url, PHP_URL_HOST);
-
-        if (empty($domain)) {
-            return null;
-        }
-
-        if (!$this->domainModel->isBanned($domain)) {
-            return null;
-        }
-
-        $banInfo = $this->domainModel->getBanInfo($domain);
-        $reason = $banInfo['ban_reason'] ?? 'Домен заблокирован администрацией';
-
-        return "Публикация отклонена: домен **{$domain}** заблокирован. Причина: {$reason}";
     }
 
     /**
@@ -155,23 +101,10 @@ class StoryValidator
         $errors = [];
 
         // Заголовок (если предложен)
-        if (isset($proposedData['title'])) {
-            $titleError = $this->validateTitle($proposedData['title'], false);
+        if (isset($proposedData['title']) && !empty($proposedData['title'])) {
+            $titleError = $this->validateTitle($proposedData['title']);
             if ($titleError) {
                 $errors[] = $titleError;
-            }
-        }
-
-        // URL (если предложен)
-        if (!empty($proposedData['url'])) {
-            $urlError = $this->validateUrl($proposedData['url']);
-            if ($urlError) {
-                $errors[] = $urlError;
-            }
-
-            $domainError = $this->validateDomain($proposedData['url']);
-            if ($domainError) {
-                $errors[] = $domainError;
             }
         }
 

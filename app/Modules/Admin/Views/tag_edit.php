@@ -1,6 +1,6 @@
 <?php
 // Получаем список категорий
-$categoryModel = new App\Modules\Tags\Models\Category();
+$categoryModel = container(App\Modules\Tags\Models\Category::class);
 $categories = $categoryModel->getAllOrdered();
 ?>
 
@@ -19,10 +19,10 @@ $categories = $categoryModel->getAllOrdered();
 
     <div class="form-field-group">
         <label for="name">Название тега <span class="form-field-hint-inline">(обязательно)</span></label>
-        <input type="text" id="name" name="name" required pattern="[a-zа-я0-9\-]+" class="form-input-wide"
+        <input type="text" id="name" name="name" required class="form-input-wide"
             value="<?= e($request->getParams('name', $tagItem['name'] ?? '')) ?>"
             placeholder="Например: php">
-        <div class="hint">Только латиница в нижнем регистре, цифры и дефис. <strong>Изменение повлияет на URL тега.</strong></div>
+        <div class="hint">Только латиница в нижнем регистре, цифры и дефис.</div>
     </div>
 
     <div class="form-field-group">

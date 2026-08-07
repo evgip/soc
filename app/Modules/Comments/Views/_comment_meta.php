@@ -12,7 +12,7 @@ $isModerator = $isModerator ?? false; // Получаем из переданн�
 <div class="comment_meta">
     <?php if (!$isDeleted): ?>
         <?php if (!empty($comment['author_avatar'])): ?>
-            <img src="/uploads/avatars/<?= substr($comment['author_avatar'], 0, 2) ?>/<?= e($comment['author_avatar']) ?>" class="avatar" alt="">
+            <img src="/uploads/avatars/<?= substr($comment['author_avatar'], 0, 2) ?>/<?= e($comment['author_avatar']) ?>" class="mini-avatar-img" alt="">
         <?php endif; ?>
 
         <a href="<?= route('user.profile', ['username' => $comment['author_name']]) ?>" <?= $isOwner ? 'class="user_is_author"' : '' ?>>

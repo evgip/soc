@@ -5,7 +5,7 @@ namespace App\Modules\Stats\Models;
 use W3a\Core\Database\Model;
 use W3a\Core\Database\Database;
 use W3a\Core\Support\Logger;
-use W3a\Core\SvgChart;
+use W3a\Core\View\SvgChart;
 
 class Stats extends Model
 {

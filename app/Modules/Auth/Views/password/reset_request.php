@@ -1,7 +1,5 @@
 <h1>Восстановление пароля</h1>
 
-<?= render_flashes() ?>
-
 <p class="hint">Введите email, указанный при регистрации. Мы отправим ссылку для восстановления пароля.</p>
 
 <form action="<?= route('password.request.submit') ?>" method="POST">

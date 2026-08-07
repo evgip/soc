@@ -1,142 +1,456 @@
 /* ============================================
-   W3A CSS Framework — Сброс, Типографика и Базовые Элементы
-   Всё, что работает без классов.
+   W3A CSS Framework — Сброс и Базовая типографика
+   ============================================
+   
+   Этот файл содержит:
+   1. Базовый сброс (box-sizing)
+   2. Контейнеры (макеты страниц)
+   3. Типографика (заголовки, параграфы, ссылки, цитаты)
+   4. Код (pre, code)
+   5. Списки
+   6. Изображения и фигуры
+   7. Формы
+   8. Базовые кнопки
+   9. Таблицы
+   10. Навигация
+   11. Футер
+   12. Доступность
+   13. Выделение текста
+   
+   Компоненты приложения (header, feed, comments, sidebar и т.д.)
+   находятся в 99_w3a_specific.css
    ============================================ */
 
-@font-face {
-  font-family: 'Inter';
-  font-style: oblique;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url('Inter-var.woff2') format('woff2');
+/* ============================================
+   1. БАЗОВЫЙ СБРОС
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-
-/* ---------- БАЗОВЫЙ СБРОС ---------- */
 html {
   font-size: var(--font-size-default);
   overflow-y: scroll;
   scroll-behavior: smooth;
-}
-
-body, textarea, input, button, select {
-  font-family: 'Inter', 'Helvetica Neue', 'Helvetica', sans-serif;
-  color: var(--color-fg);
-  line-height: 1.6em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: var(--line-height-text);
+  color: var(--color-fg);
   background-color: var(--color-bg);
-  margin: 0 auto;
-  padding: 0 0.5em 2em 0.5em;
-  max-width: 60rem;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
-  color: var(--base-color);
+  margin: 0;
+  padding: 0;
+  transition: background-color var(--transition-fast), 
+              color var(--transition-fast);
 }
 
-/* ---------- ТИПОГРАФИКА ---------- */
+main {
+  padding-top: 0;
+  width: 100%;
+}
+
+/* ============================================
+   2. БАЗОВЫЙ КОНТЕЙНЕР
+   Общие свойства для всех макетов
+   ============================================ */
+main .content {
+  margin: 0 auto;
+  padding: 0 var(--content-padding);
+  transition: max-width 0.2s ease;
+}
+
+/* ============================================
+   ВАРИАНТЫ МАКЕТОВ
+   Ширины берутся из переменных в 00_variables.css
+   ============================================ */
+
+/* Для чтения: статьи, комментарии */
+main .content.content-default {
+  max-width: var(--content-width-default);
+}
+
+/* Главная с сайдбаром, каталоги */
+main .content.content-wide {
+  max-width: var(--content-width-wide);
+}
+
+/* Профиль, wiki-страницы */
+main .content.content-medium {
+  max-width: var(--content-width-medium);
+}
+
+/* Формы: вход, регистрация, настройки */
+main .content.content-narrow {
+  max-width: var(--content-width-narrow);
+}
+
+/* Admin-панель: без ограничения ширины */
+main .content.content-full {
+  max-width: none;
+  padding-left: var(--content-padding-full);
+  padding-right: var(--content-padding-full);
+}
+
+/* ============================================
+   АДАПТИВНОСТЬ
+   ============================================ */
+
+/* На средних экранах wide-макет занимает всю ширину */
+@media (max-width: 1240px) {
+  main .content.content-wide {
+    max-width: 100%;
+  }
+}
+
+/* На мобильных все макеты становятся на всю ширину */
+@media (max-width: 640px) {
+  main .content {
+    padding: 0 16px;
+  }
+  
+  main .content.content-full {
+    padding: 0 16px;
+  }
+}
+
+/* ============================================
+   3. ТИПОГРАФИКА
+   ============================================ */
+
+/* Базовые отступы для блочных элементов */
+p, ul, ol, blockquote, pre, figure, table {
+  margin: 1.5rem 0;
+}
+
+/* Параграфы (специальный отступ как в Medium) */
+p {
+  margin: 1.46rem 0;
+}
+
+/* Ссылки */
 a {
   color: var(--color-fg-link);
-  cursor: pointer;
-  transition: color var(--transition-fast);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition: text-decoration-color var(--transition-fast), 
+              color var(--transition-fast);
 }
 
-h1, h2, h3, h4 { font-weight: bold; padding: 0; }
-h1 { font-size: 1.4em; }
-h2 { font-size: 1.2em; }
-h3 { font-size: 1.1em; }
+a:hover {
+  text-decoration-color: currentColor;
+}
 
+a:active {
+  opacity: 0.8;
+}
+
+/* Заголовки */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 2.5rem 0 1rem;
+  letter-spacing: -0.015em;
+}
+
+h1 {
+  font-size: 2.25rem;
+  letter-spacing: -0.022em;
+  margin-top: 0;
+}
+
+h2 {
+  font-size: 1.625rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+h4 {
+  font-size: 1.1rem;
+}
+
+h5 {
+  font-size: 1rem;
+}
+
+h6 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Горизонтальная линия */
 hr {
   border: none;
   height: 1px;
   background-color: var(--color-fg-shape);
-  margin: 1em 0;
+  margin: 3rem 0;
 }
 
+/* Цитата в стиле Medium */
+blockquote {
+  margin: 2rem 0;
+  padding: 0 0 0 20px;
+  border-left: 3px solid var(--color-fg);
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--color-fg);
+  letter-spacing: -0.006em;
+}
+
+blockquote footer {
+  margin-top: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-style: normal;
+  color: var(--opacity-fg-54);
+}
+
+blockquote footer::before {
+  content: "— ";
+}
+
+/* Дополнительные текстовые элементы */
+mark {
+  background-color: var(--color-selection-bg);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+small {
+  font-size: 0.875em;
+  color: var(--opacity-fg-67);
+}
+
+sub, sup {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+/* Курсив */
+i, em {
+  font-style: italic;
+}
+
+/* Жирный */
+b, strong {
+  font-weight: 700;
+}
+
+/* ============================================
+   4. КОД
+   ============================================ */
+
+/* Блок кода */
 pre {
   background-color: var(--color-box-bg-shaded);
-  padding: 0.5em;
-  border-radius: 3px;
-  white-space: pre-wrap; /* Перенос с сохранением пробелов */
-  overflow-x: auto; /* Горизонтальная прокрутка при длинной строке */
-  overflow-y: auto; /* Вертикальная прокрутка, если текст слишком длинный */
-  word-break: break-word; /* Чтобы длинные слова разрывались корректно */
-  font-family: monospace; /* Моноширинный шрифт по умолчанию */  
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  line-height: 1.55;
+  border: 1px solid var(--color-fg-shape);
 }
 
+/* Встроенный код */
 code {
   background-color: var(--color-box-bg-shaded);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: 0.9em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  border: 1px solid var(--color-fg-shape);
 }
 
-blockquote {
-  font-style: italic;
-  margin: 0.25em 0 0 0.5em;
-  padding: 0 0 0 1em;
-  border-left: 2px solid var(--color-fg-shape);
+/* Код внутри блока (убираем двойное оформление) */
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  border: none;
 }
 
-/* ---------- ФОРМЫ (базовые) ---------- */
+/* ============================================
+   5. СПИСКИ
+   ============================================ */
+ul, ol {
+  padding-left: 1.5rem;
+}
+
+li {
+  margin: 0.3rem 0;
+}
+
+/* Вложенные списки */
+ul ul, ul ol,
+ol ul, ol ol {
+  margin: 0.5rem 0;
+}
+
+/* ============================================
+   6. ИЗОБРАЖЕНИЯ И ФИГУРЫ
+   ============================================ */
+
+/* Базовые изображения */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Фигура с подписью */
+figure {
+  margin: 3rem 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+figure figcaption {
+  margin-top: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--opacity-fg-54);
+  text-align: center;
+  max-width: var(--content-width);
+  letter-spacing: -0.003em;
+}
+
+/* ============================================
+   7. ФОРМЫ
+   ============================================ */
+
+/* Базовые поля ввода */
 input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
-textarea,
-select {
+textarea, select {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
 input, button, select, textarea {
+  font-family: inherit;
+  font-size: 1rem;
   color: var(--color-fg);
-  font: inherit;
   background-color: var(--color-box-bg);
-  padding: 6px 10px;
+  padding: 0.6rem 0.875rem;
   border: 1px solid var(--color-box-border);
-  border-radius: 3px;
-  transition: border-color var(--transition-fast), outline var(--transition-fast);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), 
+              box-shadow var(--transition-fast);
 }
 
 input:focus, select:focus, textarea:focus {
-  outline: var(--input-outline-width) solid var(--color-box-border-focus);
-  border-color: transparent;
+  outline: none;
+  border-color: var(--color-box-border-focus);
+  box-shadow: 0 0 0 3px rgba(41, 41, 41, 0.08);
 }
 
 textarea {
-  min-height: 80px;
+  min-height: 120px;
   resize: vertical;
+  line-height: 1.55;
 }
 
-/* ---------- КНОПКИ (базовые) ---------- */
-button,
-input[type="submit"],
+/* Чекбоксы и радиокнопки */
+input[type="checkbox"],
+input[type="radio"] {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+/* Placeholder */
+::placeholder {
+  color: var(--opacity-fg-40);
+  opacity: 1;
+}
+
+/* ============================================
+   8. БАЗОВЫЕ КНОПКИ
+   ============================================ */
+button, 
+input[type="submit"], 
 input[type="button"] {
   width: auto;
   background-color: var(--color-button-bg);
   border: 1px solid var(--color-box-border);
-  border-bottom-color: var(--color-fg-shape);
   color: var(--color-fg);
   cursor: pointer;
-  padding: 6px 14px;
+  padding: 0.55rem 1.125rem;
   font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast), 
+              border-color var(--transition-fast),
+              opacity var(--transition-fast),
+              transform var(--transition-fast);
 }
 
-button:hover,
-input[type="submit"]:hover,
+button:hover, 
+input[type="submit"]:hover, 
 input[type="button"]:hover {
   background-color: var(--color-button-bg-shaded);
 }
 
-/* ---------- ТАБЛИЦЫ (базовые) ---------- */
+/* Disabled состояние */
+button:disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-box-bg-shaded);
+}
+
+/* Active состояние */
+button:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+input[type="button"]:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ============================================
+   9. ТАБЛИЦЫ
+   ============================================ */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1.5em 0;
+  margin: 2rem 0;
+  font-size: 0.95rem;
 }
 
 th, td {
-  padding: 0.75em;
+  padding: 0.85rem 1rem;
   text-align: left;
   border-bottom: 1px solid var(--color-table-row-border);
 }
@@ -144,26 +458,36 @@ th, td {
 thead th {
   background-color: var(--color-table-header-bg);
   font-weight: 600;
-  border-bottom: 2px solid var(--color-table-header-border);
+  border-bottom: 1px solid var(--color-table-header-border);
 }
 
 tbody tr:hover {
   background-color: var(--color-box-bg-shaded);
 }
 
-/* ---------- НАВИГАЦИЯ (базовая) ---------- */
+/* Адаптивные таблицы */
+@media (max-width: 640px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* ============================================
+   10. БАЗОВАЯ НАВИГАЦИЯ
+   ============================================ */
 nav {
   display: flex;
   align-items: center;
-  gap: 1.5em;
-  padding: 0.75em 0;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
 nav a {
-  color: var(--opacity-fg-67);
-  font-weight: 600;
-  padding: 0.25em 0;
+  color: var(--opacity-fg-54);
+  font-weight: 500;
+  text-decoration: none;
   transition: color var(--transition-fast);
 }
 
@@ -171,17 +495,10 @@ nav a:hover {
   color: var(--color-fg);
 }
 
-nav a.is-active {
-  color: var(--color-fg);
-  border-bottom: 2px solid var(--color-fg-accent);
-  padding-bottom: 0.15em;
-}
-
-/* ---------- ХЛЕБНЫЕ КРОШКИ (семантические) ---------- */
+/* Хлебные крошки */
 nav[aria-label="Breadcrumb"] {
-  margin: 1em 0;
-  padding: 0;
-  border-bottom: none; /* Переопределяем базовый nav */
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
 }
 
 nav[aria-label="Breadcrumb"] ol {
@@ -189,33 +506,126 @@ nav[aria-label="Breadcrumb"] ol {
   padding: 0;
   margin: 0;
   display: flex;
-  align-items: center;
   gap: 0.5rem;
-  font-size: 0.95rem;
   flex-wrap: wrap;
 }
 
 nav[aria-label="Breadcrumb"] li {
-  display: contents; /* Чтобы ::after работал между li */
+  display: contents;
 }
 
 nav[aria-label="Breadcrumb"] li:not(:last-child)::after {
   content: "/";
   margin-left: 0.5rem;
-  color: var(--opacity-fg-63);
+  color: var(--opacity-fg-40);
 }
 
 nav[aria-label="Breadcrumb"] a {
-  color: var(--opacity-fg-59);
-  font-weight: normal; /* Переопределяем nav a */
-}
-
-nav[aria-label="Breadcrumb"] a:hover {
-  color: var(--color-fg-link);
-  text-decoration: underline;
+  color: var(--opacity-fg-54);
+  font-weight: normal;
 }
 
 nav[aria-label="Breadcrumb"] [aria-current="page"] {
   color: var(--color-fg);
-  font-weight: 600;
+  font-weight: 500;
+}
+
+/* ============================================
+   11. ФУТЕР
+   ============================================ */
+footer {
+  max-width: var(--content-width-wide);
+  margin: 4rem auto 0;
+  padding: 2rem var(--content-padding);
+  font-size: 0.875rem;
+  color: var(--opacity-fg-54);
+  border-top: 1px solid var(--color-fg-shape);
+}
+
+footer nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+footer a {
+  color: var(--opacity-fg-54);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+footer a:hover {
+  color: var(--color-fg);
+  text-decoration: underline;
+}
+
+/* Блок статистики (для админов) */
+footer .hint.right {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-style: normal;
+  color: var(--opacity-fg-40);
+}
+
+/* ============================================
+   12. ДОСТУПНОСТЬ
+   ============================================ */
+
+/* Видимый фокус для клавиатурной навигации */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-fg-accent);
+  outline-offset: 2px;
+}
+
+/* Скрытие элементов для скринридеров */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Уважение к prefers-reduced-motion (глобально) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   13. ВЫДЕЛЕНИЕ ТЕКСТА
+   ============================================ */
+::selection {
+  background-color: var(--color-selection-bg);
+  color: var(--color-fg);
+}
+
+/* ============================================
+   ДОПОЛНИТЕЛЬНЫЕ УТИЛИТЫ
+   ============================================ */
+
+/* Скрытый элемент */
+[hidden] {
+  display: none !important;
+}
+
+/* Плавный скролл к якорям */
+[id] {
+  scroll-margin-top: 80px;
 }

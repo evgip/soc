@@ -1,174 +1,305 @@
 <?php
-$currentUserId = $currentUserId ?? 0;
-$isAdmin = $isAdmin ?? false;
-$canUserDownvote = $canUserDownvote ?? false;
-$voteModel = $voteModel ?? null;
+/**
+ * Главная страница — лента статей (Medium-стиль)
+ * 
+ * @var \App\Modules\Stories\ViewModels\HomeFeedViewModel|null $viewModel
+ * @var string $title
+ */
 
-// Проверяем, это специальная страница подписок и там пусто?
-$isSubscribedEmpty = ($title === 'Мои подписки' && !empty($isEmptyState));
+// Проверяем, используется ли новый ViewModel или старая логика (для фильтров по тегу/подписок)
+$useViewModel = isset($viewModel) 
+    && $viewModel instanceof \App\Modules\Stories\ViewModels\HomeFeedViewModel;
+
+if ($useViewModel):
+    // ============================================================
+    // НОВЫЙ ФОРМАТ: Medium-стиль с секциями и сайдбаром
+    // ============================================================
+    
+    $currentUserId = $viewModel->currentUserId;
+    $isAdmin = $viewModel->isAdmin;
+    $canUserDownvote = $viewModel->canUserDownvote;
+    $currentVotes = $viewModel->currentVotes;
+    $newCommentsMap = $viewModel->newCommentsMap;
+    $stories = $viewModel->stories;
+    $forYou = $viewModel->forYou;
+    $trending = $viewModel->trending;
+    $staffPicks = $viewModel->staffPicks;
+    $currentPage = $viewModel->currentPage;
+    $totalPages = $viewModel->totalPages;
 ?>
 
-
-<?php
-$currentSort = $sort ?? 'hot';
-$sortLinks = [
-    'hot' => ['url' => '/?sort=hot',         'label' => 'Hot'],
-    'new' => ['url' => '/?sort=new',         'label' => 'New'],
-    'top' => ['url' => '/?sort=top',         'label' => 'Top'],
-];
-?>
-
-<nav class="nav br-none">
-    <?php foreach ($sortLinks as $key => $link): ?>
-        <a href="<?= $link['url'] ?>"
-            class="<?= $currentSort === $key ? 'is-active' : '' ?>">
-            <?= $link['label'] ?>
-        </a>
-    <?php endforeach; ?>
-</nav>
-
-<?php if (!empty($tagInfo['slug'])): ?>
-	<div class="hint mb1">
-		Статьи, <a href="/tags#<?= e($tagInfo['slug']); ?>">помеченные</a> как <a href="<?= route('tags.filter', ['tagslug' => $tagInfo['slug']]) ?>" class="tag tag-<?= e($tagInfo['slug']); ?>"><?= e($tagInfo['name']); ?></a>. 
-		<br>
-		<?php if (!empty($primaryWikiPage['title'])): ?>
-			<?php if ($wikiPagesCount > 0 || $primaryWikiPage): ?>
-				Wiki статья привязанная к тегу   <?= e($tagInfo['name']); ?>: <a href="/t/<?= e($tagInfo['slug']) ?>/wiki/<?= e($primaryWikiPage['slug']) ?>"><?= e($primaryWikiPage['title']) ?></a>
-			<?php endif; ?>
-		<?php endif; ?>
-	</div>
-<?php endif; ?>
-
-<?php if (!empty($author)): ?>
-<div class="hint mb1">
-    Публикации пользователя: <?= e($author) ?>
-	<br>
-    <a href="/">× Сбросить фильтр</a>
-</div>
-<?php endif; ?>
-
-<?php if (!empty($domain)): ?>
-<div class="hint mb1">
-    Публикации по домену: <?= e($domain) ?>
-	<br>
-    <a href="/">× Сбросить фильтр</a>
-</div>
-<?php endif; ?>
-
-
-
-<?php if ($isSubscribedEmpty): ?>
-    <!-- КРАСИВОЕ ПУСТОЕ СОСТОЯНИЕ (EMPTY STATE) -->
-    <div class="alert is-notice">
-        <h2>📭 У вас пока нет подписок</h2>
-        <p class="hint mb1">
-            Здесь будут появляться новые истории от авторов и по темам, на которые вы подпишетесь.<br>
-            Это лучший способ собрать персональную ленту без информационного шума.
-        </p>
-        <div class="flex gap">
-            <a href="/tags" class="tag-checkbox">🏷️ Посмотреть популярные теги</a>
-            <a href="/" class="tag-checkbox">🏠 Вернуться на главную</a>
-        </div>
-    </div>
-
-<?php elseif (!empty($stories)): ?>
-    <ol class="stories">
-        <?php foreach ($stories as $story): ?>
-            <?php
-            $isStoryDeleted = !empty($story['deleted_at']);
-
-            $fullHtml = markdown_comment($story['description']);
-            $needsTruncation = needsTruncation($fullHtml, 300);
-
-            $newCount = $newCommentsMap[$story['id']] ?? 0;
-            ?>
-
-            <li class="story <?= $isStoryDeleted ? 'deleted' : '' ?>">
-
-                <?php partial('Votes::_voters', [
-                    'type' => 'story',
-                    'id' => (int)$story['id'],
-                    'score' => (int)$story['score'],
-                    'currentVoteState' => $currentVotes[$story['id']] ?? null,
-                    'canDownvote' => $canUserDownvote,
-                    'isLoggedIn' => $currentUserId > 0,
-                    'contentOwnerId' => (int)$story['user_id'],
-                ]); ?>
-
-                <div class="story_liner">
-                    <div class="link">
-                        <?php if ($isStoryDeleted): ?>
-                            <em>[Удалена модератором]</em>
-                        <?php endif; ?>
-
-                        <?php
-                        $isExternal = !empty($story['url']);
-                        $targetUrl = $isExternal ? e($story['url']) : route('story.show', ['id' => $story['id']]);
-                        ?>
-
-                        <a class="title" href="<?= $targetUrl ?>" <?= $isExternal ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
-                            <?= e($story['title']) ?>
-                        </a>
-
-                        <?php if ($isExternal): ?>
-                            <?php
-                            $domainHost = !empty($story['url']) ? parse_url($story['url'], PHP_URL_HOST) : null;
-                            if ($domainHost):
-                                $isBannedDomain = false;
-                                if (isset($bannedDomainsCache)) {
-                                    $isBannedDomain = in_array(strtolower($domainHost), $bannedDomainsCache, true);
-                                }
-                            ?>
-                                <a href="<?= route('domain.show', ['domain' => $domainHost]) ?>"
-                                    class="domain <?= $isBannedDomain ? 'domain-banned' : '' ?>"
-                                    title="<?= $isBannedDomain ? '⚠ Домен заблокирован модераторами' : '' ?>">
-                                    <?= e($domainHost) ?>
-                                    <?php if ($isBannedDomain): ?>
-                                        🚫
-                                    <?php endif; ?>
-                                </a>
-                            <?php endif; ?>
-                        <?php endif; ?>
-
-                        <?php if (!empty($story['tags'])): ?>
-                            <span class="tags">
-                                <?php foreach ($story['tags_with_names'] as $tagData): ?>
-                                    <a href="<?= route('tags.filter', ['tagslug' => e($tagData['slug'])]) ?>" class="tag tag-<?= e($tagData['slug']); ?>"><?= e($tagData['name']) ?></a>
-                                <?php endforeach; ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="story_content">
-                        <?php if ($needsTruncation): ?>
-                            <details>
-                                <summary>
-                                    <?= truncateDescription($fullHtml, 150) ?>
-                                </summary>
-                                <div class="full-content">
-                                    <?= $fullHtml ?>
-                                </div>
-                            </details>
-                        <?php else: ?>
-                            <?= $fullHtml ?>
-                        <?php endif; ?>
-                    </div>
-
-                    <?php partial('Users::_story_meta', [
+<div class="home-grid">
+    <!-- ========================================================
+         ЛЕВАЯ КОЛОНКА: основная лента + рекомендации
+         ======================================================== -->
+    <div class="home-grid__main">
+        
+        <!-- СЕКЦИЯ: РЕКОМЕНДАЦИИ ДЛЯ ВАС -->
+        <?php if ($viewModel->shouldShowForYou()): ?>
+        <section class="feed-section feed-section--for-you">
+            <header class="section-header">
+                <h2 class="section-title">Рекомендации для вас</h2>
+                <p class="section-subtitle">На основе вашей истории чтения и подписок</p>
+            </header>
+            
+            <div class="story-list">
+                <?php foreach (array_slice($forYou, 0, 6) as $story): ?>
+                    <?php partial('Stories::_story_item', [
                         'story' => $story,
                         'currentUserId' => $currentUserId,
                         'isAdmin' => $isAdmin,
-                        'newCount' => $newCount,
+                        'canUserDownvote' => $canUserDownvote,
+                        'currentVotes' => $currentVotes,
+                        'newCommentsMap' => $newCommentsMap,
+                        'hideAuthor' => false,
                     ]); ?>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <!-- СЕКЦИЯ: НОВЫЕ ПУБЛИКАЦИИ (основная лента) -->
+        <section class="feed-section feed-section--main">
+            <header class="section-header">
+                <h2 class="section-title">Новые публикации</h2>
+            </header>
+            
+            <?php if (!empty($stories)): ?>
+                <ol class="stories">
+                    <?php foreach ($stories as $story): ?>
+                        <?php partial('Stories::_story_item', [
+                            'story' => $story,
+                            'currentUserId' => $currentUserId,
+                            'isAdmin' => $isAdmin,
+                            'canUserDownvote' => $canUserDownvote,
+                            'currentVotes' => $currentVotes,
+                            'newCommentsMap' => $newCommentsMap,
+                            'hideAuthor' => false,
+                        ]); ?>
+                    <?php endforeach; ?>
+                </ol>
+
+                <?php if ($totalPages > 1): ?>
+                    <?= pagination($currentPage, $totalPages) ?>
+                <?php endif; ?>
+            <?php else: ?>
+                <div class="empty-state">
+                    <p class="hint">Пока нет новых статей.</p>
+                    <?php if ($currentUserId > 0): ?>
+                        <a href="<?= route('story.form') ?>" class="btn btn-pill btn-accent">
+                            Написать первую статью
+                        </a>
+                    <?php endif; ?>
                 </div>
-            </li>
+            <?php endif; ?>
+        </section>
+    </div>
+
+    <!-- ========================================================
+         ПРАВАЯ КОЛОНКА: сайдбар
+         ======================================================== -->
+    <aside class="home-grid__sidebar">
+        
+		<!-- СЕКЦИЯ: СЕЙЧАС В ТРЕНДЕ -->
+		<?php if ($viewModel->shouldShowTrending()): ?>
+		<section class="sidebar-section sidebar-section--trending">
+			<header class="sidebar-header">
+				<h3 class="sidebar-title">Сейчас в тренде</h3>
+			</header>
+			
+			<ol class="trending-list">
+				<?php foreach (array_slice($trending, 0, 5) as $index => $story): ?>
+					<li class="trending-item">
+						<span class="trending-number"><?= $index + 1 ?></span>
+						<div class="trending-content">
+							<a href="<?= route('story.show', ['id' => $story['id']]) ?>" class="trending-title">
+								<?= e($story['title']) ?>
+							</a>
+							<div class="trending-meta">
+								<a href="<?= route('user.profile', ['username' => $story['author_name']]) ?>" class="trending-author">
+									<?= e($story['author_name']) ?>
+								</a>
+								<span class="trending-divider">·</span>
+								<span class="trending-date">
+									<?= format_date_ru($story['created_at']) ?>
+								</span>
+							</div>
+						</div>
+					</li>
+				<?php endforeach; ?>
+			</ol>
+		</section>
+		<?php endif; ?>
+
+		<!-- СЕКЦИЯ: ВЫБОР РЕДАКЦИИ -->
+		<?php if ($viewModel->shouldShowStaffPicks()): ?>
+		<section class="sidebar-section sidebar-section--staff-picks">
+			<header class="sidebar-header">
+				<h3 class="sidebar-title">Выбор редакции</h3>
+			</header>
+			
+			<div class="staff-picks-list">
+				<?php foreach (array_slice($staffPicks, 0, 3) as $story): ?>
+					<article class="staff-pick-compact">
+						<?php $firstImage = get_story_first_image($story); ?>
+						<?php if ($firstImage): ?>
+							<a href="<?= route('story.show', ['id' => $story['id']]) ?>" class="staff-pick-compact__image">
+								<img src="<?= e($firstImage) ?>" alt="" loading="lazy">
+							</a>
+						<?php endif; ?>
+						
+						<h4 class="staff-pick-compact__title">
+							<a href="<?= route('story.show', ['id' => $story['id']]) ?>">
+								<?= e($story['title']) ?>
+							</a>
+						</h4>
+						<div class="staff-pick-compact__meta">
+							<a href="<?= route('user.profile', ['username' => $story['author_name']]) ?>">
+								<?= e($story['author_name']) ?>
+							</a>
+							<span class="staff-pick-compact__divider">·</span>
+							<span class="staff-pick-compact__date">
+								<?= format_date_ru($story['created_at']) ?>
+							</span>
+						</div>
+					</article>
+				<?php endforeach; ?>
+			</div>
+		</section>
+		<?php endif; ?>
+
+        <!-- СЕКЦИЯ: ПОПУЛЯРНЫЕ ТЕГИ -->
+        <?php if (!empty($allTags) && is_array($allTags)): ?>
+        <section class="sidebar-section sidebar-section--tags">
+            <header class="sidebar-header">
+                <h3 class="sidebar-title">Популярные темы</h3>
+            </header>
+            <div class="sidebar-tags">
+                <?php foreach (array_slice($allTags, 0, 10) as $tag): ?>
+                    <a href="<?= route('tags.filter', ['tagslug' => e($tag['slug'])]) ?>" class="tag tag-<?= e($tag['slug']) ?>">
+                        <?= e($tag['name']) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <!-- СЕКЦИЯ: ПРИСОЕДИНЯЙТЕСЬ (для гостей) -->
+        <?php if (!$viewModel->isLoggedIn): ?>
+        <section class="sidebar-section sidebar-section--subscribe">
+            <h3 class="sidebar-title">Присоединяйтесь</h3>
+            <p class="sidebar-text">
+                Читайте лучшие публикации, подписывайтесь на авторов и участвуйте в обсуждениях.
+            </p>
+            <div class="sidebar-actions">
+                <a href="<?= route('auth.login') ?>" class="btn btn-pill btn-outline">Войти</a>
+                <?php if (config('invitations.config.invitations_enabled')): ?>
+                    <a href="<?= route('home') ?>invite/request" class="btn btn-pill btn-accent">Запросить приглашение</a>
+                <?php else: ?>
+                    <a href="<?= route('auth.register') ?>" class="btn btn-pill btn-accent">Зарегистрироваться</a>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+    </aside>
+</div>
+
+<?php else: ?>
+<!-- ============================================================
+     СТАРЫЙ ФОРМАТ: Фильтры по тегу / автору / подписки
+     (обратная совместимость)
+     ============================================================ -->
+<?php
+$currentUserId = $currentUserId ?? 0;
+$isAdmin = $isAdmin ?? false;
+$canUserDownvote = $canUserDownvote ?? false;
+$stories = $stories ?? [];
+$tagInfo = $tagInfo ?? [];
+$author = $author ?? '';
+$domain = $domain ?? '';
+$sort = $sort ?? 'new';
+$currentPage = $currentPage ?? 1;
+$totalPages = $totalPages ?? 0;
+$newCommentsMap = $newCommentsMap ?? [];
+$currentVotes = $currentVotes ?? [];
+
+// Специальная страница "Мои подписки" с пустым состоянием
+$isSubscribedEmpty = (($title ?? '') === 'Мои подписки' && !empty($isEmptyState));
+?>
+
+<!-- Заголовок страницы для фильтров -->
+<?php if (!empty($tagInfo['slug'])): ?>
+    <div class="filter-header">
+	    <center class="mb1">
+			<h1 class="title">
+				<?= e($tagInfo['name']) ?>
+			</h1>
+			<div class="filter-header__hint"><?= e($tagInfo['description']); ?></div>
+			
+			<?php if (!empty($primaryWikiPage['title'])): ?>
+				<p class="filter-header__hint">
+					Wiki статья, привязанная к тегу: 
+					<a href="/t/<?= e($tagInfo['slug']) ?>/wiki/<?= e($primaryWikiPage['slug']) ?>">
+						<?= e($primaryWikiPage['title']) ?>
+					</a>
+				</p>
+			<?php endif; ?>
+		</center>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($author)): ?>
+    <div class="filter-header">
+        <h1 class="filter-header__title">Публикации пользователя: <?= e($author) ?></h1>
+        <a href="/" class="filter-header__reset">× Сбросить фильтр</a>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($domain)): ?>
+    <div class="filter-header">
+        <h1 class="filter-header__title">Публикации по домену: <?= e($domain) ?></h1>
+        <a href="/" class="filter-header__reset">× Сбросить фильтр</a>
+    </div>
+<?php endif; ?>
+
+<!-- ПУСТОЕ СОСТОЯНИЕ ДЛЯ ПОДПИСОК -->
+<?php if ($isSubscribedEmpty): ?>
+    <div class="empty-state empty-state--subscribed">
+        <h2>📭 У вас пока нет подписок</h2>
+        <p class="hint">
+            Здесь будут появляться новые истории от авторов и по темам, на которые вы подпишетесь.<br>
+            Это лучший способ собрать персональную ленту без информационного шума.
+        </p>
+        <div class="empty-state__actions">
+            <a href="/tags" class="btn btn-pill btn-outline">🏷️ Посмотреть популярные теги</a>
+            <a href="/" class="btn btn-pill btn-accent">🏠 Вернуться на главную</a>
+        </div>
+    </div>
+
+<!-- ЛЕНТА СТАТЕЙ -->
+<?php elseif (!empty($stories)): ?>
+    <ol class="stories">
+        <?php foreach ($stories as $story): ?>
+            <?php partial('Stories::_story_item', [
+                'story' => $story,
+                'currentUserId' => $currentUserId,
+                'isAdmin' => $isAdmin,
+                'canUserDownvote' => $canUserDownvote,
+                'currentVotes' => $currentVotes,
+                'newCommentsMap' => $newCommentsMap,
+                'hideAuthor' => false,
+            ]); ?>
         <?php endforeach; ?>
     </ol>
 
-    <?php if (isset($totalPages) && $totalPages > 1): ?>
+    <?php if ($totalPages > 1): ?>
         <?= pagination($currentPage, $totalPages) ?>
     <?php endif; ?>
 
 <?php else: ?>
-    <p class="hint">Лента историй пока пуста.</p>
+    <div class="empty-state">
+        <p class="hint">Лента историй пока пуста.</p>
+    </div>
+<?php endif; ?>
+
 <?php endif; ?>

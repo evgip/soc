@@ -8,13 +8,14 @@ use App\BaseController;
 use W3a\Core\Http\Response;
 use W3a\Core\Http\RedirectResponse;
 use W3a\Core\Http\ViewResponse;
-use W3a\Core\Support\MessageBag; // 🔥 Добавили использование MessageBag
+use W3a\Core\Support\MessageBag;
 
 use App\Modules\Moderations\Models\ModNote;
 use App\Modules\Moderations\Models\ModActivity;
 use App\Modules\Admin\Models\AuditLog;
 use App\Modules\Moderations\Services\ModerationService;
 use App\Modules\Suggestions\Services\SuggestionService;
+use App\Modules\Common\Support\Layout; 
 
 /**
  * Контроллер модерации.
@@ -30,8 +31,6 @@ use App\Modules\Suggestions\Services\SuggestionService;
  */
 class ModerationsController extends BaseController
 {
-    // 🔥 УДАЛЕНО: метод session() больше не нужен
-
     // =========================================================================
     // ПУБЛИЧНЫЙ ЛОГ МОДЕРАЦИИ
     // =========================================================================
@@ -55,6 +54,10 @@ class ModerationsController extends BaseController
                 ? json_decode($item['payload'], true)
                 : [];
         }
+
+        // 🔑 Устанавливаем широкий макет для главной
+        Layout::set(Layout::WIDE);
+
 
         return $this->render('log', [
             'title'        => 'Лог модерации',

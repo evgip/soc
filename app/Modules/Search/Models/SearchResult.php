@@ -20,10 +20,10 @@ class SearchResult extends Model
                     ->withAvatar()
                     ->withTags()
                     // 1. Используем уникальное имя :query_ft_select
-                    ->addSelect("MATCH(s.title, s.description) AGAINST(:query_ft_select IN NATURAL LANGUAGE MODE) as relevance")
+                    ->addSelect("MATCH(s.title, s.description_text) AGAINST(:query_ft_select IN NATURAL LANGUAGE MODE) as relevance")
                     ->addWhere("s.deleted_at IS NULL")
                     // 2. Используем уникальное имя :query_ft_where
-                    ->addWhere("MATCH(s.title, s.description) AGAINST(:query_ft_where IN NATURAL LANGUAGE MODE)", [
+                    ->addWhere("MATCH(s.title, s.description_text) AGAINST(:query_ft_where IN NATURAL LANGUAGE MODE)", [
                         ':query_ft_select' => $keywords, // Передаем значение для SELECT
                         ':query_ft_where'  => $keywords  // Передаем значение для WHERE
                     ])

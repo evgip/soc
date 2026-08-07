@@ -63,7 +63,7 @@ $stories = $stories ?? [];
                             <?php endif; ?>
                         </div>
                         
-                        <?php partial('Users::_story_meta', [
+                        <?php partial('Stories::_story_meta', [
                             'story' => $story,
                             'currentUserId' => $currentUserId,
                             'isAdmin' => $isAdmin,

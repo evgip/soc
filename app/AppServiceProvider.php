@@ -8,7 +8,6 @@ use W3a\Core\Contracts\RateLimitStorageInterface;
 use W3a\Core\Contracts\UserIdProviderInterface;
 use W3a\Core\Contracts\AuditStorageInterface;
 use W3a\Core\Contracts\BannedIpRepositoryInterface;
-// use W3a\Core\Contracts\UniqueCheckerInterface;
 use W3a\Core\Contracts\ErrorHandlerInterface;
 
 use W3a\Core\Database\Database;

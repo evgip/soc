@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title><?= e($title ?? 'error') ?></title>
-    <link rel="stylesheet" href="/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
 </head>
 <body>
     <main>

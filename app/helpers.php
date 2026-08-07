@@ -2,6 +2,7 @@
 
 use W3a\Core\Http\Router;
 use W3a\Core\Foundation\Container;
+use App\Modules\Common\Support\Layout;
 
 
 
@@ -84,6 +85,109 @@ if (!function_exists('plural')) {
 	}
 }
 
+
+if (!function_exists('format_date_ru')) {
+    /**
+     * Форматирует дату в русском стиле: "7 июн", "15 авг"
+     */
+    function format_date_ru(string $datetime, string $format = 'short'): string
+    {
+        $months = [
+            1 => 'янв', 2 => 'фев', 3 => 'мар', 4 => 'апр',
+            5 => 'май', 6 => 'июн', 7 => 'июл', 8 => 'авг',
+            9 => 'сен', 10 => 'окт', 11 => 'ноя', 12 => 'дек'
+        ];
+        
+        $timestamp = strtotime($datetime);
+        $day = date('j', $timestamp);
+        $month = (int)date('n', $timestamp);
+        $year = date('Y', $timestamp);
+        
+        if ($format === 'short') {
+            return $day . ' ' . $months[$month];
+        }
+        
+        return $day . ' ' . $months[$month] . ' ' . $year;
+    }
+}
+
+
+if (!function_exists('adaptive_time')) {
+    /**
+     * Показывает время в адаптивном формате: относительное для свежих, абсолютное для старых.
+     * 
+     * Логика отображения:
+     * - < 1 часа: "5 минут назад"
+     * - < 24 часов: "2 часа назад"
+     * - Вчера: "Вчера"
+     * - < 7 дней: "3 дня назад"
+     * - В этом году: "13 июл"
+     * - Прошлый год: "13 июл 2025"
+     * 
+     * @param string|null $datetime Дата и время
+     * @return string HTML-элемент span с tooltip
+     * 
+     * @example
+     * <?= adaptive_time($story['created_at']) ?>
+     */
+    function adaptive_time(?string $datetime): string
+    {
+        if (!$datetime) return '';
+        
+        $timestamp = strtotime($datetime);
+        if (!$timestamp) return '';
+        
+        $now = time();
+        $diff = $now - $timestamp;
+        
+        // Определяем формат отображения
+        if ($diff < 60) {
+            $display = 'только что';
+        } elseif ($diff < 3600) {
+            $minutes = (int)floor($diff / 60);
+            $display = $minutes . ' ' . plural($minutes, ['минута', 'минуты', 'минут']) . ' назад';
+        } elseif ($diff < 7200) {
+            $display = '1 час назад';
+        } elseif ($diff < 86400) {
+            $hours = (int)floor($diff / 3600);
+            $display = $hours . ' ' . plural($hours, ['час', 'часа', 'часов']) . ' назад';
+        } elseif ($diff < 172800) { // 2 дня
+            $display = 'Вчера';
+        } elseif ($diff < 604800) { // 7 дней
+            $days = (int)floor($diff / 86400);
+            $display = $days . ' ' . plural($days, ['день', 'дня', 'дней']) . ' назад';
+        } else {
+            // Абсолютная дата для старых статей
+            $months = [
+                1 => 'янв', 2 => 'фев', 3 => 'мар', 4 => 'апр',
+                5 => 'май', 6 => 'июн', 7 => 'июл', 8 => 'авг',
+                9 => 'сен', 10 => 'окт', 11 => 'ноя', 12 => 'дек'
+            ];
+            
+            $day = date('j', $timestamp);
+            $month = (int)date('n', $timestamp);
+            $year = date('Y', $timestamp);
+            $currentYear = date('Y', $now);
+            
+            // Если год текущий — без года
+            if ($year == $currentYear) {
+                $display = $day . ' ' . $months[$month];
+            } else {
+                // Если прошлый год — с годом
+                $display = $day . ' ' . $months[$month] . ' ' . $year;
+            }
+        }
+        
+        // Полная дата для tooltip
+        $title = date('d.m.Y H:i:s', $timestamp);
+        
+        return sprintf(
+            '<span title="%s">%s</span>',
+            htmlspecialchars($title, ENT_QUOTES, 'UTF-8'),
+            htmlspecialchars($display, ENT_QUOTES, 'UTF-8')
+        );
+    }
+}
 
 /**
  * Retrieve application name
@@ -486,4 +590,290 @@ if (!function_exists('buildPaginationQuery')) {
 		//    - вернет чистую, безопасную строку
 		return http_build_query($params);
 	}
+}
+
+
+
+if (!function_exists('render_editorjs_content')) {
+    /**
+     * Безопасно рендерит JSON от Editor.js в HTML.
+     * 
+     * @param string $json JSON от Editor.js
+     * @param bool $skipFirstHeader Если true, пропускает первый блок H1/H2 (он уже выведен как title)
+     */
+    function render_editorjs_content(string $json, bool $skipFirstHeader = false): string 
+    {
+        $data = json_decode($json, true);
+        if (!$data || !isset($data['blocks']) || !is_array($data['blocks'])) {
+            return '';
+        }
+
+        $inlineTags = '<b><strong><i><em><u><s><del><mark><code><a><br>';
+        $html = '';
+        $firstHeaderSkipped = false;
+        
+        foreach ($data['blocks'] as $block) {
+            $type = $block['type'] ?? '';
+            $d = $block['data'] ?? [];
+
+            // Пропускаем первый заголовок, если нужно
+            if ($skipFirstHeader && !$firstHeaderSkipped && $type === 'header') {
+                $level = (int)($d['level'] ?? 2);
+                if ($level <= 2) {
+                    $firstHeaderSkipped = true;
+                    continue; // Пропускаем этот блок
+                }
+            }
+
+            switch ($type) {
+                case 'header':
+                    $level = min((int)($d['level'] ?? 2), 4);
+                    $text = strip_tags($d['text'] ?? '', $inlineTags);
+                    $html .= "<h{$level}>{$text}</h{$level}>\n";
+                    break;
+
+                case 'paragraph':
+                    $text = strip_tags($d['text'] ?? '', $inlineTags);
+                    $html .= "<p>{$text}</p>\n";
+                    break;
+
+                case 'quote':
+                    $text = strip_tags($d['text'] ?? '', $inlineTags);
+                    $caption = !empty($d['caption']) ? '<footer>' . e($d['caption']) . '</footer>' : '';
+                    $html .= "<blockquote>{$text}{$caption}</blockquote>\n";
+                    break;
+
+                case 'list':
+                    $tag = ($d['style'] ?? 'unordered') === 'ordered' ? 'ol' : 'ul';
+                    $html .= "<{$tag}>\n";
+                    foreach ($d['items'] ?? [] as $item) {
+                        $itemText = strip_tags($item['content'] ?? '', $inlineTags);
+                        $html .= "<li>{$itemText}</li>\n";
+                    }
+                    $html .= "</{$tag}>\n";
+                    break;
+
+                case 'code':
+                    $code = e($d['code'] ?? '');
+                    $lang = e($d['language'] ?? 'plaintext');
+                    $html .= "<pre><code class=\"language-{$lang}\">{$code}</code></pre>\n";
+                    break;
+                    
+                case 'image':
+                    $url = filter_var(config('app.url') . ($d['file']['url'] ?? ''), FILTER_VALIDATE_URL);
+                    $caption = e($d['caption'] ?? '');
+
+                    if ($url) {
+                        // Собираем классы оформления
+                        $classes = ['editorjs-image'];
+                        
+                        if (!empty($d['withBorder'])) {
+                            $classes[] = 'editorjs-image--border';
+                        }
+                        if (!empty($d['withBackground'])) {
+                            $classes[] = 'editorjs-image--background';
+                        }
+                        if (!empty($d['stretched'])) {
+                            $classes[] = 'editorjs-image--stretched';
+                        }
+                        
+                        $classString = implode(' ', $classes);
+
+                        $html .= "<figure class=\"{$classString}\">\n";
+                        $html .= "    <img src=\"{$url}\" alt=\"{$caption}\">\n";
+                        if ($caption) {
+                            $html .= "    <figcaption>{$caption}</figcaption>\n";
+                        }
+                        $html .= "</figure>\n";
+                    }
+                    break;
+
+            }
+        }
+        
+        return trim($html);
+    }
+}
+
+if (!function_exists('render_story_with_paywall')) {
+    /**
+     * Рендерит статью с учётом paywall.
+     * 
+     * Если в JSON есть блок 'paywall' и у пользователя нет доступа —
+     * обрезает контент на этом блоке и возвращает флаг для показа CTA.
+     * 
+     * @param array $story Массив статьи
+     * @param bool $hasAccess Есть ли у читателя доступ к закрытой части
+     * @return array ['html' => string, 'is_locked' => bool]
+     */
+    function render_story_with_paywall(array $story, bool $hasAccess): array
+    {
+        $json = $story['description_json'] ?? null;
+        if (!$json) {
+            return ['html' => '', 'is_locked' => false];
+        }
+
+        $data = json_decode($json, true);
+        if (!$data || !isset($data['blocks'])) {
+            return ['html' => '', 'is_locked' => false];
+        }
+
+        $blocks = $data['blocks'];
+        $paywallIndex = null;
+
+        // Ищем первый блок paywall
+        foreach ($blocks as $index => $block) {
+            if (($block['type'] ?? '') === 'paywall') {
+                $paywallIndex = $index;
+                break;
+            }
+        }
+
+        // Paywall нет — рендерим как обычно
+        if ($paywallIndex === null) {
+            return [
+                'html' => render_editorjs_content($json, true),
+                'is_locked' => false,
+            ];
+        }
+
+        // Есть доступ — рендерим всё (paywall-блок превращаем в разделитель)
+        if ($hasAccess) {
+            $html = render_editorjs_content($json, true);
+            return ['html' => $html, 'is_locked' => false];
+        }
+
+        // Доступа нет — обрезаем на paywall
+        $data['blocks'] = array_slice($blocks, 0, $paywallIndex);
+        $truncatedJson = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        return [
+            'html' => render_editorjs_content($truncatedJson, true),
+            'is_locked' => true,
+        ];
+    }
+}
+
+if (!function_exists('get_story_excerpt')) {
+    /**
+     * Формирует краткое превью статьи для ленты.
+     * Пропускает первый блок H1/H2 (он уже выведен как title).
+     */
+    function get_story_excerpt(array $story, int $maxBlocks = 2): string 
+    {
+        $json = $story['description_json'] ?? null;
+        $text = $story['description_text'] ?? '';
+
+        if ($json) {
+            $data = json_decode($json, true);
+            if ($data && isset($data['blocks']) && is_array($data['blocks'])) {
+                $html = '';
+                $blocksAdded = 0;
+                $firstHeaderSkipped = false;
+
+                foreach ($data['blocks'] as $block) {
+                    if ($blocksAdded >= $maxBlocks) break;
+
+                    $type = $block['type'] ?? '';
+                    $d = $block['data'] ?? [];
+                    $content = $d['text'] ?? $d['content'] ?? '';
+
+                    // Пропускаем первый заголовок
+                    if (!$firstHeaderSkipped && $type === 'header') {
+                        $level = (int)($d['level'] ?? 2);
+                        if ($level <= 2) {
+                            $firstHeaderSkipped = true;
+                            continue;
+                        }
+                    }
+
+                    if ($type === 'paragraph') {
+                        $clean = strip_tags($content, '<b><strong><i><em><a><code>');
+                        $html .= "<p class=\"story-excerpt\">{$clean}</p>";
+                        $blocksAdded++;
+                    } elseif ($type === 'quote') {
+                        $clean = strip_tags($content, '<b><strong><i><em>');
+                        $html .= "<blockquote class=\"story-excerpt\"><p>{$clean}</p></blockquote>";
+                        $blocksAdded++;
+                    }
+                }
+                
+                if (trim($html) !== '') {
+                    return trim($html);
+                }
+            }
+        }
+
+        // Fallback: если JSON нет или пуст
+        if ($text) {
+            $cleanText = mb_substr(strip_tags($text), 0, 200);
+            if (mb_strlen(strip_tags($text)) > 200) {
+                $cleanText .= '...';
+            }
+            return '<p class="story-excerpt">' . htmlspecialchars($cleanText, ENT_QUOTES, 'UTF-8') . '</p>';
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('get_story_first_image')) {
+    /**
+     * Извлекает URL первой картинки из JSON статьи для превью в ленте.
+     * Поддерживает как полные URL (https://...), так и относительные пути (/uploads/...).
+     */
+    function get_story_first_image(array $story): ?string 
+    {
+        $json = $story['description_json'] ?? null;
+        if (!$json) return null;
+
+        $data = json_decode($json, true);
+        if (!$data || !isset($data['blocks']) || !is_array($data['blocks'])) {
+            return null;
+        }
+
+        foreach ($data['blocks'] as $block) {
+            if (($block['type'] ?? '') === 'image') {
+                $url = $block['data']['file']['url'] ?? null;
+                
+                // Проверяем, что URL не пустой и начинается с '/' или 'http'
+                if (!empty($url) && (str_starts_with($url, '/') || str_starts_with($url, 'http'))) {
+                    return $url;
+                }
+            }
+        }
+        return null;
+    }
+}
+
+if (!function_exists('layout')) {
+    /**
+     * Хелпер для установки макета страницы.
+     * 
+     * @param string $layout Макет (используйте константы Layout::WIDE и т.д.)
+     */
+    function layout(string $layout): void
+    {
+        Layout::set($layout);
+    }
+}
+
+if (!function_exists('layout_class')) {
+    /**
+     * Получить CSS-класс контейнера для текущего макета.
+     */
+    function layout_class(): string
+    {
+        return Layout::getClass();
+    }
+}
+
+if (!function_exists('layout_body_class')) {
+    /**
+     * Получить CSS-класс для body.
+     */
+    function layout_body_class(): string
+    {
+        return Layout::getBodyClass();
+    }
 }

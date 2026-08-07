@@ -1,7 +1,5 @@
 <h1>Установить новый пароль</h1>
 
-<?= render_flashes() ?>
-
 <p class="hint">Придумайте новый надёжный пароль для вашего аккаунта.</p>
 
 <form action="<?= route('password.reset.submit') ?>" method="POST">

@@ -9,17 +9,15 @@ use W3a\Core\Auth\Auth;
 use App\Modules\Stories\Models\Story;
 use App\Modules\Stories\Models\ReadRibbon;
 use App\Modules\Stories\Services\RankingService;
-use App\Modules\Origins\Models\Domain;
 use App\Modules\Tags\Models\TagFilter;
 use App\Modules\Muted\Services\MuteService;
 
 /**
- * Сервис для фильтрации и получения списков историй.
+ * Сервис для фильтрации и получения списков статей (Medium-стиль).
  */
 class StoryFilterService
 {
     private Story $storyModel;
-    private Domain $domainModel;
     private Container $container;
     private MuteService $muteService;
     private RankingService $rankingService;
@@ -27,34 +25,37 @@ class StoryFilterService
     /**
      * Конструктор с инъекцией зависимостей.
      * 
-     * @param Story $storyModel Модель историй
-     * @param Domain $domainModel Модель доменов
+     * @param Story $storyModel Модель статей
      * @param Container $container DI-контейнер
+     * @param MuteService|null $muteService Сервис для работы с игнорируемыми пользователями
+     * @param RankingService|null $rankingService Сервис для расчёта рейтингов
      */
-    public function __construct(Story $storyModel, Domain $domainModel, Container $container, ?MuteService $muteService = null, ?RankingService $rankingService = null)
-    {
+    public function __construct(
+        Story $storyModel, 
+        Container $container, 
+        ?MuteService $muteService = null, 
+        ?RankingService $rankingService = null
+    ) {
         $this->storyModel = $storyModel;
-        $this->domainModel = $domainModel;
         $this->container = $container;
         $this->muteService = $muteService;
-
         $this->rankingService = $rankingService ?? new RankingService();
     }
 
     /**
-     * Получает ленту историй с учётом всех фильтров.
+     * Получает ленту статей с учётом всех фильтров.
      *
      * @param int $perPage Количество на страницу
      * @param int $offset Смещение
      * @param string $tagslug Фильтр по тегу
-     * @param string $domain Фильтр по домену
-     * @return array Массив историй
+     * @param string $sort Сортировка (hot, new, top)
+     * @param string $author Фильтр по автору
+     * @return array Массив статей
      */
     public function getFilteredStories(
         int $perPage,
         int $offset,
         string $tagslug = '',
-        string $domain = '',
         string $sort = 'hot',
         string $author = ''
     ): array {
@@ -62,24 +63,32 @@ class StoryFilterService
         $excludeTagIds = $this->getUserExcludedTags();
         $mutedUserIds = $this->getMutedUserIds();
 
-        return $this->storyModel->getFeed($perPage, $offset, $tagslug, $showDeleted, $domain, $excludeTagIds, $sort, $author, $mutedUserIds);
+        return $this->storyModel->getFeed(
+            $perPage, 
+            $offset, 
+            $tagslug, 
+            $showDeleted, 
+            $excludeTagIds, 
+            $sort, 
+            $author, 
+            $mutedUserIds
+        );
     }
 
     /**
-     * Получает общее количество историй с учётом фильтров.
+     * Получает общее количество статей с учётом фильтров.
      */
     public function getTotalCount(
         string $tagname = '',
-        string $domain = '',
         string $author = ''
     ): int {
         $excludeTagIds = $this->getUserExcludedTags();
         $mutedUserIds = $this->getMutedUserIds();
-        return $this->storyModel->getTotalCount($tagname, $domain, $excludeTagIds, $author, $mutedUserIds);
+        return $this->storyModel->getTotalCount($tagname, $excludeTagIds, $author, $mutedUserIds);
     }
 
     /**
-     * Получает комментарии для истории в виде дерева с сортировкой по Вильсону
+     * Получает комментарии для статьи в виде дерева с сортировкой по Вильсону
      */
     public function getCommentsTree(int $storyId): array
     {
@@ -109,18 +118,6 @@ class StoryFilterService
     }
 
     /**
-     * Получает список забаненных доменов (в нижнем регистре).
-     *
-     * @return array Массив забаненных доменов
-     */
-    public function getBannedDomains(): array
-    {
-        $bannedDomains = $this->domainModel->getBannedDomains();
-        $domains = array_column($bannedDomains, 'domain');
-        return array_map('strtolower', $domains);
-    }
-
-    /**
      * Получает ID тегов, которые пользователь исключил из ленты.
      *
      * @return array Массив ID тегов
@@ -131,15 +128,14 @@ class StoryFilterService
             return [];
         }
 
-        // Получаем модель из контейнера вместо new TagFilter()
         $filterModel = $this->container->get(TagFilter::class);
         return $filterModel->getFilteredTagIds(Auth::id());
     }
 
     /**
-     * Получает количество новых комментариев для списка историй.
+     * Получает количество новых комментариев для списка статей.
      *
-     * @param array $storyIds Массив ID историй
+     * @param array $storyIds Массив ID статей
      * @return array Массив [story_id => count]
      */
     public function getNewCommentsCounts(array $storyIds): array
@@ -149,21 +145,17 @@ class StoryFilterService
         }
 
         $readRibbon = $this->container->get(ReadRibbon::class);
-
-        // Получаем замьюченных
         $mutedUserIds = $this->getMutedUserIds();
 
         return $readRibbon->getNewCommentsCounts(
             Auth::id(),
             array_map('intval', $storyIds),
-            $mutedUserIds // Передаём в модель
+            $mutedUserIds
         );
     }
 
-
-
     /**
-     * Получает одну историю с информацией об авторе.
+     * Получает одну статью с информацией об авторе.
      */
     public function getStoryWithAuthor(int $storyId): ?array
     {
@@ -174,7 +166,7 @@ class StoryFilterService
     /**
      * Подготовить данные для Open Graph мета-тегов.
      * 
-     * @param array $story Данные истории (уже загруженные)
+     * @param array $story Данные статьи (уже загруженные)
      * @return array Массив с ключами: title, description, image, author_name, author_url
      */
     public function getStoryOpenGraphData(array $story): array
@@ -183,29 +175,28 @@ class StoryFilterService
             return [];
         }
 
-        // Описание: либо из текста, либо кол-во комментариев
+        // Описание: берем из description_text (чистый текст для поиска)
         $description = '';
-        if (!empty($story['description'])) {
-            $description = mb_substr(strip_tags($story['description']), 0, 200);
-            if (mb_strlen($story['description']) > 200) {
+        if (!empty($story['description_text'])) {
+            $description = mb_substr($story['description_text'], 0, 200);
+            if (mb_strlen($story['description_text']) > 200) {
                 $description .= '...';
             }
         } else {
             $description = (int)$story['comments_count'] . ' комментариев';
         }
 
-        // Изображение: превью ссылки или дефолтное
+        // Изображение: дефолтное (можно добавить логику для первой картинки из JSON позже)
         $image = null;
-        if (!empty($story['url'])) {
-            $image = rtrim(config('config.app.url'), '/') . '/' . $story['id'] . '.png';
-        }
 
         return [
             'title' => $story['title'],
             'description' => $description,
             'image' => $image,
-            'author_name' => $story['author_name'],
-            'author_url' => route('user.profile', ['username' => $story['author_name']]),
+            'author_name' => $story['author_name'] ?? '',
+            'author_url' => !empty($story['author_name']) 
+                ? route('user.profile', ['username' => $story['author_name']]) 
+                : null,
         ];
     }
 

@@ -56,7 +56,6 @@ class SavedController extends BaseController
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
             'newCommentsMap' => $newCommentsMap,
-            'bannedDomainsCache' => $filterService->getBannedDomains(),
             'sort' => 'saved',
             'currentUserId' => $userContext['id'],
             'isAdmin' => $userContext['isAdmin'],

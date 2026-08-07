@@ -15,7 +15,7 @@
 </div>
 
 <div class="form-actions">
-    <a href="<?= route('wiki.tag.create', ['tagslug' => $tag['slug']]) ?>" class="btn-nav-create">
+    <a href="<?= route('wiki.tag.create', ['tagslug' => $tag['slug']]) ?>" class="btn">
         ➕ Создать страницу
     </a>
     

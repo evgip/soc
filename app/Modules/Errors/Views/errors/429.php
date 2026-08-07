@@ -2,4 +2,4 @@
 
 <p><?= e($message) ?></p>
 <p>Пожалуйста, подождите <?= (int)$retryAfter ?> секунд и попробуйте снова.</p>
-<a href="/" class="btn-nav-create blocked-error-btn">Вернуться на главную</a>
+<a href="/" class="btn">Вернуться на главную</a>

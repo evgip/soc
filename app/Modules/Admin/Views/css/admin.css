@@ -201,11 +201,6 @@ display: block;
     font-size: 12px;
 }
 
-.confidence-progress-bar {
-	background: #4CAF50; height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;
-}
-
-.progress-bar { background: #e0e0e0; border-radius: 4px; overflow: hidden; height: 24px; }
 
 @keyframes slideInLeftToast {
     0% {
