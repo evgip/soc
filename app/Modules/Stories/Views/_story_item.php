@@ -22,7 +22,7 @@ $hideAuthor       = $hideAuthor ?? false;
 $isStoryDeleted = !empty($story['deleted_at']);
 $newCount       = $newCommentsMap[$story['id']] ?? 0;
 $excerptHtml    = get_story_excerpt($story, 2); // 2 абзаца для ленты
-$firstImage     = get_story_first_image($story);
+$firstImage     = get_story_first_image($story, 'medium');
 ?>
 
 <li class="story <?= $isStoryDeleted ? 'deleted' : '' ?>">

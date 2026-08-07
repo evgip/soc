@@ -142,21 +142,25 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
             );
         });
 
-        // 🔧 ИСПРАВЛЕНО: передаём CacheHelper вторым аргументом
         $container->singleton(TrendingService::class, function(Container $c) {
             return new TrendingService(
                 $c->get(Database::class),
-                $c->get(CacheHelper::class)    // ← добавлено
+                $c->get(CacheHelper::class)
             );
         });
 
-        // 🔧 ИСПРАВЛЕНО: передаём CacheHelper вторым аргументом
         $container->singleton(StaffPicksService::class, function(Container $c) {
             return new StaffPicksService(
                 $c->get(Database::class),
-                $c->get(CacheHelper::class)    // ← добавлено
+                $c->get(CacheHelper::class)
             );
         });
+
+		$container->singleton(\App\Modules\Stories\Services\ImageProcessorService::class, function(Container $c) {
+			return new \App\Modules\Stories\Services\ImageProcessorService(
+				$c->get(Logger::class)
+			);
+		});
 
         // ================================================================
         // СЛУШАТЕЛИ СОБЫТИЙ
@@ -173,6 +177,8 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
                 $c->get(Story::class)
             );
         });
+		
+		
     }
 
     public function boot(): void

@@ -659,34 +659,58 @@ if (!function_exists('render_editorjs_content')) {
                     $html .= "<pre><code class=\"language-{$lang}\">{$code}</code></pre>\n";
                     break;
                     
-                case 'image':
-                    $url = filter_var(config('app.url') . ($d['file']['url'] ?? ''), FILTER_VALIDATE_URL);
-                    $caption = e($d['caption'] ?? '');
+				case 'image':
+					$url = filter_var(config('app.url') . ($d['file']['url'] ?? ''), FILTER_VALIDATE_URL);
+					$caption = e($d['caption'] ?? '');
 
-                    if ($url) {
-                        // Собираем классы оформления
-                        $classes = ['editorjs-image'];
-                        
-                        if (!empty($d['withBorder'])) {
-                            $classes[] = 'editorjs-image--border';
-                        }
-                        if (!empty($d['withBackground'])) {
-                            $classes[] = 'editorjs-image--background';
-                        }
-                        if (!empty($d['stretched'])) {
-                            $classes[] = 'editorjs-image--stretched';
-                        }
-                        
-                        $classString = implode(' ', $classes);
+					if ($url) {
+						$classes = ['editorjs-image'];
+						
+						if (!empty($d['withBorder'])) {
+							$classes[] = 'editorjs-image--border';
+						}
+						if (!empty($d['withBackground'])) {
+							$classes[] = 'editorjs-image--background';
+						}
+						if (!empty($d['stretched'])) {
+							$classes[] = 'editorjs-image--stretched';
+						}
+						
+						$classString = implode(' ', $classes);
 
-                        $html .= "<figure class=\"{$classString}\">\n";
-                        $html .= "    <img src=\"{$url}\" alt=\"{$caption}\">\n";
-                        if ($caption) {
-                            $html .= "    <figcaption>{$caption}</figcaption>\n";
-                        }
-                        $html .= "</figure>\n";
-                    }
-                    break;
+						// Извлекаем базовое имя для генерации вариантов
+						$parsedUrl = parse_url($url);
+						$urlPath = $parsedUrl['path'] ?? '';
+						$pathInfo = pathinfo($urlPath);
+						$baseName = $pathInfo['filename'];
+						$extension = $pathInfo['extension'] ?? '';
+						$dir = $pathInfo['dirname'] ?? '';
+						
+						$baseUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') 
+								 . ($parsedUrl['host'] ?? '') 
+								 . $dir . '/' . $baseName;
+
+						$html .= "<figure class=\"{$classString}\">\n";
+						$html .= "    <picture>\n";
+						
+						// AVIF варианты
+						if (function_exists('imageavif')) {
+							$html .= "        <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
+						}
+						
+						// WebP варианты
+						$html .= "        <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
+						
+						// Fallback на основную WebP версию (без расширения _large)
+						$html .= "		<img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
+						$html .= "    </picture>\n";
+						
+						if ($caption) {
+							$html .= "    <figcaption>{$caption}</figcaption>\n";
+						}
+						$html .= "</figure>\n";
+					}
+					break;
 
             }
         }
@@ -820,9 +844,15 @@ if (!function_exists('get_story_excerpt')) {
 if (!function_exists('get_story_first_image')) {
     /**
      * Извлекает URL первой картинки из JSON статьи для превью в ленте.
-     * Поддерживает как полные URL (https://...), так и относительные пути (/uploads/...).
+     * Автоматически возвращает версию нужного размера (по умолчанию 'small').
+     * 
+     * Поддерживает размеры: 'small', 'medium', 'large', 'original'
+     * 
+     * @param array $story Массив статьи
+     * @param string $size Размер изображения: small|medium|large|original
+     * @return string|null URL изображения или null если не найдено
      */
-    function get_story_first_image(array $story): ?string 
+    function get_story_first_image(array $story, string $size = 'small'): ?string 
     {
         $json = $story['description_json'] ?? null;
         if (!$json) return null;
@@ -832,17 +862,79 @@ if (!function_exists('get_story_first_image')) {
             return null;
         }
 
+        // Ищем первую картинку
         foreach ($data['blocks'] as $block) {
             if (($block['type'] ?? '') === 'image') {
                 $url = $block['data']['file']['url'] ?? null;
                 
-                // Проверяем, что URL не пустой и начинается с '/' или 'http'
-                if (!empty($url) && (str_starts_with($url, '/') || str_starts_with($url, 'http'))) {
-                    return $url;
+                // Проверяем, что URL не пустой и валидный
+                if (empty($url) || (!str_starts_with($url, '/') && !str_starts_with($url, 'http'))) {
+                    continue;
                 }
+
+                // Возвращаем URL нужного размера
+                return get_image_variant_url($url, $size);
             }
         }
+        
         return null;
+    }
+}
+
+if (!function_exists('get_image_variant_url')) {
+    /**
+     * Генерирует URL для нужного размера изображения на основе основного URL.
+     * 
+     * Конвенция именования файлов:
+     * - original: /uploads/stories/2026/08/abc123.webp
+     * - large:    /uploads/stories/2026/08/abc123_large.webp
+     * - medium:   /uploads/stories/2026/08/abc123_medium.webp
+     * - small:    /uploads/stories/2026/08/abc123_small.webp
+     * 
+     * @param string $url Основной URL изображения
+     * @param string $size Размер: small|medium|large|original
+     * @return string URL нужной версии
+     */
+    function get_image_variant_url(string $url, string $size = 'original'): string
+    {
+        // Допустимые размеры
+        $validSizes = ['small', 'medium', 'large', 'original'];
+        if (!in_array($size, $validSizes, true)) {
+            $size = 'original';
+        }
+
+        // Если оригинал — возвращаем как есть
+        if ($size === 'original') {
+            return $url;
+        }
+
+        // Парсим URL
+        $parsedUrl = parse_url($url);
+        $path = $parsedUrl['path'] ?? '';
+        
+        // Разбиваем путь на компоненты
+        $pathInfo = pathinfo($path);
+        $dir = $pathInfo['dirname'] ?? '';
+        $baseName = $pathInfo['filename'] ?? '';
+        $extension = $pathInfo['extension'] ?? 'webp';
+
+        // 🆕 Удаляем суффикс размера, если он уже есть (на случай повторного вызова)
+        $baseName = preg_replace('/_(small|medium|large)$/', '', $baseName);
+
+        // Формируем новое имя файла с суффиксом
+        $newFileName = $baseName . '_' . $size . '.' . $extension;
+        $newPath = ($dir === '.' || $dir === '') 
+            ? $newFileName 
+            : $dir . '/' . $newFileName;
+
+        // Собираем URL обратно
+        $scheme = isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '';
+        $host = $parsedUrl['host'] ?? '';
+        $port = isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
+        $query = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
+
+        return $scheme . $host . $port . $newPath . $query . $fragment;
     }
 }
 

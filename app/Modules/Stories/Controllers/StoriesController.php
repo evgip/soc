@@ -151,11 +151,13 @@ class StoriesController extends BaseController
         $userContext = $this->getUserContext();
         $viewModel = $this->service(StoryPageService::class)->buildShowPageData((int)$id, $userContext);
 
+		$ogImage = get_story_first_image($viewModel->story, 'large');
+
         $this->setOpenGraph([
             'type' => 'article',
             'title' => $viewModel->story['title'],
             'description' => $viewModel->story['seo_description'] ?? '',
-            'image' => $viewModel->story['og_image'] ?? '',
+            'image' => $ogImage ?: config('app.url') . '/default-og.jpg',
         ]);
 		
 		
@@ -609,63 +611,57 @@ class StoriesController extends BaseController
     /**
      * Загрузка изображения для Editor.js с сохранением по папкам с датами.
      */
-    public function uploadImage(): JsonResponse
-    {
-        // 1. Проверка авторизации
-        $userContext = $this->getUserContext();
-        if (empty($userContext['isLoggedIn'])) {
-            return $this->json(['success' => 0, 'message' => 'Требуется авторизация'], 401);
-        }
+	public function uploadImage(): JsonResponse
+	{
+		$userContext = $this->getUserContext();
+		if (empty($userContext['isLoggedIn'])) {
+			return $this->json(['success' => 0, 'message' => 'Требуется авторизация'], 401);
+		}
 
-        try {
-            // 2. Получаем файл из запроса
-            $file = UploadedFile::fromRequest('image');
+		try {
+			$file = UploadedFile::fromRequest('image');
 
-            // 3. Валидируем файл (MIME, расширение, размер до 5 МБ)
-            $validator = new FileValidator([
-                'mimes'      => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-                'extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-                'max_size'   => 5 * 1024 * 1024, 
-            ]);
-            $validator->validateOrFail($file);
+			$validator = new FileValidator([
+				'mimes'      => ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+				'extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+				'max_size'   => 5 * 1024 * 1024,
+			]);
+			$validator->validateOrFail($file);
 
-            // 4. Сохраняем на диск с группировкой по дате
-            $storage = $this->container->get(StorageManager::class);
-            
-            // Формируем путь вида "2026/08" (год/месяц)
-            $datePath = date('Y/m'); 
-            
-            // putFile() автоматически:
-            // 1. Создаст папку public/uploads/stories/2026/08/, если её нет
-            // 2. Сгенерирует безопасное уникальное имя (например, a3f2b1c4.jpg)
-            // 3. Переместит файл через move_uploaded_file()
-            $path = $storage->disk('stories')->putFile($file, $datePath);
+			$storage = $this->container->get(StorageManager::class);
+			$datePath = date('Y/m');
+			
+			// 1. Сохраняем оригинал временно
+			$path = $storage->disk('stories')->putFile($file, $datePath);
+			$fullPath = $storage->disk('stories')->path($path);
 
-            // 5. Получаем публичный URL
-            $url = $storage->disk('stories')->url($path);
+			// 2. Конвертируем в WebP и удаляем оригинал
+			$processor = $this->service(\App\Modules\Stories\Services\ImageProcessorService::class);
+			$webpPath = $processor->process($fullPath);
 
-            // 6. Возвращаем ответ в формате Editor.js
-            return $this->json([
-                'success' => 1,
-                'file' => [
-                    'url' => $url,
-                ]
-            ]);
+			if (!$webpPath) {
+				// Конвертация не удалась - оставляем оригинал
+				$url = $storage->disk('stories')->url($path);
+			} else {
+				// Возвращаем URL WebP версии
+				$relativePath = $storage->disk('stories')->relativePath($webpPath);
+				$url = $storage->disk('stories')->url($relativePath);
+			}
 
-        } catch (ValidationException $e) {
-            return $this->json([
-                'success' => 0,
-                'message' => $e->getMessage()
-            ], 400);
-            
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Stories.uploadImage');
-            return $this->json([
-                'success' => 0,
-                'message' => 'Ошибка при загрузке изображения'
-            ], 500);
-        }
-    }
+			return $this->json([
+				'success' => 1,
+				'file' => [
+					'url' => $url,
+				]
+			]);
+
+		} catch (ValidationException $e) {
+			return $this->json(['success' => 0, 'message' => $e->getMessage()], 400);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.uploadImage');
+			return $this->json(['success' => 0, 'message' => 'Ошибка при загрузке изображения'], 500);
+		}
+	}
 	
 	// =========================================================================
 	// API: Трекинг времени чтения (для рекомендаций)

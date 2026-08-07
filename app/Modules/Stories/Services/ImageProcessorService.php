@@ -1,0 +1,191 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Stories\Services;
+
+use W3a\Core\Support\Logger;
+
+class ImageProcessorService
+{
+    private Logger $logger;
+
+    public function __construct(Logger $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    /**
+     * Конвертирует изображение в WebP/AVIF и УДАЛЯЕТ оригинал.
+     * 
+     * @param string $fullPath Полный путь к оригиналу на диске
+     * @return string|false Путь к WebP версии или false при ошибке
+     */
+	public function process(string $fullPath): string|false
+	{
+		if (!extension_loaded('gd')) {
+			return false;
+		}
+
+		if (!file_exists($fullPath)) {
+			return false;
+		}
+
+		$orientation = $this->readExifOrientation($fullPath);
+		$image = $this->loadImage($fullPath);
+		if (!$image) {
+			return false;
+		}
+
+		$image = $this->applyOrientation($image, $orientation);
+
+		$originalWidth = imagesx($image);
+		$originalHeight = imagesy($image);
+
+		$sizes = [
+			'large'  => 1200,
+			'medium' => 800,
+			'small'  => 400,
+		];
+
+		$baseName = pathinfo($fullPath, PATHINFO_FILENAME);
+		$outputDir = dirname($fullPath);
+		$createdFiles = [];
+
+		foreach ($sizes as $name => $targetWidth) {
+			// 🆕 Если оригинал меньше целевого размера - копируем оригинал
+			if ($originalWidth <= $targetWidth) {
+				$this->logger->info("Original ({$originalWidth}px) <= target ({$targetWidth}px), copying original as {$name}");
+				
+				// Для WebP
+				$webpPath = $outputDir . '/' . $baseName . '_' . $name . '.webp';
+				imagewebp($image, $webpPath, 85);
+				$createdFiles[] = $webpPath;
+
+				// Для AVIF
+				if (function_exists('imageavif')) {
+					$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
+					imageavif($image, $avifPath, 80);
+					$createdFiles[] = $avifPath;
+				}
+				
+				continue;
+			}
+
+			// Обычный ресайз
+			$ratio = $targetWidth / $originalWidth;
+			$targetHeight = (int)($originalHeight * $ratio);
+
+			$resized = imagecreatetruecolor($targetWidth, $targetHeight);
+			$this->preserveTransparency($resized);
+			
+			imagecopyresampled($resized, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $originalWidth, $originalHeight);
+
+			$webpPath = $outputDir . '/' . $baseName . '_' . $name . '.webp';
+			imagewebp($resized, $webpPath, 85);
+			$createdFiles[] = $webpPath;
+
+			if (function_exists('imageavif')) {
+				$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
+				imageavif($resized, $avifPath, 80);
+				$createdFiles[] = $avifPath;
+			}
+
+			imagedestroy($resized);
+		}
+
+		// Основная WebP версия
+		$webpMain = $outputDir . '/' . $baseName . '.webp';
+		$success = imagewebp($image, $webpMain, 85);
+		
+		imagedestroy($image);
+
+		if (!$success) {
+			return false;
+		}
+
+		$createdFiles[] = $webpMain;
+
+		// Удаляем оригинал
+		if (count($createdFiles) > 0) {
+			@unlink($fullPath);
+		}
+
+		return $webpMain;
+	}
+
+    private function readExifOrientation(string $path): int
+    {
+        if (!function_exists('exif_read_data')) {
+            return 1;
+        }
+
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!in_array($extension, ['jpg', 'jpeg', 'tiff', 'tif'])) {
+            return 1;
+        }
+
+        try {
+            $exif = @exif_read_data($path, 'IFD0', false);
+            return (int)($exif['Orientation'] ?? 1);
+        } catch (\Throwable $e) {
+            return 1;
+        }
+    }
+
+    private function applyOrientation($image, int $orientation)
+    {
+        switch ($orientation) {
+            case 2:
+                imageflip($image, IMG_FLIP_HORIZONTAL);
+                break;
+            case 3:
+                $image = imagerotate($image, 180, 0);
+                break;
+            case 4:
+                imageflip($image, IMG_FLIP_VERTICAL);
+                break;
+            case 5:
+                $image = imagerotate($image, -90, 0);
+                imageflip($image, IMG_FLIP_HORIZONTAL);
+                break;
+            case 6:
+                $image = imagerotate($image, -90, 0);
+                break;
+            case 7:
+                $image = imagerotate($image, 90, 0);
+                imageflip($image, IMG_FLIP_HORIZONTAL);
+                break;
+            case 8:
+                $image = imagerotate($image, 90, 0);
+                break;
+        }
+        
+        return $image;
+    }
+
+    private function preserveTransparency($image): void
+    {
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        
+        $transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);
+        imagefill($image, 0, 0, $transparent);
+    }
+
+    private function loadImage(string $path)
+    {
+        $info = @getimagesize($path);
+        if (!$info) {
+            return null;
+        }
+
+        return match($info['mime']) {
+            'image/jpeg' => @imagecreatefromjpeg($path),
+            'image/png'  => @imagecreatefrompng($path),
+            'image/gif'  => @imagecreatefromgif($path),
+            'image/webp' => @imagecreatefromwebp($path),
+            default      => null,
+        };
+    }
+}
