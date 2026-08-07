@@ -95,3 +95,6 @@
 <p>
     Уже есть аккаунт? <a href="/login">Войти</a>
 </p>
+
+
+<?php partial('SocialAuth::_buttons'); ?>

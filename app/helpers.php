@@ -666,24 +666,18 @@ if (!function_exists('render_editorjs_content')) {
 					if ($url) {
 						$classes = ['editorjs-image'];
 						
-						if (!empty($d['withBorder'])) {
-							$classes[] = 'editorjs-image--border';
-						}
-						if (!empty($d['withBackground'])) {
-							$classes[] = 'editorjs-image--background';
-						}
-						if (!empty($d['stretched'])) {
-							$classes[] = 'editorjs-image--stretched';
-						}
+						if (!empty($d['withBorder'])) $classes[] = 'editorjs-image--border';
+						if (!empty($d['withBackground'])) $classes[] = 'editorjs-image--background';
+						if (!empty($d['stretched'])) $classes[] = 'editorjs-image--stretched';
 						
 						$classString = implode(' ', $classes);
 
-						// Извлекаем базовое имя для генерации вариантов
+						// Извлекаем базовое имя
 						$parsedUrl = parse_url($url);
 						$urlPath = $parsedUrl['path'] ?? '';
 						$pathInfo = pathinfo($urlPath);
 						$baseName = $pathInfo['filename'];
-						$extension = $pathInfo['extension'] ?? '';
+						$extension = $pathInfo['extension'] ?? 'webp';
 						$dir = $pathInfo['dirname'] ?? '';
 						
 						$baseUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') 
@@ -693,16 +687,32 @@ if (!function_exists('render_editorjs_content')) {
 						$html .= "<figure class=\"{$classString}\">\n";
 						$html .= "    <picture>\n";
 						
-						// AVIF варианты
-						if (function_exists('imageavif')) {
-							$html .= "        <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
+						// 🆕 Собираем srcset только для существующих файлов
+						$variants = [];
+						foreach (['large', 'medium', 'small'] as $size) {
+							$variantPath = "{$baseName}_{$size}.{$extension}";
+							$fullVariantPath = str_replace($urlPath, $variantPath, $_SERVER['DOCUMENT_ROOT'] . $urlPath);
+							
+							// Проверяем существование файла
+							if (file_exists($fullVariantPath)) {
+								$variants[] = "{$baseUrl}_{$size}.{$extension}";
+							}
+						}
+						
+						// AVIF варианты (если существуют)
+						if (function_exists('imageavif') && !empty($variants)) {
+							$avifSrcset = implode(', ', array_map(fn($v) => str_replace('.webp', '.avif', $v), $variants));
+							$html .= "        <source srcset=\"{$avifSrcset}\" type=\"image/avif\">\n";
 						}
 						
 						// WebP варианты
-						$html .= "        <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
+						if (!empty($variants)) {
+							$webpSrcset = implode(', ', $variants);
+							$html .= "        <source srcset=\"{$webpSrcset}\" type=\"image/webp\">\n";
+						}
 						
-						// Fallback на основную WebP версию (без расширения _large)
-						$html .= "		<img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
+						// Fallback на основной файл
+						$html .= "        <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
 						$html .= "    </picture>\n";
 						
 						if ($caption) {

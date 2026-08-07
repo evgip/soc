@@ -20,13 +20,13 @@ CREATE TABLE `audit_logs` (
 --
 
 INSERT INTO `audit_logs` (`id`, `user_id`, `username`, `role`, `ip_address`, `action`, `description`, `category`, `payload`, `created_at`) VALUES
-(4, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #libarea', 'general', NULL, '2026-06-18 11:47:20'),
-(5, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #php', 'general', NULL, '2026-06-18 11:47:29'),
-(6, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #security', 'general', NULL, '2026-06-18 11:47:39'),
-(7, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #show', 'general', NULL, '2026-06-18 11:47:51'),
-(8, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #video', 'general', NULL, '2026-06-18 11:47:59'),
-(9, 1, 'Admin', 'admin', '127.0.0.1', 'auth.logout', 'Пользователь вышел из системы', 'auth', NULL, '2026-08-04 01:36:11'),
-(10, 1, 'Admin', 'admin', '127.0.0.1', 'auth.login_success', 'Пользователь вошел в систему', 'auth', NULL, '2026-08-04 01:36:19');
+(4, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #libarea', 'general', NULL, '2026-06-18 08:47:20'),
+(5, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #php', 'general', NULL, '2026-06-18 08:47:29'),
+(6, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #security', 'general', NULL, '2026-06-18 08:47:39'),
+(7, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #show', 'general', NULL, '2026-06-18 08:47:51'),
+(8, 1, 'Admin', 'admin', '127.0.0.1', 'admin.tag_updated', 'Администратор изменил параметры тега #video', 'general', NULL, '2026-06-18 08:47:59'),
+(9, 1, 'Admin', 'admin', '127.0.0.1', 'auth.logout', 'Пользователь вышел из системы', 'auth', NULL, '2026-08-03 22:36:11'),
+(10, 1, 'Admin', 'admin', '127.0.0.1', 'auth.login_success', 'Пользователь вошел в систему', 'auth', NULL, '2026-08-03 22:36:19');
 
 -- --------------------------------------------------------
 
@@ -63,10 +63,10 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `slug`, `description`, `sort_order`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Языки программирования', 'languages', 'PHP, Python, JavaScript и другие', 10, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL),
-(2, 'Практики', 'practices', 'Безопасность, архитектура, методологии', 20, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL),
-(3, 'Формат', 'format', 'Видео, демонстрации проектов, подкасты', 30, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL),
-(4, 'Разное', 'other', 'Общие темы и обсуждения', 99, '2026-06-15 19:10:39', '2026-06-15 19:10:39', NULL);
+(1, 'Языки программирования', 'languages', 'PHP, Python, JavaScript и другие', 10, '2026-06-15 16:10:39', '2026-06-15 16:10:39', NULL),
+(2, 'Практики', 'practices', 'Безопасность, архитектура, методологии', 20, '2026-06-15 16:10:39', '2026-06-15 16:10:39', NULL),
+(3, 'Формат', 'format', 'Видео, демонстрации проектов, подкасты', 30, '2026-06-15 16:10:39', '2026-06-15 16:10:39', NULL),
+(4, 'Разное', 'other', 'Общие темы и обсуждения', 99, '2026-06-15 16:10:39', '2026-06-15 16:10:39', NULL);
 
 -- --------------------------------------------------------
 
@@ -94,12 +94,12 @@ CREATE TABLE `comments` (
 --
 
 INSERT INTO `comments` (`id`, `story_id`, `user_id`, `parent_id`, `comment`, `score`, `flag_count`, `is_hidden_by_flags`, `created_at`, `updated_at`, `deleted_at`, `confidence_score`) VALUES
-(1, 1, 1, NULL, 'Отличная архитектура у фреймворка!', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
-(2, 1, 1, 1, 'Согласен, один SQL-запрос на дерево — это быстро.', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
-(3, 1, 1, 2, 'И рекурсия на анонимных функциях PHP выглядит лаконично.', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
-(4, 1, 1, NULL, 'А когда мы добавим форму отправки нового комментария?', 1, 0, 0, '2026-06-07 07:20:16', '2026-06-21 02:48:02', NULL, 0.37844750),
-(5, 2, 1, NULL, 'Добавим первые комментарий 333', 1, 0, 0, '2026-06-07 07:51:00', '2026-06-21 02:48:02', NULL, 0.37844750),
-(6, 2, 1, 5, 'Добавим ответ Админу', 2, 0, 0, '2026-06-07 07:51:12', '2026-06-21 02:48:02', NULL, 0.54909237);
+(1, 1, 1, NULL, 'Отличная архитектура у фреймворка!', 1, 0, 0, '2026-06-07 04:20:16', '2026-06-20 23:48:02', NULL, 0.37844750),
+(2, 1, 1, 1, 'Согласен, один SQL-запрос на дерево — это быстро.', 1, 0, 0, '2026-06-07 04:20:16', '2026-06-20 23:48:02', NULL, 0.37844750),
+(3, 1, 1, 2, 'И рекурсия на анонимных функциях PHP выглядит лаконично.', 1, 0, 0, '2026-06-07 04:20:16', '2026-06-20 23:48:02', NULL, 0.37844750),
+(4, 1, 1, NULL, 'А когда мы добавим форму отправки нового комментария?', 1, 0, 0, '2026-06-07 04:20:16', '2026-06-20 23:48:02', NULL, 0.37844750),
+(5, 2, 1, NULL, 'Добавим первые комментарий 333', 1, 0, 0, '2026-06-07 04:51:00', '2026-06-20 23:48:02', NULL, 0.37844750),
+(6, 2, 1, 5, 'Добавим ответ Админу', 2, 0, 0, '2026-06-07 04:51:12', '2026-06-20 23:48:02', NULL, 0.54909237);
 
 -- --------------------------------------------------------
 
@@ -326,9 +326,9 @@ CREATE TABLE `password_resets` (
 
 CREATE TABLE `rate_limits` (
   `id` bigint UNSIGNED NOT NULL,
-  `identifier` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `identifier` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `endpoint_action` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `window_start` timestamp NOT NULL COMMENT 'Начало временного окна (например, округленное до минуты)',
+  `window_start` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Начало временного окна (например, округленное до минуты)',
   `request_count` int UNSIGNED NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -337,23 +337,9 @@ CREATE TABLE `rate_limits` (
 --
 
 INSERT INTO `rate_limits` (`id`, `identifier`, `endpoint_action`, `window_start`, `request_count`) VALUES
-(1, 'user:1', 'global.get', '2026-08-04 01:30:00', 7),
-(2, 'user:1', 'global.get', '2026-08-04 01:31:00', 7),
-(5, 'user:1', 'global.get', '2026-08-04 01:32:00', 6),
-(11, 'user:1', 'global.get', '2026-08-04 01:33:00', 8),
-(19, 'user:1', 'global.get', '2026-08-04 01:34:00', 6),
-(25, 'user:1', 'global.get', '2026-08-04 01:35:00', 16),
-(41, 'user:1', 'global.get', '2026-08-04 01:36:00', 16),
-(45, 'user:1', 'global.post', '2026-08-04 01:36:00', 1),
-(46, 'fingerprint:da54fac2d33f4d018311dc1fa2bf0158da10e818ad9655883292d8c5452a59b5', 'global.get', '2026-08-04 01:36:00', 4),
-(50, 'fingerprint:da54fac2d33f4d018311dc1fa2bf0158da10e818ad9655883292d8c5452a59b5', 'auth.submit', '2026-08-04 01:36:00', 1),
-(63, 'user:1', 'global.get', '2026-08-04 01:37:00', 6),
-(65, 'user:1', 'global.post', '2026-08-04 01:37:00', 1),
-(70, 'user:1', 'global.get', '2026-08-04 01:38:00', 13),
-(75, 'user:1', 'global.post', '2026-08-04 01:38:00', 1),
-(84, 'user:1', 'global.get', '2026-08-04 01:39:00', 10),
-(88, 'user:1', 'global.post', '2026-08-04 01:39:00', 1),
-(95, 'user:1', 'global.get', '2026-08-04 01:40:00', 1);
+(96, 'user:1', 'global.get', '2026-08-07 21:41:00', 3),
+(99, 'user:1', 'global.get', '2026-08-07 21:42:00', 7),
+(106, 'user:1', 'global.get', '2026-08-07 21:43:00', 5);
 
 -- --------------------------------------------------------
 
@@ -374,8 +360,8 @@ CREATE TABLE `read_ribbons` (
 --
 
 INSERT INTO `read_ribbons` (`id`, `user_id`, `story_id`, `last_read_comment_id`, `updated_at`) VALUES
-(1, 1, 2, 6, '2026-06-16 01:32:51'),
-(2, 1, 1, 4, '2026-06-18 11:48:40');
+(1, 1, 2, 6, '2026-06-15 22:32:51'),
+(2, 1, 1, 4, '2026-06-18 08:48:40');
 
 -- --------------------------------------------------------
 
@@ -410,6 +396,25 @@ CREATE TABLE `saved_stories` (
 -- --------------------------------------------------------
 
 --
+-- Структура таблицы `social_accounts`
+--
+
+CREATE TABLE `social_accounts` (
+  `id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `provider` enum('yandex','vk','google','github') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `provider_user_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `access_token` text COLLATE utf8mb4_unicode_ci,
+  `refresh_token` text COLLATE utf8mb4_unicode_ci,
+  `token_expires_at` datetime DEFAULT NULL,
+  `profile_data` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Структура таблицы `stories`
 --
 
@@ -427,16 +432,35 @@ CREATE TABLE `stories` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `user_is_following` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Подписан ли автор на уведомления о новых комментариях'
+  `user_is_following` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Подписан ли автор на уведомления о новых комментариях',
+  `has_paywall` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Есть ли в статье закрытая часть',
+  `paywall_type` enum('none','members','subscribers') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'none' COMMENT 'none=все видят, members=только залогиненные, subscribers=только подписчики автора',
+  `is_staff_pick` tinyint(1) NOT NULL DEFAULT '0',
+  `picked_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Дамп данных таблицы `stories`
 --
 
-INSERT INTO `stories` (`id`, `user_id`, `title`, `description_text`, `description_json`, `score`, `hotness`, `flag_count`, `is_hidden_by_flags`, `comments_count`, `created_at`, `updated_at`, `deleted_at`, `user_is_following`) VALUES
-(1, 1, 'Первая статья (будет заголовком)', 'Первая статья (будет заголовком)\n\nПросто тестовый пост с фото\n\nТекст продолжается.', '{\"time\":1785807517723,\"blocks\":[{\"id\":\"BOKfOZY_5W\",\"type\":\"header\",\"data\":{\"text\":\"Первая статья (будет заголовком)\",\"level\":2}},{\"id\":\"wif3npeMuz\",\"type\":\"paragraph\",\"data\":{\"text\":\"Просто тестовый пост с фото\"}},{\"id\":\"v0Njc-Vu3M\",\"type\":\"image\",\"data\":{\"file\":{\"url\":\"/uploads/stories/2026/08/a3791280731a4a60962c300d04cf61d0.jpg\"},\"caption\":\"подпись под картинкой\",\"withBorder\":false,\"stretched\":false,\"withBackground\":false}},{\"id\":\"Q73C0CMXBg\",\"type\":\"paragraph\",\"data\":{\"text\":\"Текст продолжается.\"}}],\"version\":\"2.30.7\"}', 15, 14367.8, 0, 0, 4, '2026-06-07 06:53:33', '2026-08-04 01:38:38', NULL, 1),
-(2, 1, 'Второй пост для тест', 'Второй пост для тест\n\nА это продолжение статьи.... короткий обзац.', '{\"time\":1785807575811,\"blocks\":[{\"id\":\"sdMJfQACVz\",\"type\":\"header\",\"data\":{\"text\":\"Второй пост для тест\",\"level\":2}},{\"id\":\"4D0ReSQ3EJ\",\"type\":\"paragraph\",\"data\":{\"text\":\"А это продолжение статьи.... короткий обзац.\"}}],\"version\":\"2.30.7\"}', 2, 14367, 0, 0, 2, '2026-06-07 07:14:37', '2026-08-04 01:39:35', NULL, 1);
+INSERT INTO `stories` (`id`, `user_id`, `title`, `description_text`, `description_json`, `score`, `hotness`, `flag_count`, `is_hidden_by_flags`, `comments_count`, `created_at`, `updated_at`, `deleted_at`, `user_is_following`, `has_paywall`, `paywall_type`, `is_staff_pick`, `picked_at`) VALUES
+(1, 1, 'Первая статья (будет заголовком)', 'Первая статья (будет заголовком)\n\nПросто тестовый пост с фото\n\nТекст продолжается.', '{\"time\":1785807517723,\"blocks\":[{\"id\":\"BOKfOZY_5W\",\"type\":\"header\",\"data\":{\"text\":\"Первая статья (будет заголовком)\",\"level\":2}},{\"id\":\"wif3npeMuz\",\"type\":\"paragraph\",\"data\":{\"text\":\"Просто тестовый пост с фото\"}},{\"id\":\"v0Njc-Vu3M\",\"type\":\"image\",\"data\":{\"file\":{\"url\":\"/uploads/stories/2026/08/a3791280731a4a60962c300d04cf61d0.jpg\"},\"caption\":\"подпись под картинкой\",\"withBorder\":false,\"stretched\":false,\"withBackground\":false}},{\"id\":\"Q73C0CMXBg\",\"type\":\"paragraph\",\"data\":{\"text\":\"Текст продолжается.\"}}],\"version\":\"2.30.7\"}', 15, 14367.8, 0, 0, 4, '2026-06-07 03:53:33', '2026-08-03 22:38:38', NULL, 1, 0, 'none', 0, NULL),
+(2, 1, 'Второй пост для тест', 'Второй пост для тест\n\nА это продолжение статьи.... короткий обзац.', '{\"time\":1785807575811,\"blocks\":[{\"id\":\"sdMJfQACVz\",\"type\":\"header\",\"data\":{\"text\":\"Второй пост для тест\",\"level\":2}},{\"id\":\"4D0ReSQ3EJ\",\"type\":\"paragraph\",\"data\":{\"text\":\"А это продолжение статьи.... короткий обзац.\"}}],\"version\":\"2.30.7\"}', 2, 14367, 0, 0, 2, '2026-06-07 04:14:37', '2026-08-03 22:39:35', NULL, 1, 0, 'none', 0, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `story_views`
+--
+
+CREATE TABLE `story_views` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `story_id` int UNSIGNED NOT NULL,
+  `read_seconds` int UNSIGNED DEFAULT '0' COMMENT 'Время чтения в секундах',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -482,11 +506,11 @@ CREATE TABLE `tags` (
 --
 
 INSERT INTO `tags` (`id`, `name`, `hotness_mod`, `slug`, `description`, `is_media`, `created_at`, `deleted_at`, `category_id`) VALUES
-(1, 'php', 0, 'php', 'Язык1 программирования PHP и фреймворки', 1, '2026-06-07 10:08:44', NULL, 1),
-(2, 'безопасность', 0, 'security', 'Уязвимости, безопасность и CSP политики', 1, '2026-06-07 10:08:44', NULL, 2),
-(3, 'личное', 0, 'show', 'Демонстрация личных проектов разработчиков', 1, '2026-06-07 10:08:44', NULL, 3),
-(4, 'видео', 0, 'video', 'Материал содержит видеоролик', 1, '2026-06-07 10:08:44', NULL, 3),
-(5, 'libarea', 0, 'libarea', 'Обсуждение сайта...', 1, '2026-06-07 10:46:26', NULL, 4);
+(1, 'php', 0, 'php', 'Язык1 программирования PHP и фреймворки', 1, '2026-06-07 07:08:44', NULL, 1),
+(2, 'безопасность', 0, 'security', 'Уязвимости, безопасность и CSP политики', 1, '2026-06-07 07:08:44', NULL, 2),
+(3, 'личное', 0, 'show', 'Демонстрация личных проектов разработчиков', 1, '2026-06-07 07:08:44', NULL, 3),
+(4, 'видео', 0, 'video', 'Материал содержит видеоролик', 1, '2026-06-07 07:08:44', NULL, 3),
+(5, 'libarea', 0, 'libarea', 'Обсуждение сайта...', 1, '2026-06-07 07:46:26', NULL, 4);
 
 -- --------------------------------------------------------
 
@@ -499,6 +523,19 @@ CREATE TABLE `tag_filters` (
   `user_id` int UNSIGNED NOT NULL,
   `tag_id` int UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `trending_cache`
+--
+
+CREATE TABLE `trending_cache` (
+  `id` int UNSIGNED NOT NULL,
+  `story_id` int UNSIGNED NOT NULL,
+  `score` float NOT NULL DEFAULT '0',
+  `calculated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -525,8 +562,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`, `updated_at`, `deleted_at`, `is_active`, `last_read_comments_at`) VALUES
-(1, 'Admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', '2026-06-06 23:28:55', '2026-06-15 19:15:11', NULL, 1, NULL),
-(2, 'test', 'test@test.ru', '$2y$10$xKEu8vvztJ/yoA2yaHHque9z4el8tdWKZDI4SY/AvX3HyyojdHFva', 'user', '2026-06-12 09:31:51', '2026-06-15 19:15:14', NULL, 1, NULL);
+(1, 'Admin', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', '2026-06-06 20:28:55', '2026-06-15 16:15:11', NULL, 1, NULL),
+(2, 'test', 'test@test.ru', '$2y$10$xKEu8vvztJ/yoA2yaHHque9z4el8tdWKZDI4SY/AvX3HyyojdHFva', 'user', '2026-06-12 06:31:51', '2026-06-15 16:15:14', NULL, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -582,8 +619,8 @@ CREATE TABLE `user_profiles` (
 --
 
 INSERT INTO `user_profiles` (`user_id`, `bio`, `avatar`, `updated_at`) VALUES
-(1, 'О себе я расскажуыва ыва ыва 3', 'a6fa1e10b80411629030d4079a5d2253.jpg', '2026-06-15 19:15:11'),
-(2, 'sdfsdfsdf', NULL, '2026-06-15 19:15:14');
+(1, 'О себе я расскажуыва ыва ыва 3', 'a6fa1e10b80411629030d4079a5d2253.jpg', '2026-06-15 16:15:11'),
+(2, 'sdfsdfsdf', NULL, '2026-06-15 16:15:14');
 
 -- --------------------------------------------------------
 
@@ -606,8 +643,8 @@ CREATE TABLE `user_settings` (
 --
 
 INSERT INTO `user_settings` (`user_id`, `notify_on_reply`, `notify_on_story_comment`, `notify_on_mention`, `notify_on_message`, `email_notifications`, `updated_at`) VALUES
-(1, 1, 1, 1, 1, 1, '2026-06-15 19:15:11'),
-(2, 1, 1, 1, 1, 1, '2026-06-15 19:15:14');
+(1, 1, 1, 1, 1, 1, '2026-06-15 16:15:11'),
+(2, 1, 1, 1, 1, 1, '2026-06-15 16:15:14');
 
 -- --------------------------------------------------------
 
@@ -629,8 +666,8 @@ CREATE TABLE `votes` (
 --
 
 INSERT INTO `votes` (`id`, `user_id`, `votable_type`, `votable_id`, `vote_type`, `created_at`) VALUES
-(5, 1, 'comment', 6, 1, '2026-06-07 08:28:01'),
-(6, 1, 'story', 2, 1, '2026-06-07 08:28:05');
+(5, 1, 'comment', 6, 1, '2026-06-07 05:28:01'),
+(6, 1, 'story', 2, 1, '2026-06-07 05:28:05');
 
 -- --------------------------------------------------------
 
@@ -723,7 +760,8 @@ ALTER TABLE `comments`
   ADD KEY `fk_comments_user_id` (`user_id`),
   ADD KEY `idx_comments_deleted_at` (`deleted_at`),
   ADD KEY `idx_comments_parent` (`parent_id`,`created_at`),
-  ADD KEY `idx_comments_story_score` (`story_id`,`score`,`created_at`);
+  ADD KEY `idx_comments_story_score` (`story_id`,`score`,`created_at`),
+  ADD KEY `idx_comments_created` (`created_at`);
 ALTER TABLE `comments` ADD FULLTEXT KEY `idx_comments_search` (`comment`);
 
 --
@@ -886,6 +924,15 @@ ALTER TABLE `saved_stories`
   ADD KEY `idx_story_id` (`story_id`);
 
 --
+-- Индексы таблицы `social_accounts`
+--
+ALTER TABLE `social_accounts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_provider_user` (`provider`,`provider_user_id`),
+  ADD UNIQUE KEY `unique_user_provider` (`user_id`,`provider`),
+  ADD KEY `idx_user_id` (`user_id`);
+
+--
 -- Индексы таблицы `stories`
 --
 ALTER TABLE `stories`
@@ -894,8 +941,18 @@ ALTER TABLE `stories`
   ADD KEY `idx_stories_score` (`score` DESC),
   ADD KEY `idx_stories_created_at` (`created_at` DESC),
   ADD KEY `idx_stories_hotness` (`hotness`),
-  ADD KEY `idx_stories_deleted_hotness` (`deleted_at`,`hotness`);
+  ADD KEY `idx_stories_deleted_hotness` (`deleted_at`,`hotness`),
+  ADD KEY `idx_staff_picks` (`is_staff_pick`,`picked_at` DESC);
 ALTER TABLE `stories` ADD FULLTEXT KEY `idx_stories_search` (`title`,`description_text`);
+
+--
+-- Индексы таблицы `story_views`
+--
+ALTER TABLE `story_views`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_user_story` (`user_id`,`story_id`),
+  ADD KEY `idx_user_created` (`user_id`,`created_at`),
+  ADD KEY `idx_story_reads` (`story_id`);
 
 --
 -- Индексы таблицы `taggings`
@@ -920,6 +977,14 @@ ALTER TABLE `tag_filters`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_user_tag` (`user_id`,`tag_id`),
   ADD KEY `idx_tag_id` (`tag_id`);
+
+--
+-- Индексы таблицы `trending_cache`
+--
+ALTER TABLE `trending_cache`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_score` (`score` DESC),
+  ADD KEY `fk_trending_story` (`story_id`);
 
 --
 -- Индексы таблицы `users`
@@ -962,7 +1027,9 @@ ALTER TABLE `user_settings`
 ALTER TABLE `votes`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uid_type_id_unique` (`user_id`,`votable_type`,`votable_id`),
-  ADD KEY `idx_votable_lookup` (`votable_type`,`votable_id`);
+  ADD KEY `idx_votable_lookup` (`votable_type`,`votable_id`),
+  ADD KEY `idx_votes_created` (`created_at`),
+  ADD KEY `idx_votes_type_id_created` (`votable_type`,`votable_id`,`created_at`);
 
 --
 -- Индексы таблицы `wiki_pages`
@@ -1106,7 +1173,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT для таблицы `rate_limits`
 --
 ALTER TABLE `rate_limits`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- AUTO_INCREMENT для таблицы `read_ribbons`
@@ -1127,10 +1194,22 @@ ALTER TABLE `saved_stories`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT для таблицы `social_accounts`
+--
+ALTER TABLE `social_accounts`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT для таблицы `stories`
 --
 ALTER TABLE `stories`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT для таблицы `story_views`
+--
+ALTER TABLE `story_views`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `taggings`
@@ -1148,6 +1227,12 @@ ALTER TABLE `tags`
 -- AUTO_INCREMENT для таблицы `tag_filters`
 --
 ALTER TABLE `tag_filters`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT для таблицы `trending_cache`
+--
+ALTER TABLE `trending_cache`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -1293,10 +1378,23 @@ ALTER TABLE `saved_stories`
   ADD CONSTRAINT `fk_saved_stories_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Ограничения внешнего ключа таблицы `social_accounts`
+--
+ALTER TABLE `social_accounts`
+  ADD CONSTRAINT `social_accounts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Ограничения внешнего ключа таблицы `stories`
 --
 ALTER TABLE `stories`
   ADD CONSTRAINT `fk_stories_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `story_views`
+--
+ALTER TABLE `story_views`
+  ADD CONSTRAINT `fk_story_views_story` FOREIGN KEY (`story_id`) REFERENCES `stories` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_story_views_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `taggings`
@@ -1317,6 +1415,12 @@ ALTER TABLE `tags`
 ALTER TABLE `tag_filters`
   ADD CONSTRAINT `fk_tag_filters_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_tag_filters_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `trending_cache`
+--
+ALTER TABLE `trending_cache`
+  ADD CONSTRAINT `fk_trending_story` FOREIGN KEY (`story_id`) REFERENCES `stories` (`id`) ON DELETE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `user_notifications`
@@ -1376,54 +1480,3 @@ CREATE DEFINER=`root`@`%` EVENT `cleanup_rate_limits` ON SCHEDULE EVERY 1 HOUR S
   WHERE `window_start` < NOW() - INTERVAL 24 HOUR$$
 
 DELIMITER ;
-
-
--- Добавляем поля для Staff Picks
-ALTER TABLE `stories` 
-  ADD COLUMN `is_staff_pick` TINYINT(1) NOT NULL DEFAULT 0 AFTER `user_is_following`,
-  ADD COLUMN `picked_at` TIMESTAMP NULL DEFAULT NULL AFTER `is_staff_pick`,
-  ADD INDEX `idx_staff_picks` (`is_staff_pick`, `picked_at` DESC);
-
--- Таблица для отслеживания чтений (для рекомендаций)
-CREATE TABLE `story_views` (
-  `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  `user_id` INT UNSIGNED NOT NULL,
-  `story_id` INT UNSIGNED NOT NULL,
-  `read_seconds` INT UNSIGNED DEFAULT 0 COMMENT 'Время чтения в секундах',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  UNIQUE KEY `uniq_user_story` (`user_id`, `story_id`),
-  INDEX `idx_user_created` (`user_id`, `created_at`),
-  INDEX `idx_story_reads` (`story_id`),
-  CONSTRAINT `fk_story_views_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_story_views_story` FOREIGN KEY (`story_id`) REFERENCES `stories` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Таблица для кэширования трендов (опционально, для производительности)
-CREATE TABLE `trending_cache` (
-  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  `story_id` INT UNSIGNED NOT NULL,
-  `score` FLOAT NOT NULL DEFAULT 0,
-  `calculated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX `idx_score` (`score` DESC),
-  CONSTRAINT `fk_trending_story` FOREIGN KEY (`story_id`) REFERENCES `stories` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-ALTER TABLE `votes` ADD INDEX `idx_votes_created` (`created_at`);
-ALTER TABLE `votes` ADD INDEX `idx_votes_type_id_created` (`votable_type`, `votable_id`, `created_at`);
-ALTER TABLE `comments` ADD INDEX `idx_comments_created` (`created_at`);
-
--- Флаг наличия paywall в статье (для быстрой фильтрации в ленте)
-ALTER TABLE `stories` 
-  ADD COLUMN `has_paywall` TINYINT(1) NOT NULL DEFAULT 0 
-  COMMENT 'Есть ли в статье закрытая часть' AFTER `user_is_following`;
-
--- Опционально: тип доступа
-ALTER TABLE `stories`
-  ADD COLUMN `paywall_type` ENUM('none', 'members', 'subscribers') NOT NULL DEFAULT 'none'
-  COMMENT 'none=все видят, members=только залогиненные, subscribers=только подписчики автора'
-  AFTER `has_paywall`;
-  
-  ALTER TABLE `rate_limits` 
-MODIFY COLUMN `window_start` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Начало временного окна (например, округленное до минуты)';

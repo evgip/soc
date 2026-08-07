@@ -23,11 +23,7 @@ class ImageProcessorService
      */
 	public function process(string $fullPath): string|false
 	{
-		if (!extension_loaded('gd')) {
-			return false;
-		}
-
-		if (!file_exists($fullPath)) {
+		if (!extension_loaded('gd') || !file_exists($fullPath)) {
 			return false;
 		}
 
@@ -42,31 +38,43 @@ class ImageProcessorService
 		$originalWidth = imagesx($image);
 		$originalHeight = imagesy($image);
 
+		$baseName = pathinfo($fullPath, PATHINFO_FILENAME);
+		$outputDir = dirname($fullPath);
+		$createdFiles = [];
+
+		// 🆕 Если изображение ОЧЕНЬ маленькое (< 100px) — не создаём версии вообще
+		if ($originalWidth < 100 && $originalHeight < 100) {
+			$this->logger->info("Image too small ({$originalWidth}x{$originalHeight}), skipping variants");
+			
+			$webpMain = $outputDir . '/' . $baseName . '.webp';
+			imagewebp($image, $webpMain, 85);
+			imagedestroy($image);
+			
+			@unlink($fullPath); // Удаляем оригинал
+			return $webpMain;
+		}
+
 		$sizes = [
 			'large'  => 1200,
 			'medium' => 800,
 			'small'  => 400,
 		];
 
-		$baseName = pathinfo($fullPath, PATHINFO_FILENAME);
-		$outputDir = dirname($fullPath);
-		$createdFiles = [];
-
 		foreach ($sizes as $name => $targetWidth) {
-			// 🆕 Если оригинал меньше целевого размера - копируем оригинал
+			// 🆕 Если оригинал меньше целевого размера - создаём только ОДИН раз
 			if ($originalWidth <= $targetWidth) {
-				$this->logger->info("Original ({$originalWidth}px) <= target ({$targetWidth}px), copying original as {$name}");
-				
-				// Для WebP
+				// Проверяем, не создали ли мы уже такую версию
 				$webpPath = $outputDir . '/' . $baseName . '_' . $name . '.webp';
-				imagewebp($image, $webpPath, 85);
-				$createdFiles[] = $webpPath;
+				
+				if (!file_exists($webpPath)) {
+					imagewebp($image, $webpPath, 85);
+					$createdFiles[] = $webpPath;
 
-				// Для AVIF
-				if (function_exists('imageavif')) {
-					$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
-					imageavif($image, $avifPath, 80);
-					$createdFiles[] = $avifPath;
+					if (function_exists('imageavif')) {
+						$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
+						imageavif($image, $avifPath, 80);
+						$createdFiles[] = $avifPath;
+					}
 				}
 				
 				continue;
@@ -96,15 +104,10 @@ class ImageProcessorService
 
 		// Основная WebP версия
 		$webpMain = $outputDir . '/' . $baseName . '.webp';
-		$success = imagewebp($image, $webpMain, 85);
-		
-		imagedestroy($image);
-
-		if (!$success) {
-			return false;
-		}
-
+		imagewebp($image, $webpMain, 85);
 		$createdFiles[] = $webpMain;
+
+		imagedestroy($image);
 
 		// Удаляем оригинал
 		if (count($createdFiles) > 0) {

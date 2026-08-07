@@ -279,11 +279,58 @@ class User extends Model
         ]) > 0;
     }
 	
-	public function updateLastReadComments(int $userId): void
+    public function updateLastReadComments(int $userId): void
+    {
+        $this->db->execute(
+            "UPDATE users SET last_read_comments_at = NOW() WHERE id = :id",
+            ['id' => $userId]
+        );
+    }
+
+	// ==========================================
+	// OAuth / Социальная авторизация
+	// ==========================================
+
+	/**
+	 * Находит пользователя по email.
+	 */
+	public function findByEmail(string $email): ?array
 	{
-		$this->db->execute(
-			"UPDATE users SET last_read_comments_at = NOW() WHERE id = :id",
-			['id' => $userId]
+		return $this->db->fetchOne(
+			"SELECT id, username, email, is_active FROM `{$this->table}` 
+			 WHERE `email` = :email AND `deleted_at` IS NULL 
+			 LIMIT 1",
+			['email' => $email]
 		);
 	}
-}
+
+	/**
+	 * Создаёт нового пользователя при OAuth-регистрации.
+	 * 
+	 * @param string $username Уникальное имя пользователя
+	 * @param string|null $email Email из соц. сети (может быть null от VK)
+	 * @param string $provider Провайдер (yandex, vk) — для генерации placeholder email
+	 * @param string $providerUserId ID пользователя у провайдера
+	 * @return int ID созданного пользователя
+	 */
+	public function createOAuthUser(string $username, ?string $email, string $provider, string $providerUserId): int
+	{
+		// Генерируем случайный пароль (пользователь будет входить через OAuth)
+		$password = password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
+
+		// 🆕 Если email не пришёл — генерируем уникальный placeholder
+		// Это обходит ограничение NOT NULL + UNIQUE
+		if (empty($email)) {
+			$email = $provider . '_' . $providerUserId . '@social.local';
+		}
+
+		$this->db->execute(
+			"INSERT INTO `{$this->table}` 
+				(`username`, `email`, `password`, `role`, `is_active`, `created_at`)
+			 VALUES (?, ?, ?, 'user', 1, NOW())",
+			[$username, $email, $password]
+		);
+
+		return (int)$this->db->lastInsertId();
+	}
+}	

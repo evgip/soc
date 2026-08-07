@@ -3026,3 +3026,52 @@ li.story .staff-pick-badge {
     border: 1px solid var(--color-box-border, #dee2e6);
     border-radius: 3px;
 }
+
+
+/* Регистрация через сервисы */
+.social-auth {
+    margin: 1.5rem 0;
+}
+.social-auth__divider {
+    text-align: center;
+    margin: 1rem 0;
+    color: #888;
+    font-size: 0.875rem;
+}
+.social-auth__divider::before,
+.social-auth__divider::after {
+    content: '';
+    display: inline-block;
+    width: 30%;
+    height: 1px;
+    background: #ddd;
+    vertical-align: middle;
+    margin: 0 0.5rem;
+}
+.social-auth__buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-social {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+.btn-social:hover {
+    opacity: 0.9;
+}
+.btn-yandex {
+    background: #FC3F1D;
+    color: white;
+}
+.btn-vk {
+    background: #0077FF;
+    color: white;
+}
