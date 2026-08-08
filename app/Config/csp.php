@@ -12,10 +12,13 @@ return [
     ],
 
     'script_src' => [
-        'https://captcha-api.yandex.ru',           // ← JS капчи
-        'https://smartcaptcha.yandex.ru',          // ← Iframe капчи
+        'https://captcha-api.yandex.ru',
+        'https://smartcaptcha.yandex.ru',
         'https://www.google.com',
         'https://www.gstatic.com',
+        'https://mc.yandex.ru',
+        'https://yandex.ru',                
+        'https://passport.yandex.ru',        
     ],
     
     'style_src' => [
@@ -31,22 +34,37 @@ return [
     'img_src' => [
         'https://smartcaptcha.yandex.ru',
         'https://www.google.com',
-        'https://mc.yandex.ru',                    // ← Метрика (если нужна)
+        'https://mc.yandex.ru',
+        'https://avatars.yandex.net',         // ← для аватарок Яндекса
     ],
     
-    // 🔑 НОВОЕ: frame-src для iframe виджетов
     'frame_src' => [
-        'https://captcha-api.yandex.ru',           // ← ← ← ДОБАВЛЕНО!
+        'https://captcha-api.yandex.ru',           
         'https://smartcaptcha.yandex.ru',
         'https://www.google.com',
         'https://recaptcha.google.com',
+        'https://oauth.yandex.ru',
+        'https://passport.yandex.ru',
+        'https://yandex.ru',                  
     ],
     
-    // 🔑 НОВОЕ: connect-src для API
+    // 🔑 РАСШИРЕННЫЙ connect-src с поддержкой WebSocket
     'connect_src' => [
-        'https://captcha-api.yandex.ru',           // ← ← ← ДОБАВЛЕНО!
+        // HTTPS домены
+        'https://captcha-api.yandex.ru',           
         'https://smartcaptcha.cloud.yandex.ru',
         'https://www.google.com',
+        'https://passport.yandex.ru',
+        'https://oauth.yandex.ru',
+        'https://mc.yandex.ru',
+        'https://yandex.ru',
+        'https://autofill.yandex.ru',
+        'https://avatars.yandex.net',
+        
+        // 🆕 WebSocket домены (КРИТИЧНО для OAuth Яндекса!)
+        'wss://mc.yandex.ru',             
+        'wss://passport.yandex.ru',
+        'wss://yandex.ru',
     ],
     
     'frame_ancestors' => [

@@ -39,19 +39,19 @@ $bodyClass = Layout::getBodyClass();
 		})();
 	</script>
     
-	<link rel="stylesheet" href="/assets/css/app.min.css">
+	<link rel="stylesheet" href="<?= \W3a\Core\View\Asset::css(); ?>">
 </head>
 
 <body class="<?= $bodyClass ?>">
 
-	<header>
+	<header class="header">
 		<div class="navbar-container">
 			<a href="<?= route('home') ?>" class="navbar-logo"><?= e(app_name()); ?></a>
 
 			<nav class="navbar-links">
-				<a href="<?= route('comments.index') ?>"><?= __('comments') ?></a>
+				<a class="mb-none" href="<?= route('comments.index') ?>"><?= __('comments') ?></a>
 				<a href="<?= route('tags.index') ?>"><?= __('tags') ?></a>
-				<a href="<?= route('search.index') ?>"><?= __('search') ?></a>
+				<a class="mb-none" href="<?= route('search.index') ?>"><?= __('search') ?></a>
 
 				<button type="button" id="theme-toggle" class="theme-toggle" title="<?= __('toggle_theme') ?>" aria-label="<?= __('toggle_theme') ?>">
 					<svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

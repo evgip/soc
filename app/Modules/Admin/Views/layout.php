@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <title>Админ-панель | <?= e($title ?? '') ?></title>
 
-    <link rel="stylesheet" href="/assets/css/app.min.css">
-    <link rel="stylesheet" href="/assets/css/admin.min.css">
+	<link rel="stylesheet" href="<?= \W3a\Core\View\Asset::css(); ?>">
+	<link rel="stylesheet" href="<?= \W3a\Core\View\Asset::Admincss(); ?>">
     <script src="<?= \W3a\Core\View\Asset::js() ?>"></script>
 
 </head>
