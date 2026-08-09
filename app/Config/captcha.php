@@ -19,7 +19,7 @@ return [
     'enabled' => env('CAPTCHA_ENABLED', true),
     
     // Драйвер капчи: 'yandex', 'google', 'custom'
-    'driver' => env('CAPTCHA_DRIVER', 'yandex'),
+    'driver' => env('CAPTCHA_DRIVER', 'custom'),
 
     // ═══════════════════════════════════════════
     // 🔐 YANDEX SMARTCAPTCHA

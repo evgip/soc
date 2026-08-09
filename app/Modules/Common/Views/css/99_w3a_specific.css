@@ -508,11 +508,6 @@ li .link .tags {
   color: var(--color-fg-author);
 }
 
-.new-comments {
-  color: var(--color-fg-accent);
-  font-weight: 600;
-}
-
 /* ============================================
    3. ARTICLE / СТРАНИЦА СТАТЬИ
    ============================================ */

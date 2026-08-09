@@ -25,7 +25,7 @@ class Captcha
     /**
      * Получить драйвер из конфига
      */
-    private function getDriver(): string
+    public function getDriver(): string
     {
         if ($this->driver === null) {
             $this->driver = $this->config->getString('captcha.driver', 'yandex');

@@ -97,4 +97,4 @@
 </p>
 
 
-<?php partial('SocialAuth::_buttons'); ?>
+<!--?php partial('SocialAuth::_buttons'); ?-->

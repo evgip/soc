@@ -13,6 +13,7 @@ use W3a\Core\Support\Validator;
 use W3a\Core\Events\EventDispatcher;
 use W3a\Core\Security\UserContext;
 use W3a\Core\Cache\FileCache;
+use W3a\Core\Storage\StorageManager;
 
 use App\Modules\Stories\Events\StoryCreated;
 use App\Modules\Stories\Events\StoryDeleted;
@@ -40,7 +41,7 @@ use App\Modules\Tags\Services\TagValidator;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Subscriptions\Services\SubscriptionService;
 
-// 🆕 НОВОЕ: импорт CacheHelper
+use App\Modules\Stories\Services\ImageCleaner;
 use App\Modules\Common\Support\CacheHelper;
 
 class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
@@ -115,7 +116,8 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
                 $c->get(Audit::class),
                 $c->get(EventDispatcher::class),
                 $c->get(UserContext::class),
-                $c->get(HtmlSanitizer::class)
+                $c->get(HtmlSanitizer::class),
+				$c->get(ImageCleaner::class)
             );
         });
 
@@ -130,8 +132,15 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
             return new UrlFetcherService();
         });
 
+		$container->singleton(ImageCleaner::class, function(Container $c) {
+			return new ImageCleaner(
+				$c->get(StorageManager::class),
+				$c->get(Logger::class)
+			);
+		});
+
         // ================================================================
-        // MEDIUM-СТИЛЬ СЕРВИСЫ (с кэшированием через CacheHelper)
+        // СЕРВИСЫ (с кэшированием через CacheHelper)
         // ================================================================
 
         $container->singleton(RecommendationService::class, function(Container $c) {

@@ -62,7 +62,7 @@ $showMenu = $canManageStory
         <?php else: ?>
             <?= $commentsCount ?> <?= plural($commentsCount, ['комментарий', 'комментария', 'комментариев']) ?>
             <?php if ($newCount > 0): ?>
-                <span class="new-comments" title="Новых комментариев с последнего посещения">
+                <span class="red" title="Новых комментариев с последнего посещения">
                     +<?= $newCount ?>
                 </span>
             <?php endif; ?>

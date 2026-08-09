@@ -196,7 +196,7 @@ if (!function_exists('adaptive_time')) {
 if (!function_exists('app_name')) {
 	function app_name(): string
 	{
-		return config('config.app.name', 'w3a');
+		return config('app.name', 'w3a');
 	}
 }
 
@@ -404,6 +404,7 @@ if (!function_exists('captcha')) {
 
 		if ($html === null) {
 			$captcha = get_cached_container(App\Modules\Captcha\Core\Captcha::class, fn() => null);
+			
 			if ($captcha !== null) {
 				try {
 					$html = $captcha->getHtml();
@@ -700,7 +701,7 @@ if (!function_exists('render_editorjs_content')) {
 						// Picture с обычной lazy-загрузкой
 						$html .= "        <picture>\n";
 						if (function_exists('imageavif')) {
-							$html .= "            <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
+							 $html .= "            <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
 						}
 						$html .= "            <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
 						$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";

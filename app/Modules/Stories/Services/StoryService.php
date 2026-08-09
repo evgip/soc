@@ -14,6 +14,7 @@ use App\Modules\Stories\Models\Story;
 use App\Modules\Stories\Events\StoryDeleted;
 use App\Modules\Stories\Events\StoryRestored;
 use App\Modules\Stories\Exceptions\StoryValidationException;
+use App\Modules\Stories\Services\ImageCleaner;
 
 /**
  * Сервис для управления бизнес-логикой статей (Medium-стиль).
@@ -30,6 +31,7 @@ class StoryService
     private EventDispatcher $eventDispatcher;
     private UserContext $currentUser;
     private HtmlSanitizer $sanitizer;
+    private ImageCleaner $imageCleaner;
 
     public function __construct(
         Story $storyModel,
@@ -38,7 +40,8 @@ class StoryService
         Audit $audit,
         EventDispatcher $eventDispatcher,
         UserContext $currentUser,
-        HtmlSanitizer $sanitizer
+        HtmlSanitizer $sanitizer,
+        ImageCleaner $imageCleaner
     ) {
         $this->storyModel = $storyModel;
         $this->storyValidator = $storyValidator;
@@ -47,6 +50,7 @@ class StoryService
         $this->eventDispatcher = $eventDispatcher;
         $this->currentUser = $currentUser;
         $this->sanitizer = $sanitizer;
+        $this->imageCleaner = $imageCleaner;
     }
 
 	/**
@@ -197,6 +201,11 @@ class StoryService
 		// 6. Обновляем статью через модель
 		$this->storyModel->update($storyId, $updateData);
 
+		// Удаляем изображения, которые были удалены из статьи
+		$oldJson = $story['description_json'] ?? null;
+		$newJson = $processedContent['description_json'];
+		$this->imageCleaner->cleanUnusedImages($oldJson, $newJson);
+
 		// 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
 		$this->storyModel->updatePaywallFlags($storyId, $paywallType);
 
@@ -235,6 +244,11 @@ class StoryService
         }
 
         $this->storyModel->softDelete($storyId);
+		
+		// Удаляем все изображения статьи с диска?
+		// Пока не имеет смысла, т.к. мягкое удаление это и возможно восстановление
+		// $this->imageCleaner->cleanAllImages($story['description_json'] ?? null);
+		
         $this->eventDispatcher->dispatch(new StoryDeleted($storyId, $adminId, $reason));
         
         return true;
