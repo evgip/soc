@@ -123,6 +123,7 @@ $bodyClass = Layout::getBodyClass();
 
 							<a href="<?= route('saved.index') ?>" class="dropdown-menu-item">🔖 <?= __('bookmarks') ?></a>
 
+							<a href="<?= route('drafts.index') ?>" class="dropdown-menu-item">📝 Черновики</a>
 
 							<a href="/subscribed" class="dropdown-menu-item">
 								<span>📡 Подписки</span>
@@ -229,6 +230,7 @@ $bodyClass = Layout::getBodyClass();
 	</footer>
 
 	<script src="<?= \W3a\Core\View\Asset::js() ?>"></script>
+	
 </body>
 
 </html>

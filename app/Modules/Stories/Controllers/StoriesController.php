@@ -143,38 +143,45 @@ class StoriesController extends BaseController
 		]);
 	}
 
-    // =========================================================================
-    // ПРОСМОТР ОДНОЙ СТАТЬИ
-    // =========================================================================
-    public function show(string $id): ViewResponse
-    {
-        $userContext = $this->getUserContext();
-        $viewModel = $this->service(StoryPageService::class)->buildShowPageData((int)$id, $userContext);
+	// =========================================================================
+	// ПРОСМОТР ОДНОЙ СТАТЬИ
+	// =========================================================================
+	public function show(string $id): ViewResponse
+	{
+		$storyId = (int)$id;
+		
+		// Проверяем что статья опубликована (черновики недоступны никому, даже автору)
+		$storyModel = $this->container->get(Story::class);
+		$story = $storyModel->find($storyId);
+		
+		if (!$story || ($story['status'] ?? 'published') !== 'published' || !empty($story['deleted_at'])) {
+			throw new \W3a\Core\Exceptions\NotFoundException("Статья не найдена");
+		}
+
+		$userContext = $this->getUserContext();
+		$viewModel = $this->service(StoryPageService::class)->buildShowPageData($storyId, $userContext);
 
 		$ogImage = get_story_first_image($viewModel->story, 'large');
 
-        $this->setOpenGraph([
-            'type' => 'article',
-            'title' => $viewModel->story['title'],
-            'description' => $viewModel->story['seo_description'] ?? '',
-            'image' => $ogImage ?: config('app.url') . '/default-og.jpg',
-        ]);
-		
-		
-        $userContext = $this->getUserContext();
+		$this->setOpenGraph([
+			'type' => 'article',
+			'title' => $viewModel->story['title'],
+			'description' => $viewModel->story['seo_description'] ?? '',
+			'image' => $ogImage ?: config('app.url') . '/default-og.jpg',
+		]);
 
-        $isFollowing = false;
-        if ($userContext['isLoggedIn'] && (int)$viewModel->story['user_id'] !== $userContext['id']) {
-            $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
-            $isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$viewModel->story['user_id']);
-        }
+		$isFollowing = false;
+		if ($userContext['isLoggedIn'] && (int)$viewModel->story['user_id'] !== $userContext['id']) {
+			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+			$isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$viewModel->story['user_id']);
+		}
 
-        return $this->render('show', [
-            'title' => $viewModel->story['title'],
-            'viewModel' => $viewModel,
+		return $this->render('show', [
+			'title' => $viewModel->story['title'],
+			'viewModel' => $viewModel,
 			'isFollowing' => $isFollowing,
-        ]);
-    }
+		]);
+	}
 
     // =========================================================================
     // СОЗДАНИЕ СТАТЬИ
@@ -195,38 +202,49 @@ class StoriesController extends BaseController
         ]);
     }
 
-    /**
-     * Обработка создания новой статьи.
-     * Заголовок извлекается из JSON автоматически в StoryService.
-     */
-    public function create(): RedirectResponse
-    {
-        // Надежное получение массива тегов
-        $rawTags = $this->request->post('tags');
-        $tagsArray = is_array($rawTags) ? $rawTags : [];
+	/**
+	 * Обработка создания новой статьи.
+	 * Заголовок извлекается из JSON автоматически в StoryService.
+	 * Параметр action: 'publish' (опубликовать) или 'draft' (сохранить черновик)
+	 */
+	public function create(): RedirectResponse
+	{
+		// Надежное получение массива тегов
+		$rawTags = $this->request->post('tags');
+		$tagsArray = is_array($rawTags) ? $rawTags : [];
 
-        $data = [
-            'description' => $this->request->post('description') ?: null,
-            'tags'        => $tagsArray,
-            'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
-        ];
+		// Определяем действие из формы
+		$action = $this->request->post('action', 'publish');
+		$status = ($action === 'draft') ? 'draft' : 'published';
 
-        $userContext = $this->getUserContext();
+		$data = [
+			'description' => $this->request->post('description') ?: null,
+			'tags'        => $tagsArray,
+			'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
+		];
 
-        try {
-            $storyId = $this->service(StoryService::class)->createStory($data, $userContext['id']);
-        } catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
-            MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectBack();
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Stories.create');
-            MessageBag::flashMessage('error', 'Произошла ошибка при создании публикации.');
-            return $this->redirectBack();
-        }
+		$userContext = $this->getUserContext();
 
-        MessageBag::flashMessage('success', 'Ваша статья успешно опубликована!');
-        return $this->redirect('/story/' . $storyId);
-    }
+		try {
+			$storyId = $this->service(StoryService::class)->createStory($data, $userContext['id'], $status);
+		} catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
+			MessageBag::flashMessage('error', $e->getMessage());
+			return $this->redirectBack();
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.create');
+			MessageBag::flashMessage('error', 'Произошла ошибка при создании публикации.');
+			return $this->redirectBack();
+		}
+
+		// Разные редиректы в зависимости от действия
+		if ($status === 'draft') {
+			MessageBag::flashMessage('success', 'Черновик сохранён.');
+			return $this->redirect('/stories/' . $storyId . '/edit');
+		}
+
+		MessageBag::flashMessage('success', 'Ваша статья успешно опубликована!');
+		return $this->redirect('/story/' . $storyId);
+	}
 
     // =========================================================================
     // РЕДАКТИРОВАНИЕ СТАТЬИ
@@ -260,45 +278,76 @@ class StoriesController extends BaseController
         ]);
     }
 
-    /**
-     * Обработка обновления существующей статьи.
-     */
-    public function update(string $id): RedirectResponse
-    {
-        $storyId = (int)$id;
-        $storyModel = $this->container->get(Story::class);
-        $story = $storyModel->find($storyId);
-        $userContext = $this->getUserContext();
+	/**
+	 * Обработка обновления существующей статьи.
+	 * Параметр action: 'draft' (сохранить черновик), 'publish' (опубликовать), 
+	 * или пусто (просто сохранить изменения для уже опубликованной)
+	 */
+	public function update(string $id): RedirectResponse
+	{
+		$storyId = (int)$id;
+		$storyModel = $this->container->get(Story::class);
+		$story = $storyModel->find($storyId);
+		$userContext = $this->getUserContext();
 
-        if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
-            MessageBag::flashMessage('error', 'У вас нет прав для изменения этой публикации.');
-            return $this->redirectBack();
-        }
+		if (!$story || !$this->service(StoryService::class)->canEditStory($story, $userContext['id'])) {
+			MessageBag::flashMessage('error', 'У вас нет прав для изменения этой публикации.');
+			return $this->redirectBack();
+		}
 
-        // Надежное получение массива тегов
-        $rawTags = $this->request->post('tags');
-        $tagsArray = is_array($rawTags) ? $rawTags : [];
+		// Надежное получение массива тегов
+		$rawTags = $this->request->post('tags');
+		$tagsArray = is_array($rawTags) ? $rawTags : [];
 
-        $data = [
-            'description' => $this->request->post('description') ?: null,
-            'tags'        => $tagsArray,
-            'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
-        ];
+		// Определяем действие из формы
+		$action = $this->request->post('action', '');
+		
+		// Определяем новый статус
+		$currentStatus = $story['status'] ?? 'published';
+		
+		if ($currentStatus === 'draft' && $action === 'publish') {
+			// Публикуем черновик
+			$newStatus = 'published';
+		} elseif ($currentStatus === 'draft' && $action === 'draft') {
+			// Сохраняем черновик
+			$newStatus = 'draft';
+		} else {
+			// Уже опубликована — статус не меняется (нет возврата в черновики)
+			$newStatus = 'published';
+		}
 
-        try {
-            $this->service(StoryService::class)->updateStory($storyId, $data);
-        } catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
-            MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirectBack();
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Stories.update');
-            MessageBag::flashMessage('error', 'Произошла ошибка при редактировании.');
-            return $this->redirectBack();
-        }
+		$data = [
+			'description' => $this->request->post('description') ?: null,
+			'tags'        => $tagsArray,
+			'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
+		];
 
-        MessageBag::flashMessage('success', 'Публикация успешно отредактирована.');
-        return $this->redirect('/story/' . $storyId);
-    }
+		try {
+			$this->service(StoryService::class)->updateStory($storyId, $data, $newStatus);
+		} catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
+			MessageBag::flashMessage('error', $e->getMessage());
+			return $this->redirectBack();
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.update');
+			MessageBag::flashMessage('error', 'Произошла ошибка при редактировании.');
+			return $this->redirectBack();
+		}
+
+		// Разные редиректы в зависимости от статуса
+		if ($newStatus === 'draft') {
+			MessageBag::flashMessage('success', 'Черновик сохранён.');
+			return $this->redirect('/stories/' . $storyId . '/edit');
+		}
+
+		// Если была черновик и опубликована
+		if ($currentStatus === 'draft' && $newStatus === 'published') {
+			MessageBag::flashMessage('success', 'Ваша статья успешно опубликована!');
+		} else {
+			MessageBag::flashMessage('success', 'Публикация успешно отредактирована.');
+		}
+		
+		return $this->redirect('/story/' . $storyId);
+	}
 
     // =========================================================================
     // АДМИНИСТРИРОВАНИЕ СТАТЕЙ
@@ -810,6 +859,34 @@ class StoriesController extends BaseController
 			'canUserDownvote' => $this->canUserDownvote($userContext['id']),
 			'currentVotes' => $currentVotes,
 			'newCommentsMap' => $newCommentsMap,
+		]);
+	}
+	
+	
+	// =========================================================================
+	// ЧЕРНОВИКИ
+	// =========================================================================
+
+	/**
+	 * Список черновиков пользователя
+	 */
+	public function drafts(): ViewResponse
+	{
+		$userContext = $this->getUserContext();
+
+		$page = max(1, (int)$this->request->query('page', 1));
+
+		$data = $this->service(StoryService::class)->getUserDrafts(
+			$userContext['id'],
+			$page,
+			20
+		);
+
+		return $this->render('drafts_list', [
+			'title' => 'Мои черновики',
+			'drafts' => $data['drafts'],
+			'total' => $data['total'],
+			'currentPage' => $page,
 		]);
 	}
 }

@@ -10,7 +10,7 @@ $commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
 ?>
 
 <div class="container">
-    <h1>Комментарии пользователя <?= e($profileUser['name']) ?></h1>
+    <h1>Комментарии пользователя <?= e($profileUser['username']) ?></h1>
     
     <?php if (empty($comments)): ?>
         <p class="hint">Пользователь ещё не оставил комментариев.</p>

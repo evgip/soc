@@ -13,6 +13,10 @@ use App\Modules\Stories\Services\RankingService;
 class Story extends Model
 {
     protected string $table = 'stories';
+	
+	public const STATUS_DRAFT = 'draft';
+    public const STATUS_PUBLISHED = 'published';
+    public const STATUS_SCHEDULED = 'scheduled';
     
     private RankingService $rankingService;
     private HtmlSanitizer $sanitizer;
@@ -28,7 +32,8 @@ class Story extends Model
         'is_staff_pick',      // Staff Picks
         'picked_at',          // Staff Picks
         'has_paywall',        // Paywall: есть ли закрытая часть
-        'paywall_type',       // Paywall: none / members / subscribers
+        'paywall_type',    // Paywall: none / members / subscribers
+		'status', 		 
         'deleted_at'
     ];
 
@@ -176,40 +181,46 @@ class Story extends Model
     // МЕТОДЫ ЛЕНТЫ И ФИЛЬТРАЦИИ (Domain полностью удален)
     // =========================================================================
 
-    private function buildFeedConditions(
-        string $tagslug = '', array $excludeTagIds = [],
-        string $author = '', array $mutedUserIds = [], bool $showDeleted = false
-    ): array {
-        $where = [];
-        $bindings = [];
+	private function buildFeedConditions(
+		string $tagslug = '', array $excludeTagIds = [],
+		string $author = '', array $mutedUserIds = [], bool $showDeleted = false
+	): array {
+		$where = [];
+		$bindings = [];
 
-        if (!$showDeleted) $where[] = "s.deleted_at IS NULL";
-        if ($tagslug !== '') {
-            $where[] = "t.slug = :slug";
-            $bindings[':slug'] = $tagslug;
-        }
-        if ($author !== '') {
-            $where[] = "u.username = :author";
-            $bindings[':author'] = $author;
-        }
+		// ВАЖНО: Фильтруем только опубликованные статьи + не удаленные
+		if (!$showDeleted) {
+			$where[] = "s.deleted_at IS NULL";
+			$where[] = "s.status = :status";
+			$bindings[':status'] = self::STATUS_PUBLISHED;
+		}
+		
+		if ($tagslug !== '') {
+			$where[] = "t.slug = :slug";
+			$bindings[':slug'] = $tagslug;
+		}
+		if ($author !== '') {
+			$where[] = "u.username = :author";
+			$bindings[':author'] = $author;
+		}
 
-        if (!empty($mutedUserIds)) {
-            $inData = $this->db->buildInClause($mutedUserIds, 'muted_user');
-            $where[] = "s.user_id NOT IN ({$inData['clause']})";
-            $bindings = array_merge($bindings, $inData['bindings']);
-        }
+		if (!empty($mutedUserIds)) {
+			$inData = $this->db->buildInClause($mutedUserIds, 'muted_user');
+			$where[] = "s.user_id NOT IN ({$inData['clause']})";
+			$bindings = array_merge($bindings, $inData['bindings']);
+		}
 
-        if (!empty($excludeTagIds)) {
-            $inData = $this->db->buildInClause($excludeTagIds, 'exclude_tag');
-            $where[] = "s.id NOT IN (
-                SELECT DISTINCT story_id FROM taggings 
-                WHERE tag_id IN ({$inData['clause']})
-            )";
-            $bindings = array_merge($bindings, $inData['bindings']);
-        }
+		if (!empty($excludeTagIds)) {
+			$inData = $this->db->buildInClause($excludeTagIds, 'exclude_tag');
+			$where[] = "s.id NOT IN (
+				SELECT DISTINCT story_id FROM taggings 
+				WHERE tag_id IN ({$inData['clause']})
+			)";
+			$bindings = array_merge($bindings, $inData['bindings']);
+		}
 
-        return ['conditions' => $where, 'bindings' => $bindings];
-    }
+		return ['conditions' => $where, 'bindings' => $bindings];
+	}
 
     public function getFeed(
         int $limit, int $offset, string $tagslug = '', bool $showDeleted = false, 
@@ -250,20 +261,35 @@ class Story extends Model
                     ->count();
     }
 
-    public function getSingleWithAuthor(int $id, bool $showDeleted = false): ?array {
-        $repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
-        
-        $repo->withAuthor()->withAvatar()->withTags()
-             ->addWhere('s.id = :id', ['id' => $id]);
-             
-        if (!$showDeleted) {
-            $repo->addWhere('s.deleted_at IS NULL');
-        }
-        
-        return $repo->first();
-    }
+	public function getSingleWithAuthor(int $id, bool $showDeleted = false): ?array {
+		$repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
+		
+		$repo->withAuthor()->withAvatar()->withTags()
+			 ->addWhere('s.id = :id', ['id' => $id]);
+			 
+		if (!$showDeleted) {
+			$repo->addWhere('s.deleted_at IS NULL');
+			$repo->addWhere('s.status = :status', ['status' => self::STATUS_PUBLISHED]);
+		}
+		
+		return $repo->first();
+	}
 	
-	
+	/**
+	 * Получить статью для автора (включая его черновики)
+	 * Используется когда автор просматривает свою статью
+	 */
+	public function getForAuthor(int $id, int $authorId): ?array {
+		$repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
+		
+		$repo->withAuthor()->withAvatar()->withTags()
+			 ->addWhere('s.id = :id', ['id' => $id])
+			 ->addWhere('s.user_id = :author_id', ['author_id' => $authorId])
+			 ->addWhere('s.deleted_at IS NULL');
+		
+		return $repo->first();
+	}
+		
     public function recalculateHotness(int $storyId): void
     {
         $story = $this->find($storyId);
@@ -417,7 +443,8 @@ class Story extends Model
              ->withAuthor()
              ->withAvatar()
              ->withTags()
-             ->addWhere('s.deleted_at IS NULL');
+             ->addWhere('s.deleted_at IS NULL')
+			 ->addWhere('s.status = :status', ['status' => self::STATUS_PUBLISHED]);
 
         if (!empty($mutedUserIds)) {
             $inData = $this->db->buildInClause($mutedUserIds, 'muted_user');
@@ -442,7 +469,8 @@ class Story extends Model
         
         $repo->fromSubscribed($userId, $followedUserIds, $followedTagIds)
              ->withAuthor()
-             ->addWhere('s.deleted_at IS NULL');
+             ->addWhere('s.deleted_at IS NULL')
+			 ->addWhere('s.status = :status', ['status' => self::STATUS_PUBLISHED]);
 
         if (!empty($mutedUserIds)) {
             $inData = $this->db->buildInClause($mutedUserIds, 'muted_user');
@@ -460,12 +488,266 @@ class Story extends Model
 
         $repo = new \App\Modules\Stories\Repositories\StoryRepository($this->db);
         
-        $repo->fromSubscribed($userId, $followedUserIds, $followedTagIds)
-             ->addWhere('s.deleted_at IS NULL')
-             ->addWhere('s.created_at >= :since', [
-                 'since' => date('Y-m-d H:i:s', strtotime('-24 hours'))
-             ]);
+		$repo->fromSubscribed($userId, $followedUserIds, $followedTagIds)
+			 ->addWhere('s.deleted_at IS NULL')
+			 ->addWhere('s.status = :status', ['status' => self::STATUS_PUBLISHED])
+			 ->addWhere('s.created_at >= :since', [
+				 'since' => date('Y-m-d H:i:s', strtotime('-24 hours'))
+			 ]);
         
         return $repo->count();
+    }
+	
+    // ============================================================
+    // МЕТОДЫ ДЛЯ ЧЕРНОВИКОВ (добавить в конец класса)
+    // ============================================================
+
+    /**
+     * Создать черновик
+     */
+    public function createDraft(array $data): int
+    {
+        $sql = "INSERT INTO stories 
+                (user_id, title, description_text, description_json, 
+                 cover_image, word_count, reading_time, 
+                 status, created_at, updated_at)
+                VALUES 
+                (:user_id, :title, :description_text, :description_json,
+                 :cover_image, :word_count, :reading_time,
+                 'draft', NOW(), NOW())";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'user_id' => $data['user_id'],
+            'title' => $data['title'] ?? 'Без названия',
+            'description_text' => $data['description_text'] ?? '',
+            'description_json' => $data['description_json'] ?? '{}',
+            'cover_image' => $data['cover_image'] ?? null,
+            'word_count' => $data['word_count'] ?? 0,
+            'reading_time' => $data['reading_time'] ?? 0,
+        ]);
+
+        return (int)$this->db->lastInsertId();
+    }
+
+    /**
+     * Обновить черновик
+     */
+    public function updateDraft(int $draftId, int $userId, array $data): bool
+    {
+        $fields = [];
+        $params = ['id' => $draftId, 'user_id' => $userId];
+
+        $allowedFields = [
+            'title', 'description_text', 'description_json', 
+            'cover_image', 'word_count', 'reading_time', 'slug'
+        ];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $fields[] = "$field = :$field";
+                $params[$field] = $data[$field];
+            }
+        }
+
+        if (empty($fields)) {
+            return true;
+        }
+
+        $fields[] = "updated_at = NOW()";
+        $fields[] = "is_autosaved = " . (!empty($data['is_autosaved']) ? '1' : '0');
+
+        $sql = "UPDATE stories 
+                SET " . implode(', ', $fields) . "
+                WHERE id = :id 
+                AND user_id = :user_id 
+                AND status = 'draft'
+                AND deleted_at IS NULL";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    /**
+     * Найти черновик пользователя
+     */
+    public function findDraft(int $id, int $userId): ?array
+    {
+        $sql = "SELECT * FROM stories 
+                WHERE id = :id 
+                AND user_id = :user_id 
+                AND status = 'draft'
+                AND deleted_at IS NULL
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id, 'user_id' => $userId]);
+
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
+    /**
+     * Получить черновики пользователя
+     */
+    public function getUserDrafts(int $userId, int $page = 1, int $perPage = 20): array
+    {
+        $offset = ($page - 1) * $perPage;
+
+        $sql = "SELECT id, title, description_text, cover_image, 
+                       word_count, reading_time, updated_at, draft_version
+                FROM stories
+                WHERE user_id = :user_id 
+                AND status = 'draft' 
+                AND deleted_at IS NULL
+                ORDER BY updated_at DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue('user_id', $userId, \PDO::PARAM_INT);
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Опубликовать черновик
+     */
+    public function publishDraft(int $draftId, int $userId): bool
+    {
+        $draft = $this->findDraft($draftId, $userId);
+        if (!$draft) {
+            return false;
+        }
+
+        $slug = $draft['slug'] ?? $this->generateSlug($draft['title'], $draftId);
+
+        $sql = "UPDATE stories 
+                SET status = 'published', 
+                    published_at = NOW(),
+                    slug = :slug,
+                    updated_at = NOW()
+                WHERE id = :id 
+                AND user_id = :user_id 
+                AND status = 'draft'";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $draftId, 
+            'user_id' => $userId,
+            'slug' => $slug
+        ]);
+    }
+
+    /**
+     * Удалить черновик (мягкое удаление)
+     */
+    public function deleteDraft(int $draftId, int $userId): bool
+    {
+        $sql = "UPDATE stories 
+                SET deleted_at = NOW()
+                WHERE id = :id 
+                AND user_id = :user_id 
+                AND status = 'draft'";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(['id' => $draftId, 'user_id' => $userId]);
+    }
+
+    /**
+     * Автосохранение черновика
+     */
+	public function autosaveDraft(int $draftId, int $userId, array $data): bool
+	{
+		$sql = "UPDATE stories 
+				SET title = :title,
+					description_text = :description_text,
+					description_json = :description_json,
+					cover_image = :cover_image,
+					paywall_type = :paywall_type,
+					word_count = :word_count,
+					reading_time = :reading_time,
+					updated_at = NOW(),
+					is_autosaved = 1
+				WHERE id = :id 
+				AND user_id = :user_id 
+				AND status = 'draft'
+				AND deleted_at IS NULL";
+
+		$stmt = $this->db->prepare($sql);
+		return $stmt->execute([
+			'id' => $draftId,
+			'user_id' => $userId,
+			'title' => $data['title'] ?? '',
+			'description_text' => $data['description_text'] ?? '',
+			'description_json' => $data['description_json'] ?? '{}',
+			'cover_image' => $data['cover_image'] ?? null,
+			'paywall_type' => $data['paywall_type'] ?? 'none',
+			'word_count' => $data['word_count'] ?? 0,
+			'reading_time' => $data['reading_time'] ?? 0,
+		]);
+	}
+
+    /**
+     * Подсчитать черновики пользователя
+     */
+    public function countUserDrafts(int $userId): int
+    {
+        $sql = "SELECT COUNT(*) FROM stories 
+                WHERE user_id = :user_id 
+                AND status = 'draft' 
+                AND deleted_at IS NULL";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['user_id' => $userId]);
+
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Получить статью по slug
+     */
+    public function findBySlug(string $slug): ?array
+    {
+        $sql = "SELECT * FROM stories 
+                WHERE slug = :slug 
+                AND deleted_at IS NULL 
+                AND status = 'published'
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['slug' => $slug]);
+
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $result ?: null;
+    }
+
+    /**
+     * Генерация slug (приватный метод)
+     */
+    private function generateSlug(string $title, int $id): string
+    {
+        $translit = [
+            'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd',
+            'е' => 'e', 'ё' => 'yo', 'ж' => 'zh', 'з' => 'z', 'и' => 'i',
+            'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm', 'н' => 'n',
+            'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't',
+            'у' => 'u', 'ф' => 'f', 'х' => 'h', 'ц' => 'ts', 'ч' => 'ch',
+            'ш' => 'sh', 'щ' => 'sch', 'ъ' => '', 'ы' => 'y', 'ь' => '',
+            'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
+        ];
+
+        $slug = mb_strtolower($title);
+        $slug = strtr($slug, $translit);
+        $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
+        $slug = trim($slug, '-');
+
+        if (empty($slug)) {
+            $slug = 'post-' . $id;
+        }
+
+        return $slug;
     }
 }

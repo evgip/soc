@@ -48,8 +48,15 @@
         </small>
     </div>
 
+    <?php $isDraft = ($story['status'] ?? 'published') === 'draft'; ?>
+
     <div class="form-actions v-center">
-        <button type="submit">Сохранить изменения</button>
-        <a href="<?= route('story.show', ['id' => $story['id']]) ?>">Отмена</a>
+        <?php if ($isDraft): ?>
+            <button type="submit" name="action" value="publish">Опубликовать</button>
+            <button type="submit" name="action" value="draft" class="btn btn--secondary">Сохранить черновик</button>
+        <?php else: ?>
+            <button type="submit" name="action" value="save">Сохранить изменения</button>
+        <?php endif; ?>
+        <a href="<?= $isDraft ? '/drafts' : route('story.show', ['id' => $story['id']]) ?>">Отмена</a>
     </div>
 </form>

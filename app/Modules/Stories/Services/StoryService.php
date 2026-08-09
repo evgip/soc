@@ -49,135 +49,171 @@ class StoryService
         $this->sanitizer = $sanitizer;
     }
 
-    /**
-     * Создаёт новую статью.
-     * Заголовок извлекается из первого H1/H2 блока Editor.js.
-     *
-     * @throws StoryValidationException Если данные не прошли валидацию
-     */
-    public function createStory(array $data, int $userId): int
-    {
-        $editorJsJson = $data['description'] ?? '';
+	/**
+	 * Создаёт новую статью.
+	 * Заголовок извлекается из первого H1/H2 блока Editor.js.
+	 *
+	 * @param string $status 'published' или 'draft'
+	 * @throws StoryValidationException Если данные не прошли валидацию
+	 */
+	public function createStory(array $data, int $userId, string $status = 'published'): int
+	{
+		$editorJsJson = $data['description'] ?? '';
+		$isDraft = ($status === 'draft');
 
-        // 1. Проверяем, что JSON не пустой
-        if (empty(trim($editorJsJson))) {
-            throw new StoryValidationException('Статья не может быть пустой.');
-        }
+		// 1. Проверяем, что JSON не пустой (только для публикации)
+		if (!$isDraft && empty(trim($editorJsJson))) {
+			throw new StoryValidationException('Статья не может быть пустой.');
+		}
 
-        // 2. Извлекаем заголовок из первого H1/H2 блока
-        $title = $this->storyModel->extractTitleFromJson($editorJsJson);
-        if (empty($title)) {
-            throw new StoryValidationException('Статья должна начинаться с заголовка (H1 или H2).');
-        }
+		// 2. Извлекаем заголовок из первого H1/H2 блока (для черновика может быть пустым)
+		$title = '';
+		if (!empty($editorJsJson)) {
+			$title = $this->storyModel->extractTitleFromJson($editorJsJson);
+		}
+		
+		if (!$isDraft && empty($title)) {
+			throw new StoryValidationException('Статья должна начинаться с заголовка (H1 или H2).');
+		}
 
-        // 3. Обрабатываем JSON: очищаем HTML и извлекаем текст для поиска
-        $processedContent = $this->storyModel->processEditorJsData($editorJsJson);
+		// 3. Обрабатываем JSON: очищаем HTML и извлекаем текст для поиска
+		if (!empty($editorJsJson)) {
+			$processedContent = $this->storyModel->processEditorJsData($editorJsJson);
+		} else {
+			$processedContent = [
+				'description_json' => '',
+				'description_text' => '',
+			];
+		}
 
-        // 4. Определяем тип paywall (по умолчанию 'members' для закрытых частей)
-        $paywallType = $data['paywall_type'] ?? 'members';
-        if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
-            $paywallType = 'members';
-        }
+		// 4. Определяем тип paywall (по умолчанию 'members' для закрытых частей)
+		$paywallType = $data['paywall_type'] ?? 'members';
+		if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
+			$paywallType = 'members';
+		}
 
-        // 5. Формируем данные для сохранения
-        $storyData = [
-            'user_id'            => $userId,
-            'title'              => mb_substr($title, 0, 150),
-            'description_json'   => $processedContent['description_json'],
-            'description_text'   => $processedContent['description_text'],
-            'score'              => 1,
-            'comments_count'     => 0,
-            'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
-            'paywall_type'       => $paywallType,
-        ];
+		// 5. Формируем данные для сохранения
+		$storyData = [
+			'user_id'            => $userId,
+			'title'              => mb_substr($title, 0, 150),
+			'description_json'   => $processedContent['description_json'],
+			'description_text'   => $processedContent['description_text'],
+			'score'              => 1,
+			'comments_count'     => 0,
+			'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
+			'paywall_type'       => $paywallType,
+			'status'             => $status,
+		];
 
-        // 6. Создаём статью через модель
-        $storyId = $this->storyModel->create($storyData);
+		// 6. Создаём статью через модель
+		$storyId = $this->storyModel->create($storyData);
 
-        // 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
-        if ($storyId > 0) {
-            $this->storyModel->updatePaywallFlags($storyId, $paywallType);
-        }
+		// 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
+		if ($storyId > 0) {
+			$this->storyModel->updatePaywallFlags($storyId, $paywallType);
+		}
 
-        // 8. Привязываем теги и пересчитываем hotness
-        if ($storyId > 0 && !empty($data['tags'])) {
-            $this->storyModel->syncTags($storyId, $data['tags']);
-            $this->storyModel->recalculateHotness($storyId);
-        }
+		// 8. Привязываем теги и пересчитываем hotness
+		if ($storyId > 0 && !empty($data['tags'])) {
+			$this->storyModel->syncTags($storyId, $data['tags']);
+			$this->storyModel->recalculateHotness($storyId);
+		}
 
-        // 9. Логируем в аудит
-        $this->audit->log('story.created', 'Пользователь создал новую статью', 'story', [
-            'story_id' => $storyId,
-            'user_id'  => $userId
-        ]);
+		// 9. Логируем в аудит
+		$this->audit->log('story.created', 'Пользователь создал новую статью', 'story', [
+			'story_id' => $storyId,
+			'user_id'  => $userId,
+			'status'   => $status,
+		]);
 
-        return $storyId;
-    }
+		return $storyId;
+	}
 
-    /**
-     * Обновляет существующую статью.
-     * Заголовок извлекается из первого H1/H2 блока Editor.js.
-     *
-     * @throws \InvalidArgumentException Если статья не найдена
-     * @throws StoryValidationException Если данные не прошли валидацию
-     */
-    public function updateStory(int $storyId, array $data): bool
-    {
-        $story = $this->storyModel->find($storyId);
-        if (!$story) {
-            throw new \InvalidArgumentException("Статья не найдена.");
-        }
+	/**
+	 * Обновляет существующую статью.
+	 * Заголовок извлекается из первого H1/H2 блока Editor.js.
+	 *
+	 * @param string|null $status Новый статус ('published' или 'draft'). Если null — статус не меняется.
+	 * @throws \InvalidArgumentException Если статья не найдена
+	 * @throws StoryValidationException Если данные не прошли валидацию
+	 */
+	public function updateStory(int $storyId, array $data, ?string $status = null): bool
+	{
+		$story = $this->storyModel->find($storyId);
+		if (!$story) {
+			throw new \InvalidArgumentException("Статья не найдена.");
+		}
 
-        $editorJsJson = $data['description'] ?? '';
+		// Если статус не передан — используем текущий
+		if ($status === null) {
+			$status = $story['status'] ?? 'published';
+		}
+		
+		$isDraft = ($status === 'draft');
 
-        // 1. Проверяем, что JSON не пустой
-        if (empty(trim($editorJsJson))) {
-            throw new StoryValidationException('Статья не может быть пустой.');
-        }
+		$editorJsJson = $data['description'] ?? '';
 
-        // 2. Извлекаем новый заголовок из JSON
-        $newTitle = $this->storyModel->extractTitleFromJson($editorJsJson);
-        if (empty($newTitle)) {
-            throw new StoryValidationException('Статья должна начинаться с заголовка (H1 или H2).');
-        }
+		// 1. Проверяем, что JSON не пустой (только для публикации)
+		if (!$isDraft && empty(trim($editorJsJson))) {
+			throw new StoryValidationException('Статья не может быть пустой.');
+		}
 
-        // 3. Обрабатываем JSON: очищаем HTML и извлекаем текст для поиска
-        $processedContent = $this->storyModel->processEditorJsData($editorJsJson);
+		// 2. Извлекаем новый заголовок из JSON (для черновика может быть пустым)
+		$newTitle = '';
+		if (!empty($editorJsJson)) {
+			$newTitle = $this->storyModel->extractTitleFromJson($editorJsJson);
+		}
+		
+		if (!$isDraft && empty($newTitle)) {
+			throw new StoryValidationException('Статья должна начинаться с заголовка (H1 или H2).');
+		}
 
-        // 4. Определяем тип paywall
-        $paywallType = $data['paywall_type'] ?? 'members';
-        if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
-            $paywallType = 'members';
-        }
+		// 3. Обрабатываем JSON: очищаем HTML и извлекаем текст для поиска
+		if (!empty($editorJsJson)) {
+			$processedContent = $this->storyModel->processEditorJsData($editorJsJson);
+		} else {
+			$processedContent = [
+				'description_json' => '',
+				'description_text' => '',
+			];
+		}
 
-        // 5. Формируем данные для обновления
-        $updateData = [
-            'title'              => mb_substr($newTitle, 0, 150),
-            'description_json'   => $processedContent['description_json'],
-            'description_text'   => $processedContent['description_text'],
-            'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
-            'paywall_type'       => $paywallType,
-        ];
+		// 4. Определяем тип paywall
+		$paywallType = $data['paywall_type'] ?? 'members';
+		if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
+			$paywallType = 'members';
+		}
 
-        // 6. Обновляем статью через модель
-        $this->storyModel->update($storyId, $updateData);
+		// 5. Формируем данные для обновления
+		$updateData = [
+			'title'              => mb_substr($newTitle, 0, 150),
+			'description_json'   => $processedContent['description_json'],
+			'description_text'   => $processedContent['description_text'],
+			'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
+			'paywall_type'       => $paywallType,
+			'status'             => $status,
+		];
 
-        // 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
-        $this->storyModel->updatePaywallFlags($storyId, $paywallType);
+		// 6. Обновляем статью через модель
+		$this->storyModel->update($storyId, $updateData);
 
-        // 8. Синхронизируем теги, если они переданы
-        if (isset($data['tags'])) {
-            $this->storyModel->syncTags($storyId, $data['tags']);
-            $this->storyModel->recalculateHotness($storyId);
-        }
+		// 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
+		$this->storyModel->updatePaywallFlags($storyId, $paywallType);
 
-        // 9. Логируем обновление
-        $this->audit->log('story.updated', 'Пользователь отредактировал статью', 'story', [
-            'story_id' => $storyId,
-        ]);
+		// 8. Синхронизируем теги, если они переданы
+		if (isset($data['tags'])) {
+			$this->storyModel->syncTags($storyId, $data['tags']);
+			$this->storyModel->recalculateHotness($storyId);
+		}
 
-        return true;
-    }
+		// 9. Логируем обновление
+		$this->audit->log('story.updated', 'Пользователь отредактировал статью', 'story', [
+			'story_id' => $storyId,
+			'status'   => $status,
+		]);
+
+		return true;
+	}
 
     /**
      * Проверяет наличие прав на редактирование статьи.
@@ -219,4 +255,20 @@ class StoryService
         
         return true;
     }
+
+	/**
+	 * Получить черновики пользователя с пагинацией
+	 */
+	public function getUserDrafts(int $userId, int $page = 1, int $perPage = 20): array
+	{
+		$drafts = $this->storyModel->getUserDrafts($userId, $page, $perPage);
+		$total = $this->storyModel->countUserDrafts($userId);
+
+		return [
+			'drafts' => $drafts,
+			'total' => $total,
+			'page' => $page,
+			'perPage' => $perPage,
+		];
+	}
 }

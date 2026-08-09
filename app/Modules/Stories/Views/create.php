@@ -1,7 +1,5 @@
 <h1>Создание публикации</h1>
 
-<p class="hint">Поделитесь интересной ссылкой или начните обсуждение с сообществом.</p>
-
 <?php if (!empty($error)): ?>
 <div role="alert" class="alert is-danger">
     <?= e($error) ?>
@@ -46,7 +44,8 @@
     </div>
 
     <div class="form-actions v-center">
-        <button type="submit">Опубликовать</button>
+        <button type="submit" name="action" value="publish">Опубликовать</button>
+        <button type="submit" name="action" value="draft" class="btn btn--secondary">Сохранить черновик</button>
         <a href="/">Отмена</a>
     </div>
 </form>

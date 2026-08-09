@@ -666,13 +666,19 @@ if (!function_exists('render_editorjs_content')) {
 					if ($url) {
 						$classes = ['editorjs-image'];
 						
-						if (!empty($d['withBorder'])) $classes[] = 'editorjs-image--border';
-						if (!empty($d['withBackground'])) $classes[] = 'editorjs-image--background';
-						if (!empty($d['stretched'])) $classes[] = 'editorjs-image--stretched';
+						if (!empty($d['withBorder'])) {
+							$classes[] = 'editorjs-image--border';
+						}
+						if (!empty($d['withBackground'])) {
+							$classes[] = 'editorjs-image--background';
+						}
+						if (!empty($d['stretched'])) {
+							$classes[] = 'editorjs-image--stretched';
+						}
 						
 						$classString = implode(' ', $classes);
 
-						// Извлекаем базовое имя
+						// Генерируем URL для полной версии (large)
 						$parsedUrl = parse_url($url);
 						$urlPath = $parsedUrl['path'] ?? '';
 						$pathInfo = pathinfo($urlPath);
@@ -683,37 +689,34 @@ if (!function_exists('render_editorjs_content')) {
 						$baseUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') 
 								 . ($parsedUrl['host'] ?? '') 
 								 . $dir . '/' . $baseName;
+						
+						// 🆕 URL полной версии для лайтбокса
+						$fullUrl = $baseUrl . '_large.' . $extension;
 
-						$html .= "<figure class=\"{$classString}\">\n";
-						$html .= "    <picture>\n";
+						// Обёртка с кликом для лайтбокса
+						$html .= "<figure class=\"{$classString}\" data-lightbox=\"true\">\n";
+						$html .= "    <div class=\"lightbox-trigger\" data-full-src=\"{$fullUrl}\" data-caption=\"{$caption}\">\n";
 						
-						// 🆕 Собираем srcset только для существующих файлов
-						$variants = [];
-						foreach (['large', 'medium', 'small'] as $size) {
-							$variantPath = "{$baseName}_{$size}.{$extension}";
-							$fullVariantPath = str_replace($urlPath, $variantPath, $_SERVER['DOCUMENT_ROOT'] . $urlPath);
-							
-							// Проверяем существование файла
-							if (file_exists($fullVariantPath)) {
-								$variants[] = "{$baseUrl}_{$size}.{$extension}";
-							}
+						// Picture с обычной lazy-загрузкой
+						$html .= "        <picture>\n";
+						if (function_exists('imageavif')) {
+							$html .= "            <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
 						}
+						$html .= "            <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
+						$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
+						$html .= "        </picture>\n";
 						
-						// AVIF варианты (если существуют)
-						if (function_exists('imageavif') && !empty($variants)) {
-							$avifSrcset = implode(', ', array_map(fn($v) => str_replace('.webp', '.avif', $v), $variants));
-							$html .= "        <source srcset=\"{$avifSrcset}\" type=\"image/avif\">\n";
-						}
+						// 🆕 Иконка лупы (видна при hover)
+						$html .= "        <button type=\"button\" class=\"lightbox-icon\" aria-label=\"Открыть в полном размере\">\n";
+						$html .= "            <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\">\n";
+						$html .= "                <circle cx=\"11\" cy=\"11\" r=\"8\"></circle>\n";
+						$html .= "                <line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"></line>\n";
+						$html .= "                <line x1=\"11\" y1=\"8\" x2=\"11\" y2=\"14\"></line>\n";
+						$html .= "                <line x1=\"8\" y1=\"11\" x2=\"14\" y2=\"11\"></line>\n";
+						$html .= "            </svg>\n";
+						$html .= "        </button>\n";
 						
-						// WebP варианты
-						if (!empty($variants)) {
-							$webpSrcset = implode(', ', $variants);
-							$html .= "        <source srcset=\"{$webpSrcset}\" type=\"image/webp\">\n";
-						}
-						
-						// Fallback на основной файл
-						$html .= "        <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
-						$html .= "    </picture>\n";
+						$html .= "    </div>\n";
 						
 						if ($caption) {
 							$html .= "    <figcaption>{$caption}</figcaption>\n";

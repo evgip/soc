@@ -31,6 +31,9 @@ $router->add('GET', '/user/{username}/stories', StoriesController::class . '@use
 
 $router->add('GET', '/staff-picks', StoriesController::class . '@staffPicks', 'stories.staffPicks');
 
+// API для трекинга времени чтения
+$router->add('POST', '/api/stories/track-reading', StoriesController::class . '@trackReadingTime', 'api.story.trackReading');
+
 // =========================================================================
 // МАРШРУТЫ ДЛЯ АВТОРИЗОВАННЫХ ПОЛЬЗОВАТЕЛЕЙ
 // =========================================================================
@@ -54,10 +57,14 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
     $router->add('POST', '/story/{id}/mark-read', StoriesController::class . '@markRead', 'story.markRead');
 
 	$router->add('GET', '/subscribed', StoriesController::class . '@subscribed', 'stories.subscribed');
+	
+    // --- Черновики ---
+	$router->add('GET', '/drafts', StoriesController::class . '@drafts', 'drafts.index');
+	//$router->add('GET', '/drafts/new', StoriesController::class . '@newDraft', 'drafts.new');
+	//$router->add('POST', '/stories/{id}/autosave', StoriesController::class . '@autosaveDraft', 'drafts.autosave');
+	//$router->add('POST', '/stories/{id}/publish-draft', StoriesController::class . '@publishDraft', 'drafts.publish');
+    
  
-	// API для трекинга времени чтения
-    $router->add('POST', '/api/stories/track-reading', StoriesController::class . '@trackReadingTime', 'api.story.trackReading');
-
 });
 
 // =========================================================================
@@ -75,7 +82,9 @@ $router->group(['middleware' => ['web', 'admin']], function ($router) {
 
 });
 
+$router->add('POST', '/stories/upload-image', StoriesController::class . '@uploadImage', 'story.uploadImage');
+
 
  
 
-	$router->add('POST', '/stories/upload-image', StoriesController::class . '@uploadImage', 'story.uploadImage');
+	 

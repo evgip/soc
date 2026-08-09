@@ -3062,3 +3062,218 @@ li.story .staff-pick-badge {
     background: #0077FF;
     color: white;
 }
+
+
+/* ═══════════════════════════════════════════
+   Lightbox (Medium-style)
+   ═══════════════════════════════════════════ */
+
+/* Контейнер картинки — нужен для позиционирования лупы */
+.lightbox-trigger {
+    position: relative;
+    display: block;
+    cursor: zoom-in;
+    line-height: 0;
+}
+
+.lightbox-trigger img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+/* При hover — лёгкое увеличение картинки */
+.lightbox-trigger:hover img {
+    transform: scale(1.02);
+}
+
+/* Иконка лупы (скрыта по умолчанию) */
+.lightbox-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+.lightbox-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Показываем лупу при hover на картинку */
+.lightbox-trigger:hover .lightbox-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.lightbox-icon:hover {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+/* ═══════════════════════════════════════════
+   Модальное окно лайтбокса
+   ═══════════════════════════════════════════ */
+
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.97);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.lightbox-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Тёмная тема для лайтбокса */
+@media (prefers-color-scheme: dark) {
+    .lightbox-overlay {
+        background: rgba(20, 20, 20, 0.97);
+    }
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lightbox-image {
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.lightbox-caption {
+    color: #555;
+    font-size: 0.95rem;
+    text-align: center;
+    max-width: 80%;
+    line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+    .lightbox-caption {
+        color: #aaa;
+    }
+}
+
+/* Кнопка закрытия */
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #333;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.lightbox-close svg {
+    width: 20px;
+    height: 20px;
+}
+
+.lightbox-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    .lightbox-close {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+    .lightbox-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Спиннер загрузки */
+.lightbox-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-color-scheme: dark) {
+    .spinner {
+        border-color: rgba(255, 255, 255, 0.1);
+        border-top-color: #fff;
+    }
+}
+
+/* ═══════════════════════════════════════════
+   Мобильные устройства
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .lightbox-icon {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    .lightbox-close {
+        top: 12px;
+        right: 12px;
+    }
+    
+    .lightbox-image {
+        max-width: 95vw;
+        max-height: 75vh;
+    }
+}

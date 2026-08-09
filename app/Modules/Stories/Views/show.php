@@ -147,7 +147,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
     
 	<?php $commentsCount = (int)($viewModel->story['comments_count'] ?? 0); ?>
 	<a href="<?= route('story.show', ['id' => $viewModel->story['id']]) ?>#comments" class="action-link action-link--neutral">
-		💬 <?= $commentsCount === 0 ? 'обсудить' : $commentsCount . ' ' . plural($commentsCount, ['комментарий', 'комментария', 'комментариев']) ?>
+		💬 <?= $commentsCount; ?>
 	</a>
 
     <!-- Иконки действий + dropdown меню -->
@@ -422,6 +422,25 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 	?>
 <?php endif; ?>
 
+
+<div class="lightbox-overlay" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+	<button type="button" class="lightbox-close" aria-label="Закрыть">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<line x1="18" y1="6" x2="6" y2="18"></line>
+			<line x1="6" y1="6" x2="18" y2="18"></line>
+		</svg>
+	</button>
+	
+	<div class="lightbox-content">
+		<img src="" alt="" class="lightbox-image">
+		<div class="lightbox-caption"></div>
+	</div>
+	
+	<div class="lightbox-spinner" aria-label="Загрузка">
+		<div class="spinner"></div>
+	</div>
+</div>
+
 <script nonce="<?= csp_nonce(); ?>">
 
 /**
@@ -619,5 +638,104 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
         // Сохраняем в window для отладки
         window.__readingTracker = tracker;
     });
+})();
+
+/**
+ * Lightbox — полноэкранный просмотр изображений
+ */
+(function () {
+    'use strict';
+
+    const overlay = document.getElementById('lightbox');
+    if (!overlay) return;
+
+    const image = overlay.querySelector('.lightbox-image');
+    const caption = overlay.querySelector('.lightbox-caption');
+    const spinner = overlay.querySelector('.lightbox-spinner');
+    const closeBtn = overlay.querySelector('.lightbox-close');
+
+    let lastFocused = null;
+
+    // Открытие лайтбокса
+    document.addEventListener('click', function (e) {
+        const trigger = e.target.closest('.lightbox-trigger');
+        if (!trigger) return;
+
+        const fullSrc = trigger.getAttribute('data-full-src');
+        const alt = trigger.querySelector('img')?.getAttribute('alt') || '';
+        const captionText = trigger.getAttribute('data-caption') || '';
+
+        if (!fullSrc) return;
+
+        lastFocused = document.activeElement;
+        openLightbox(fullSrc, alt, captionText);
+    });
+
+    // Закрытие по клику на фон (вне картинки)
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay || e.target.classList.contains('lightbox-content')) {
+            closeLightbox();
+        }
+    });
+
+    // Закрытие по кнопке ✕
+    closeBtn.addEventListener('click', closeLightbox);
+
+    // Закрытие по Escape
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') {
+            closeLightbox();
+        }
+    });
+
+    function openLightbox(src, alt, captionText) {
+        // Показываем спиннер, скрываем картинку
+        spinner.style.display = 'flex';
+        image.style.opacity = '0';
+        caption.textContent = '';
+
+        // Предзагрузка
+        const loader = new Image();
+        loader.onload = function () {
+            image.src = src;
+            image.alt = alt;
+            spinner.style.display = 'none';
+            image.style.opacity = '1';
+            if (captionText) {
+                caption.textContent = captionText;
+            }
+        };
+        loader.onerror = function () {
+            spinner.style.display = 'none';
+            image.src = src;
+            image.alt = alt;
+            image.style.opacity = '1';
+        };
+        loader.src = src;
+
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden'; // Блокируем скролл страницы
+        overlay.classList.add('is-open');
+
+        // Фокус на кнопку закрытия (a11y)
+        setTimeout(() => closeBtn.focus(), 100);
+    }
+
+    function closeLightbox() {
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+
+        setTimeout(() => {
+            image.src = '';
+            image.style.opacity = '0';
+            caption.textContent = '';
+        }, 300);
+
+        // Возвращаем фокус
+        if (lastFocused && typeof lastFocused.focus === 'function') {
+            lastFocused.focus();
+        }
+    }
 })();
 </script>
