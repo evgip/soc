@@ -28,7 +28,7 @@ class Captcha
     private function getDriver(): string
     {
         if ($this->driver === null) {
-            $this->driver = $this->config->getString('captcha.config.driver', 'yandex');
+            $this->driver = $this->config->getString('captcha.driver', 'yandex');
         }
         return $this->driver;
     }
@@ -38,7 +38,7 @@ class Captcha
      */
     public function isEnabled(): bool
     {
-        return $this->config->getBool('captcha.config.enabled', true);
+        return $this->config->getBool('captcha.enabled', true);
     }
 
     /**
@@ -51,10 +51,10 @@ class Captcha
         }
 
         // Если пользователь авторизован и настроен пропуск
-        if ($this->config->getBool('captcha.config.skip_for_authorized_users', true)) {
+        if ($this->config->getBool('captcha.skip_for_authorized_users', true)) {
             $userId = $this->session->get('user_id');
             if (!empty($userId)) {
-                $minKarma = $this->config->getInt('captcha.config.min_karma_to_skip', 50);
+                $minKarma = $this->config->getInt('captcha.min_karma_to_skip', 50);
                 $userKarma = $this->session->get('user_karma', 0);
                 if ($userKarma >= $minKarma) {
                     return false;
@@ -104,7 +104,7 @@ class Captcha
      */
     private function getYandexCaptcha(): string
     {
-        $siteKey = $this->config->getString('captcha.config.yandex.site_key', '');
+        $siteKey = $this->config->getString('captcha.yandex.site_key', '');
         
         if (empty($siteKey)) {
             return '<!-- Yandex Captcha: site_key not configured -->';
@@ -124,7 +124,7 @@ HTML;
      */
     private function getGoogleCaptcha(): string
     {
-        $siteKey = $this->config->getString('captcha.config.google.site_key', '');
+        $siteKey = $this->config->getString('captcha.google.site_key', '');
         
         if (empty($siteKey)) {
             return '<!-- Google Captcha: site_key not configured -->';
@@ -164,7 +164,7 @@ HTML;
             return false;
         }
 
-        $secretKey = $this->config->getString('captcha.config.yandex.secret_key', '');
+        $secretKey = $this->config->getString('captcha.yandex.secret_key', '');
         $submitUrl = $this->config->getString(
             'captcha.config.yandex.submit_url', 
             'https://smartcaptcha.cloud.yandex.ru/validate'
@@ -200,7 +200,7 @@ HTML;
             return false;
         }
 
-        $secretKey = $this->config->getString('captcha.config.google.secret_key', '');
+        $secretKey = $this->config->getString('captcha.google.secret_key', '');
         $submitUrl = $this->config->getString(
             'captcha.config.google.submit_url', 
             'https://www.google.com/recaptcha/api/siteverify'
