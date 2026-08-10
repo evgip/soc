@@ -92,9 +92,6 @@ class StoryService
 
 		// 4. Определяем тип paywall (по умолчанию 'members' для закрытых частей)
 		$paywallType = $data['paywall_type'] ?? 'members';
-		if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
-			$paywallType = 'members';
-		}
 
 		// 5. Формируем данные для сохранения
 		$storyData = [
@@ -184,9 +181,6 @@ class StoryService
 
 		// 4. Определяем тип paywall
 		$paywallType = $data['paywall_type'] ?? 'members';
-		if (!in_array($paywallType, ['none', 'members', 'subscribers'], true)) {
-			$paywallType = 'members';
-		}
 
 		// 5. Формируем данные для обновления
 		$updateData = [

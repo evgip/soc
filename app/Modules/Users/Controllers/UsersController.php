@@ -19,6 +19,9 @@ use App\Modules\Users\Exceptions\UserValidationException;
 use App\Modules\Users\Exceptions\UserNotFoundException;
 use App\Modules\Users\Exceptions\AvatarUploadException;
 
+use App\Modules\Users\Requests\UpdateSettingsRequest;
+use App\Modules\Users\Requests\ChangePasswordRequest;
+
 /**
  * Контроллер для управления профилями пользователей и настройками аккаунта.
  */
@@ -45,54 +48,54 @@ class UsersController extends BaseController
         ]);
     }
 
-	public function profile(string $username): ViewResponse
-	{
-		$user = $this->getUserByUsername(trim($username));
+    public function profile(string $username): ViewResponse
+    {
+        $user = $this->getUserByUsername(trim($username));
 
-		$profile = $user['profile'] ?? [];
-		$user['bio'] = $profile['bio'] ?? null;
-		$user['avatar'] = $profile['avatar'] ?? null;
+        $profile = $user['profile'] ?? [];
+        $user['bio'] = $profile['bio'] ?? null;
+        $user['avatar'] = $profile['avatar'] ?? null;
 
-		$userModel = $this->container->get(User::class);
-		$banInfo = $userModel->getBanInfo((int)$user['id']);
-		$user['is_banned'] = $banInfo !== null;
-		
-		$stats = $userModel->getProfileStats((int)$user['id']);
-		$userKarma = $userModel->getUserKarma((int)$user['id']);
+        $userModel = $this->container->get(User::class);
+        $banInfo = $userModel->getBanInfo((int)$user['id']);
+        $user['is_banned'] = $banInfo !== null;
+        
+        $stats = $userModel->getProfileStats((int)$user['id']);
+        $userKarma = $userModel->getUserKarma((int)$user['id']);
 
-		$userContext = $this->getUserContext();
+        $userContext = $this->getUserContext();
 
-		$isMuted = false;
-		$isFollowing = false;
-		if ($userContext['isLoggedIn'] && (int)$user['id'] !== $userContext['id']) {
-			$muteService = $this->service(\App\Modules\Muted\Services\MuteService::class);
-			$isMuted = $muteService->isMuted($userContext['id'], (int)$user['id']);
+        $isMuted = false;
+        $isFollowing = false;
+        if ($userContext['isLoggedIn'] && (int)$user['id'] !== $userContext['id']) {
+            $muteService = $this->service(\App\Modules\Muted\Services\MuteService::class);
+            $isMuted = $muteService->isMuted($userContext['id'], (int)$user['id']);
 
-			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
-			$isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$user['id']);
-		}
+            $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+            $isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$user['id']);
+        }
 
-		$feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
-			tagslug: '',
-			author: $username,
-			userContext: $userContext,
-			canUserDownvote: $this->canUserDownvote($userContext['id'] ?? 0),
-			pageData: ['title' => 'Публикации ' . e($username)]
-		);
+        $feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
+            tagslug: '',
+            author: $username,
+            userContext: $userContext,
+            canUserDownvote: $this->canUserDownvote($userContext['id'] ?? 0),
+            pageData: ['title' => 'Публикации ' . e($username)]
+        );
 
-		return $this->render('profile', [
-			'title' => 'Профиль пользователя ' . e($user['username']),
-			'profileUser' => $user,
-			'userKarma' => $userKarma ?? 0,
-			'isMuted' => $isMuted,
-			'isFollowing' => $isFollowing,
-			'storiesCount' => $stats['stories_count'] ?? count($feed->stories),
-			'commentsCount' => $stats['comments_count'] ?? 0,
-			'stories' => $feed->stories,
-			'currentPage' => $feed->currentPage,
-			'totalPages' => $feed->totalPages,
-		]);
-	}
+        return $this->render('profile', [
+            'title' => 'Профиль пользователя ' . e($user['username']),
+            'profileUser' => $user,
+            'userKarma' => $userKarma ?? 0,
+            'isMuted' => $isMuted,
+            'isFollowing' => $isFollowing,
+            'storiesCount' => $stats['stories_count'] ?? count($feed->stories),
+            'commentsCount' => $stats['comments_count'] ?? 0,
+            'stories' => $feed->stories,
+            'currentPage' => $feed->currentPage,
+            'totalPages' => $feed->totalPages,
+        ]);
+    }
 
     /**
      * Используем общий Response, так как метод может вернуть 
@@ -124,92 +127,109 @@ class UsersController extends BaseController
     // ОБРАБОТКА ФОРМ (POST)
     // =========================================================================
 
-    public function updateSettings(): RedirectResponse
-    {
-        $userContext = $this->getUserContext();
-        $userOrRedirect = $this->getUserWithProfileOrRedirect($userContext['id']);
+    /**
+     * Обновление настроек профиля пользователя.
+     */
+	public function updateSettings(): RedirectResponse
+	{
+		$userContext = $this->getUserContext();
+		$userOrRedirect = $this->getUserWithProfileOrRedirect($userContext['id']);
 
-        if ($userOrRedirect instanceof RedirectResponse) {
-            return $userOrRedirect;
-        }
-        
-        $user = $userOrRedirect;
+		if ($userOrRedirect instanceof RedirectResponse) {
+			return $userOrRedirect;
+		}
+		
+		$user = $userOrRedirect;
+		$targetUrl = route('account.settings');
 
-        $email = trim($this->request->getParams('email', ''));
-        $bio = trim($this->request->getParams('bio', ''));
-        $oldAvatarFilename = $user['avatar'] ?? '';
-        $newAvatarFilename = $oldAvatarFilename;
+		$validated = $this->validateForm(
+			new UpdateSettingsRequest($this->request, $this->container)
+		);
+		
+		if ($validated instanceof Response) {
+			return $this->redirect($targetUrl);
+		}
 
-        $errorMessage = null;
+		try {
+			$email = trim($validated['email'] ?? '');
+			if ($email !== $user['email']) {
+				$this->getUserService()->updateEmail($userContext['id'], $email);
+			}
 
-        try {
-            if ($email !== $user['email']) {
-                $this->getUserService()->updateEmail($userContext['id'], $email);
-            }
+			$oldAvatarFilename = $user['avatar'] ?? '';
+			$newAvatarFilename = $oldAvatarFilename;
 
-            $avatarFile = $this->request->file('avatar_file');
-            if ($avatarFile && $avatarFile['error'] === UPLOAD_ERR_OK) {
-                $newAvatarFilename = $this->getAvatarService()->handleUpload($avatarFile, $oldAvatarFilename);
-            }
+			$avatarFile = $this->request->file('avatar_file');
+			if ($avatarFile && $avatarFile['error'] === UPLOAD_ERR_OK) {
+				$newAvatarFilename = $this->getAvatarService()->handleUpload($avatarFile, $oldAvatarFilename);
+			}
 
-            $this->getUserService()->updateProfile($userContext['id'], [
-                'bio' => $bio,
-                'avatar' => $newAvatarFilename
-            ]);
+			$bio = trim($validated['bio'] ?? '');
+			$this->getUserService()->updateProfile($userContext['id'], [
+				'bio'    => $bio,
+				'avatar' => $newAvatarFilename
+			]);
 
-            $this->getUserService()->updateSettings($userContext['id'], [
-                'notify_on_reply' => $this->request->getParams('notify_on_reply') ? 1 : 0,
-                'notify_on_story_comment' => $this->request->getParams('notify_on_story_comment') ? 1 : 0,
-                'notify_on_mention' => $this->request->getParams('notify_on_mention') ? 1 : 0,
-                'notify_on_message' => $this->request->getParams('notify_on_message') ? 1 : 0,
-                'email_notifications' => $this->request->getParams('email_notifications') ? 1 : 0,
-            ]);
+			$this->getUserService()->updateSettings($userContext['id'], [
+				'notify_on_reply'         => (int)($validated['notify_on_reply'] ?? 0),
+				'notify_on_story_comment' => (int)($validated['notify_on_story_comment'] ?? 0),
+				'notify_on_mention'       => (int)($validated['notify_on_mention'] ?? 0),
+				'notify_on_message'       => (int)($validated['notify_on_message'] ?? 0),
+				'email_notifications'     => (int)($validated['email_notifications'] ?? 0),
+			]);
 
-            $this->container->get(Session::class)->set('user_avatar', $newAvatarFilename);
+			$this->container->get(Session::class)->set('user_avatar', $newAvatarFilename);
 
-        } catch (UserValidationException | AvatarUploadException $e) {
-            $errorMessage = $e->getMessage();
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Users.updateSettings');
-            $errorMessage = 'Произошла непредвиденная ошибка при сохранении.';
-        }
+			MessageBag::flashMessage('success', 'Настройки успешно сохранены.');
+			return $this->redirect($targetUrl);
 
-        $targetUrl = route('account.settings');
-        
-        if ($errorMessage !== null) {
-            MessageBag::flashMessage('error', $errorMessage);
-            return $this->redirect($targetUrl);
-        }
-        
-        MessageBag::flashMessage('success', 'Настройки успешно сохранены.');
-        return $this->redirect($targetUrl);
-    }
+		} catch (UserValidationException | AvatarUploadException $e) {
+			MessageBag::flashMessage('error', $e->getMessage());
+			return $this->redirect($targetUrl);
 
-    public function updatePassword(): RedirectResponse
-    {
-        $userContext = $this->getUserContext();
-        $currentPassword = $this->request->getParams('current_password', '');
-        $newPassword = $this->request->getParams('new_password', '');
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Users.updateSettings');
+			MessageBag::flashMessage('error', 'Произошла непредвиденная ошибка при сохранении.');
+			return $this->redirect($targetUrl);
+		}
+	}
 
-        if (strlen($newPassword) < 6) {
-            MessageBag::flashMessage('error', 'Пароль должен быть не менее 6 символов.');
-            return $this->redirect(route('account.settings'));
-        }
+    /**
+     * Изменение пароля пользователя.
+     */
+	public function updatePassword(): RedirectResponse
+	{
+		$userContext = $this->getUserContext();
+		$targetUrl = route('account.settings');
 
-        try {
-            $this->getUserService()->changePassword($userContext['id'], $currentPassword, $newPassword);
-            MessageBag::flashMessage('success', 'Пароль успешно изменён.');
-            return $this->redirect(route('account.settings'));
-            
-        } catch (UserValidationException | UserNotFoundException $e) {
-            MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirect(route('account.settings'));
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Users.updatePassword');
-            MessageBag::flashMessage('error', 'Произошла непредвиденная ошибка.');
-            return $this->redirect(route('account.settings'));
-        }
-    }
+		$validated = $this->validateForm(
+			new ChangePasswordRequest($this->request, $this->container)
+		);
+		
+		if ($validated instanceof Response) {
+			return $this->redirect($targetUrl);
+		}
+
+		try {
+			$this->getUserService()->changePassword(
+				$userContext['id'],
+				$validated['current_password'],
+				$validated['new_password']
+			);
+			
+			MessageBag::flashMessage('success', 'Пароль успешно изменён.');
+			return $this->redirect($targetUrl);
+			
+		} catch (UserValidationException | UserNotFoundException $e) {
+			MessageBag::flashMessage('error', $e->getMessage());
+			return $this->redirect($targetUrl);
+
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Users.updatePassword');
+			MessageBag::flashMessage('error', 'Произошла непредвиденная ошибка.');
+			return $this->redirect($targetUrl);
+		}
+	}
 
     // =========================================================================
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ

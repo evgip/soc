@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Stories\Requests;
+
+use W3a\Core\Http\FormRequest;
+
+class CreateStoryRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'description'       => 'required',
+            'tags'              => '',
+            'user_is_following' => '',
+            'paywall_type'      => 'in:none,members,subscribers',
+        ];
+    }
+
+    public function fillable(): array
+    {
+        return [
+            'description',
+            'tags',
+            'user_is_following',
+            'paywall_type',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'description.required' => 'Статья не может быть пустой',
+            'paywall_type.in'      => 'Недопустимый тип paywall',
+        ];
+    }
+}

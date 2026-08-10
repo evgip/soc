@@ -31,6 +31,9 @@ use App\Modules\Stories\Exceptions\StoryValidationException;
 
 use App\Modules\Common\Support\Layout; 
 
+use App\Modules\Stories\Requests\CreateStoryRequest;
+use App\Modules\Stories\Requests\UpdateStoryRequest;
+
 class StoriesController extends BaseController
 {
 	// =========================================================================
@@ -209,25 +212,21 @@ class StoriesController extends BaseController
 	 */
 	public function create(): RedirectResponse
 	{
-		// Надежное получение массива тегов
-		$rawTags = $this->request->post('tags');
-		$tagsArray = is_array($rawTags) ? $rawTags : [];
-
-		// Определяем действие из формы
-		$action = $this->request->post('action', 'publish');
-		$status = ($action === 'draft') ? 'draft' : 'published';
-
-		$data = [
-			'description' => $this->request->post('description') ?: null,
-			'tags'        => $tagsArray,
-			'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
-		];
-
 		$userContext = $this->getUserContext();
 
+		$validated = $this->validateForm(
+			new CreateStoryRequest($this->request, $this->container)
+		);
+		
+		if ($validated instanceof Response) {
+			return $this->redirectBack();
+		}
+
+		$status = ($validated['action'] ?? '') === 'draft' ? 'draft' : 'published';
+
 		try {
-			$storyId = $this->service(StoryService::class)->createStory($data, $userContext['id'], $status);
-		} catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
+			$storyId = $this->service(StoryService::class)->createStory($validated, $userContext['id'], $status);
+		} catch (StoryValidationException $e) {
 			MessageBag::flashMessage('error', $e->getMessage());
 			return $this->redirectBack();
 		} catch (\Throwable $e) {
@@ -236,7 +235,6 @@ class StoriesController extends BaseController
 			return $this->redirectBack();
 		}
 
-		// Разные редиректы в зависимости от действия
 		if ($status === 'draft') {
 			MessageBag::flashMessage('success', 'Черновик сохранён.');
 			return $this->redirect('/stories/' . $storyId . '/edit');
@@ -295,36 +293,28 @@ class StoriesController extends BaseController
 			return $this->redirectBack();
 		}
 
-		// Надежное получение массива тегов
-		$rawTags = $this->request->post('tags');
-		$tagsArray = is_array($rawTags) ? $rawTags : [];
-
-		// Определяем действие из формы
-		$action = $this->request->post('action', '');
+		$validated = $this->validateForm(
+			new UpdateStoryRequest($this->request, $this->container)
+		);
 		
-		// Определяем новый статус
+		if ($validated instanceof Response) {
+			return $this->redirectBack();
+		}
+
+		$action = $validated['action'] ?? '';
 		$currentStatus = $story['status'] ?? 'published';
 		
 		if ($currentStatus === 'draft' && $action === 'publish') {
-			// Публикуем черновик
 			$newStatus = 'published';
 		} elseif ($currentStatus === 'draft' && $action === 'draft') {
-			// Сохраняем черновик
 			$newStatus = 'draft';
 		} else {
-			// Уже опубликована — статус не меняется (нет возврата в черновики)
 			$newStatus = 'published';
 		}
 
-		$data = [
-			'description' => $this->request->post('description') ?: null,
-			'tags'        => $tagsArray,
-			'user_is_following' => $this->request->post('user_is_following') ? 1 : 0,
-		];
-
 		try {
-			$this->service(StoryService::class)->updateStory($storyId, $data, $newStatus);
-		} catch (\App\Modules\Stories\Exceptions\StoryValidationException $e) {
+			$this->service(StoryService::class)->updateStory($storyId, $validated, $newStatus);
+		} catch (StoryValidationException $e) {
 			MessageBag::flashMessage('error', $e->getMessage());
 			return $this->redirectBack();
 		} catch (\Throwable $e) {
@@ -333,13 +323,11 @@ class StoriesController extends BaseController
 			return $this->redirectBack();
 		}
 
-		// Разные редиректы в зависимости от статуса
 		if ($newStatus === 'draft') {
 			MessageBag::flashMessage('success', 'Черновик сохранён.');
 			return $this->redirect('/stories/' . $storyId . '/edit');
 		}
 
-		// Если была черновик и опубликована
 		if ($currentStatus === 'draft' && $newStatus === 'published') {
 			MessageBag::flashMessage('success', 'Ваша статья успешно опубликована!');
 		} else {
