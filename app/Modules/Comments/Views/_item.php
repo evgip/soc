@@ -48,16 +48,16 @@ if ($context->lastReadCommentId !== null) {
                 'isModerator' => $context->isModerator,
             ]); ?>
             
+        </div>
+
             <?php if ($showStoryContext && !empty($comment['story_title'])): ?>
                 <div class="comment_meta">
-                    <span class="divider">|</span>
                     <a href="<?= route('story.show', ['id' => $comment['story_id']]) ?>#comment-block-<?= $commentId ?>" 
                        class="story-context">
                         на: <?= e($comment['story_title']) ?>
                     </a>
                 </div>
             <?php endif; ?>
-        </div>
 
         <?php if (!$isDeleted): ?>
             <div class="comment_text" id="comment-text-content-<?= $commentId ?>"

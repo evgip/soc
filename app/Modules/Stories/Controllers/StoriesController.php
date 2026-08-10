@@ -169,7 +169,7 @@ class StoriesController extends BaseController
 		$this->setOpenGraph([
 			'type' => 'article',
 			'title' => $viewModel->story['title'],
-			'description' => $viewModel->story['seo_description'] ?? '',
+			'description' => $viewModel->story['description_text'] ?? '',
 			'image' => $ogImage ?: config('app.url') . '/default-og.jpg',
 		]);
 

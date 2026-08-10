@@ -3272,3 +3272,62 @@ li.story .staff-pick-badge {
         max-height: 75vh;
     }
 }
+
+
+/* Показ битого изображения в редакторе */
+/* Обработка битых изображений в Editor.js */
+
+/* Контейнер изображения */
+.ce-block .image-tool__image {
+    position: relative;
+    min-height: 100px;
+}
+
+/* Битое изображение */
+.ce-block .image-tool__image img[src=""],
+.ce-block .image-tool__image img:not([src]),
+.ce-block .image-tool__image img.broken {
+    display: none !important;
+}
+
+/* Placeholder для битого изображения */
+.ce-block .image-tool__image::after {
+    content: '';
+    display: none;
+}
+
+.ce-block .image-tool__image.has-error::after {
+    content: '⚠️ Изображение не найдено. Кликните, чтобы удалить блок.';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fee;
+    border: 2px dashed #c33;
+    border-radius: 8px;
+    padding: 20px;
+    color: #c33;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    min-height: 100px;
+}
+
+.ce-block .image-tool__image.has-error:hover::after {
+    background: #fdd;
+    border-color: #900;
+}
+
+/* Скрываем caption если изображение битое */
+.ce-block .image-tool__image.has-error ~ .image-tool__caption {
+    display: none;
+}
+
+/* Индикатор ошибки */
+.ce-block .image-tool__image.has-error::before {
+    content: '❌';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    z-index: 10;
+}

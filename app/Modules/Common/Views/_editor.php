@@ -243,18 +243,75 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    const editor = new EditorJS({
-        holder: containerId,
-        placeholder: '<?= e($editor['placeholder']) ?>',
-        i18n: editorI18n,
-        tools: tools,  // ← только реальные инструменты, без undefined
-        data: <?= $initialDataJson ?>,
-        onReady: () => console.log('✅ Editor.js инициализирован'),
-        onChange: async () => {
-            const outputData = await editor.save();
-            document.getElementById(hiddenTextareaId).value = JSON.stringify(outputData);
-        }
-    });
+	const editor = new EditorJS({
+		holder: containerId,
+		placeholder: '<?= e($editor['placeholder']) ?>',
+		i18n: editorI18n,
+		tools: tools,
+		data: <?= $initialDataJson ?>,
+		onReady: () => {
+			console.log('✅ Editor.js инициализирован');
+			
+			// Проверяем все изображения на битые ссылки
+			checkBrokenImages();
+			
+			// Наблюдаем за изменениями DOM (новые блоки)
+			const observer = new MutationObserver(checkBrokenImages);
+			observer.observe(document.getElementById(containerId), {
+				childList: true,
+				subtree: true,
+				attributes: true,
+				attributeFilter: ['src']
+			});
+		},
+		onChange: async () => {
+			const outputData = await editor.save();
+			document.getElementById(hiddenTextareaId).value = JSON.stringify(outputData);
+		}
+	});
+
+	/**
+	 * Проверка битых изображений в редакторе
+	 */
+	function checkBrokenImages() {
+		const container = document.getElementById('<?= e($containerId) ?>');
+		if (!container) return;
+		
+		const images = container.querySelectorAll('.image-tool__image img');
+		
+		images.forEach(img => {
+			// Пропускаем уже обработанные
+			if (img.dataset.checked) return;
+			
+			img.dataset.checked = 'true';
+			
+			// Обработчик ошибки загрузки
+			img.onerror = function() {
+				this.classList.add('broken');
+				const imageContainer = this.closest('.image-tool__image');
+				if (imageContainer) {
+					imageContainer.classList.add('has-error');
+					
+					// Добавляем клик для удаления блока
+					imageContainer.addEventListener('click', async function(e) {
+						if (confirm('Изображение не найдено. Удалить этот блок?')) {
+							const block = this.closest('.ce-block');
+							if (block) {
+								// Удаляем блок через Editor.js API
+								const blockIndex = Array.from(block.parentNode.children).indexOf(block);
+								await editor.blocks.delete(blockIndex);
+							}
+						}
+					});
+				}
+			};
+			
+			// Если изображение уже битое (naturalWidth === 0)
+			if (img.complete && img.naturalWidth === 0) {
+				img.onerror();
+			}
+		});
+	}
 
     if (form) {
         form.addEventListener('submit', async function(e) {
