@@ -3,7 +3,6 @@ $currentUserId = \W3a\Core\Auth\Auth::check() ? \W3a\Core\Auth\Auth::id() : 0;
 $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
 ?>
 
-<!-- ШАПКА ПРОФИЛЯ -->
 <div class="profile-header">
     <?php if (!empty($profileUser['avatar'])): ?>
         <img src="/uploads/avatars/<?= substr($profileUser['avatar'], 0, 2) ?>/<?= e($profileUser['avatar']) ?>" 
@@ -22,7 +21,6 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
             <p class="profile-bio"><?= nl2br(e($profileUser['bio'])) ?></p>
         <?php endif; ?>
 
-        <!-- Строка статистики (вместо таблицы) -->
         <div class="profile-stats">
             <span><strong><?= (int)$storiesCount ?></strong> публикаций</span>
             <span class="divider">·</span>
@@ -79,9 +77,6 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
     </div>
 </div>
 
-<hr class="my3">
-
-<!-- СПИСОК СТАТЕЙ АВТОРА -->
 <section class="user-stories">
     <h2 class="section-title">Публикации</h2>
 
@@ -93,11 +88,11 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
                 <?php partial('Stories::_story_item', [
                     'story' => $story,
                     'currentUserId' => $currentUserId,
-                    'isAdmin' => \W3a\Core\Auth\Auth::isModerator(), // Или как у вас передается isAdmin
-                    'canUserDownvote' => true, // Или ваша логика
+                    'isAdmin' => \W3a\Core\Auth\Auth::isModerator(),
+                    'canUserDownvote' => true,
                     'currentVotes' => [], // В профиле обычно не подгружают голоса для всех статей сразу для экономии, или подгрузите из $feed
                     'newCommentsMap' => [],
-                    'hideAuthor' => true, // ← ГЛАВНОЕ: скрываем имя и аватар, так как мы уже в профиле автора
+                    'hideAuthor' => true, // скрываем имя и аватар, так как мы уже в профиле автора
                 ]); ?>
             <?php endforeach; ?>
         </div>

@@ -24,57 +24,66 @@ class CommentsController extends BaseController
     /**
      * Глобальная лента всех комментариев
      */
-    public function index(): ViewResponse
-    {
-        $userContext = $this->getUserContext();
+	public function index(): ViewResponse
+	{
+		$userContext = $this->getUserContext();
 
-        $lastReadAt = null;
-        if ($userContext['isLoggedIn']) {
-            $userModel = $this->container->get(User::class);
-            $user = $userModel->find($userContext['id']);
-            if ($user) {
-                $lastReadAt = $user['last_read_comments_at'] ?? null;
-            }
-            $userModel->updateLastReadComments($userContext['id']);
-        }
+		$lastReadAt = null;
+		if ($userContext['isLoggedIn']) {
+			$userModel = $this->container->get(User::class);
+			$user = $userModel->find($userContext['id']);
+			if ($user) {
+				$lastReadAt = $user['last_read_comments_at'] ?? null;
+			}
+			$userModel->updateLastReadComments($userContext['id']);
+		}
 
-        $commentService = $this->service(CommentService::class);
-        $comments = $commentService->getLatestComments(50);
+		$commentService = $this->service(CommentService::class);
+		$comments = $commentService->getLatestComments(50);
 
-        if ($userContext['isLoggedIn'] && !empty($comments)) {
-            $readRibbonService = $this->service(ReadRibbonService::class);
-            $storyIds = collect($comments)
+		if ($userContext['isLoggedIn'] && !empty($comments)) {
+			$readRibbonService = $this->service(ReadRibbonService::class);
+			$storyIds = collect($comments)
 						->pluck('story_id')
 						->unique()
-						->values() // Гарантированно сбрасывает ключи на 0, 1, 2...
+						->values()
 						->toArray();
-            $readRibbonService->markStoriesAsRead($storyIds);
-        }
+			$readRibbonService->markStoriesAsRead($storyIds);
+		}
 
-        $currentCommentVotes = [];
-        if ($userContext['isLoggedIn'] && !empty($comments)) {
-            $voteModel = $this->container->get(Vote::class);
+		$currentCommentVotes = [];
+		if ($userContext['isLoggedIn'] && !empty($comments)) {
+			$voteModel = $this->container->get(Vote::class);
 			$commentIds = collect($comments)->pluck('id')->map(fn($id) => (int) $id)->toArray();
 			$currentCommentVotes = $voteModel->getUserVotesForComments($userContext['id'], $commentIds);
-        }
+		}
 
-        $canDownvote = $this->canUserDownvote($userContext['id']);
+		$highlightMap = [];
+		if (!empty($comments)) {
+			$highlightModel = $this->container->get(\App\Modules\Comments\Models\CommentHighlight::class);
+			$commentIds = array_map(fn($c) => (int)$c['id'], $comments);
+			$highlights = $highlightModel->getByCommentIds($commentIds);
+			$highlightMap = array_column($highlights, 'quoted_text', 'comment_id');
+		}
 
-        return $this->render('index', [
-            'comments' => $comments,
-            'lastReadAt' => $lastReadAt,
-            'currentUserId' => $userContext['id'],
-            'isAdmin' => $userContext['isAdmin'],
-            'isModerator' => $userContext['isModerator'],
-            'canDownvote' => $canDownvote,
-            'currentCommentVotes' => $currentCommentVotes,
-            'title' => 'Последние комментарии',
-            'rssFeed' => [
-                'title' => 'Новые комментарии',
-                'url' => '/comments/rss',
-            ],
-        ]);
-    }
+		$canDownvote = $this->canUserDownvote($userContext['id']);
+
+		return $this->render('index', [
+			'comments' => $comments,
+			'lastReadAt' => $lastReadAt,
+			'currentUserId' => $userContext['id'],
+			'isAdmin' => $userContext['isAdmin'],
+			'isModerator' => $userContext['isModerator'],
+			'canDownvote' => $canDownvote,
+			'currentCommentVotes' => $currentCommentVotes,
+			'highlightMap' => $highlightMap,  // 🆕 Передаём карту
+			'title' => 'Последние комментарии',
+			'rssFeed' => [
+				'title' => 'Новые комментарии',
+				'url' => '/comments/rss',
+			],
+		]);
+	}
 
     /**
      * Создание комментария

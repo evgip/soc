@@ -464,6 +464,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 						'showStoryContext' => false,
 						'showCollapseToggle' => true,
 						'depth' => $visualDepth,
+						'highlight' => $comment['highlight'] ?? null,
 					]); ?>
 				<?php endforeach; ?>
 			</ol>
@@ -811,118 +812,145 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
     // Кнопка "Отмена" тоже должна очищать цитату
     document.getElementById('btn-cancel-reply')?.addEventListener('click', clearQuote);
 
-    // ============================================================
-    // 4. Подсветка существующих highlights при загрузке
-    // ============================================================
-    const storyId = <?= (int)$viewModel->story['id'] ?>;
+	// ============================================================
+	// 4. Подсветка существующих highlights при загрузке
+	// ============================================================
+	const storyId = <?= (int)$viewModel->story['id'] ?>;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const resp = await fetch(`/comments/highlights/${storyId}`);
-            const data = await resp.json();
-            if (!data.success || !data.highlights) return;
+	// Запоминаем commentId из hash ДО загрузки (если есть)
+	let pendingHighlightCommentId = null;
+	if (window.location.hash.startsWith('#highlight-')) {
+		pendingHighlightCommentId = window.location.hash.replace('#highlight-', '');
+	}
 
-            data.highlights.forEach(highlightInArticle);
-        } catch (e) {
-            console.error('Не удалось загрузить highlights:', e);
-        }
-    });
+	document.addEventListener('DOMContentLoaded', async () => {
+		try {
+			const resp = await fetch(`/comments/highlights/${storyId}`);
+			const data = await resp.json();
+			if (!data.success || !data.highlights) return;
 
-    function highlightInArticle(h) {
-        const quote = h.quoted_text;
-        const blockIndex = h.block_index;
-        if (!quote) return;
+			// Создаём все <mark> элементы
+			data.highlights.forEach(highlightInArticle);
+			
+			// ПОСЛЕ создания <mark> — прокручиваем к нужному
+			if (pendingHighlightCommentId) {
+				scrollToHighlight(pendingHighlightCommentId);
+				pendingHighlightCommentId = null;
+			}
+		} catch (e) {
+			console.error('Не удалось загрузить highlights:', e);
+		}
+	});
 
-        const block = blockIndex !== null
-            ? articleBody.querySelector(`[data-block-index="${blockIndex}"]`)
-            : articleBody;
+	function highlightInArticle(h) {
+		const quote = h.quoted_text;
+		const blockIndex = h.block_index;
+		if (!quote) return;
 
-        if (!block) return;
+		const block = blockIndex !== null
+			? articleBody.querySelector(`[data-block-index="${blockIndex}"]`)
+			: articleBody;
 
-        const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-        let node;
-        while (node = walker.nextNode()) {
-            const idx = node.textContent.indexOf(quote);
-            if (idx !== -1) {
-                const range = document.createRange();
-                range.setStart(node, idx);
-                range.setEnd(node, idx + quote.length);
+		if (!block) return;
 
-                const mark = document.createElement('mark');
-                mark.className = 'inline-comment-highlight';
-                mark.dataset.commentId = h.comment_id;
-                mark.title = `${h.author_name}: нажмите, чтобы увидеть комментарий`;
+		const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+		let node;
+		while (node = walker.nextNode()) {
+			const idx = node.textContent.indexOf(quote);
+			if (idx !== -1) {
+				const range = document.createRange();
+				range.setStart(node, idx);
+				range.setEnd(node, idx + quote.length);
 
-                mark.addEventListener('click', () => {
-                    const target = document.getElementById(`comment-block-${h.comment_id}`);
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        target.classList.add('is-highlighted-temp');
-                        setTimeout(() => target.classList.remove('is-highlighted-temp'), 2000);
-                    }
-                });
+				const mark = document.createElement('mark');
+				mark.className = 'inline-comment-highlight';
+				mark.dataset.commentId = h.comment_id;
+				mark.title = `${h.author_name}: нажмите, чтобы увидеть комментарий`;
 
-                try {
-                    range.surroundContents(mark);
-                } catch (e) {
-                    console.warn('Не удалось подсветить:', e);
-                }
-                break;
-            }
-        }
-    }
-	
-	
-    // ============================================================
-    // 5. Клик по цитате в комментарии → прокрутка к highlight в статье
-    // ============================================================
-    document.querySelectorAll('.inline-comment-quote[data-highlight-target]').forEach(quoteEl => {
-        const handler = () => {
-            const commentId = quoteEl.dataset.highlightTarget;
-            const mark = articleBody.querySelector(`.inline-comment-highlight[data-comment-id="${commentId}"]`);
+				mark.addEventListener('click', () => {
+					const target = document.getElementById(`comment-block-${h.comment_id}`);
+					if (target) {
+						target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+						target.classList.add('is-highlighted-temp');
+						setTimeout(() => target.classList.remove('is-highlighted-temp'), 2000);
+					}
+				});
 
-            if (mark) {
-                mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                mark.classList.add('is-flash');
-                setTimeout(() => mark.classList.remove('is-flash'), 2000);
-            } else {
-                // Highlight не найден в статье (например, текст изменился)
-                // Прокручиваем к началу статьи как fallback
-                articleBody.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        };
+				try {
+					range.surroundContents(mark);
+				} catch (e) {
+					console.warn('Не удалось подсветить:', e);
+				}
+				break;
+			}
+		}
+	}
 
-        quoteEl.addEventListener('click', handler);
-        quoteEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handler();
-            }
-        });
-    });
+	// ============================================================
+	// 5. Клик по цитате в комментарии → прокрутка к highlight в статье
+	// ============================================================
+	document.querySelectorAll('.inline-comment-quote[data-highlight-target]').forEach(quoteEl => {
+		const handler = () => {
+			const commentId = quoteEl.dataset.highlightTarget;
+			const mark = articleBody.querySelector(`.inline-comment-highlight[data-comment-id="${commentId}"]`);
 
-    // ============================================================
-    // 6. Переход по якорю #highlight-X из глобальной ленты комментариев
-    // ============================================================
-    function handleHighlightHash() {
-        const hash = window.location.hash;
-        if (!hash.startsWith('#highlight-')) return;
+			if (mark) {
+				mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				mark.classList.add('is-flash');
+				setTimeout(() => mark.classList.remove('is-flash'), 2000);
+			} else {
+				articleBody.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		};
 
-        const commentId = hash.replace('#highlight-', '');
-        const mark = articleBody.querySelector(`.inline-comment-highlight[data-comment-id="${commentId}"]`);
+		quoteEl.addEventListener('click', handler);
+		quoteEl.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				handler();
+			}
+		});
+	});
 
-        if (mark) {
-            // Даём странице полностью отрисоваться
-            setTimeout(() => {
-                mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                mark.classList.add('is-flash');
-                setTimeout(() => mark.classList.remove('is-flash'), 2500);
-            }, 300);
-        }
-    }
+	// ============================================================
+	// 6. Универсальная функция прокрутки к highlight
+	// ============================================================
+	function scrollToHighlight(commentId) {
+		// Сначала ищем <mark> в статье
+		const mark = articleBody.querySelector(`.inline-comment-highlight[data-comment-id="${commentId}"]`);
+		
+		if (mark) {
+			setTimeout(() => {
+				mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				mark.classList.add('is-flash');
+				setTimeout(() => mark.classList.remove('is-flash'), 2500);
+			}, 100);
+		} else {
+			// 🆕 Fallback: если <mark> не найден (текст изменился),
+			// прокручиваем к самому комментарию
+			const commentBlock = document.getElementById(`comment-block-${commentId}`);
+			if (commentBlock) {
+				setTimeout(() => {
+					commentBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+					commentBlock.classList.add('is-highlighted-temp');
+					setTimeout(() => commentBlock.classList.remove('is-highlighted-temp'), 2500);
+				}, 100);
+			}
+		}
+	}
 
-    handleHighlightHash();
-    window.addEventListener('hashchange', handleHighlightHash);
+	// ============================================================
+	// 7. Обработчик hashchange (когда hash меняется на уже открытой странице)
+	// ============================================================
+	function handleHighlightHash() {
+		const hash = window.location.hash;
+		if (!hash.startsWith('#highlight-')) return;
+
+		const commentId = hash.replace('#highlight-', '');
+		scrollToHighlight(commentId);
+	}
+
+	window.addEventListener('hashchange', handleHighlightHash);
 	
 })();
 

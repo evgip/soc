@@ -33,26 +33,39 @@ if ($context->lastReadCommentId !== null) {
     id="comment-block-<?= $commentId ?>">
 
 	<?php
-	// Получаем highlight для этого комментария (если есть)
-	$highlight = null;
-	if (!empty($comment['highlight_quote'])) {
-		$highlight = $comment['highlight_quote'];
-	}
+	// Получаем highlight для этого комментария
+	$highlight = $highlight ?? null;
+	$isFlatFeed = $isFlatFeed ?? false;
 	?>
 
 	<?php if ($highlight): ?>
-		<div class="inline-comment-quote" 
-			 data-highlight-target="<?= $commentId ?>"
-			 role="button"
-			 tabindex="0"
-			 title="Перейти к выделенному фрагменту в статье">
-			<blockquote>
-				«<?= e(mb_substr($highlight, 0, 200)) ?><?= mb_strlen($highlight) > 200 ? '...' : '' ?>»
-			</blockquote>
-			<span class="inline-comment-quote__label">
-				↑ Комментарий к фрагменту статьи <span class="inline-comment-quote__arrow">↗</span>
-			</span>
-		</div>
+		<?php if ($isFlatFeed): ?>
+			<!-- В глобальной ленте: цитата как ссылка на статью -->
+			<a href="/story/<?= (int)$comment['story_id'] ?>#highlight-<?= $commentId ?>" 
+			   class="inline-comment-quote inline-comment-quote--link"
+			   title="Перейти к выделенному фрагменту в статье">
+				<blockquote>
+					«<?= e(mb_substr($highlight, 0, 150)) ?><?= mb_strlen($highlight) > 150 ? '...' : '' ?>»
+				</blockquote>
+				<span class="inline-comment-quote__label">
+					↑ Комментарий к фрагменту статьи <span class="inline-comment-quote__arrow">↗</span>
+				</span>
+			</a>
+		<?php else: ?>
+			<!-- На странице статьи: цитата кликабельна (скроллит к highlight) -->
+			<div class="inline-comment-quote" 
+				 data-highlight-target="<?= $commentId ?>"
+				 role="button"
+				 tabindex="0"
+				 title="Перейти к выделенному фрагменту в статье">
+				<blockquote>
+					«<?= e(mb_substr($highlight, 0, 200)) ?><?= mb_strlen($highlight) > 200 ? '...' : '' ?>»
+				</blockquote>
+				<span class="inline-comment-quote__label">
+					↑ Комментарий к фрагменту статьи <span class="inline-comment-quote__arrow">↗</span>
+				</span>
+			</div>
+		<?php endif; ?>
 	<?php endif; ?>
 
     <div class="comment_body">

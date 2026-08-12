@@ -353,7 +353,16 @@ if (!function_exists('markdown')) {
 if (!function_exists('markdown_comment')) {
 	function markdown_comment(?string $text): string
 	{
-		return markdown_instance()->parseComment($text);
+        // 1. Markdown → HTML
+        $html = markdown_instance()->parseComment($text);
+        
+        // 2. Санитайзер (защита от XSS)
+        $html = sanitize_html($html, 'comment');
+        
+        // 3. Типограф (красивая типографика)
+        $html = typography()->apply($html); 
+        
+        return $html;
 	}
 }
 
@@ -733,7 +742,16 @@ if (!function_exists('render_editorjs_content')) {
             }
         }
         
-        return trim($html);
+		
+        $html = trim($html);
+        
+        // 1. Санитайзер (защита от XSS)
+        $html = sanitize_html($html, 'article');
+        
+        // 2. Типограф (красивая типографика)
+        $html = typography()->apply($html);
+        
+        return $html;
     }
 }
 
@@ -985,5 +1003,23 @@ if (!function_exists('layout_body_class')) {
     function layout_body_class(): string
     {
         return Layout::getBodyClass();
+    }
+}
+
+/**
+ * Получить экземпляр типографа.
+ * 
+ * Использование в шаблонах:
+ *   <?= typography()->apply($html) ?>
+ * 
+ * Использование в коде:
+ *   $result = typography()->apply('<p>"Привет" - мир</p>');
+ * 
+ * @return \App\Modules\Content\Services\TypographyService
+ */
+if (!function_exists('typography')) {
+    function typography(): \App\Modules\Content\Services\TypographyService
+    {
+        return get_cached_container(\App\Modules\Content\Services\TypographyService::class);
     }
 }

@@ -8,6 +8,7 @@ use W3a\Core\Foundation\ModuleServiceProvider as BaseServiceProvider;
 use W3a\Core\Foundation\Config;
 use W3a\Core\Foundation\Container;
 use App\Modules\Content\Core\Markdown;
+use App\Modules\Content\Services\TypographyService;  // 🆕 Импорт типографа
 
 class ModuleServiceProvider extends BaseServiceProvider
 {
@@ -21,7 +22,12 @@ class ModuleServiceProvider extends BaseServiceProvider
         $container->singleton(Markdown::class, function($c) {
             return new Markdown($c->get(Config::class));
         });
-		
+
+        // 3. Регистрируем типограф как singleton
+        //    Один экземпляр на всё приложение, т.к. сервис не имеет состояния
+        $container->singleton(TypographyService::class, function($c) {
+            return new TypographyService();
+        });
     }
 
     public function boot(): void

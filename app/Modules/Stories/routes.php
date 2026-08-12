@@ -12,8 +12,6 @@ use App\Modules\Stories\Controllers\StoriesController;
 // ПУБЛИЧНЫЕ МАРШРУТЫ (доступны всем)
 // =========================================================================
 
-$router->add('GET', '/admin/migration', StoriesController::class . '@migration', 'admin.story.migration');
-
 // Главная страница - лента историй
 $router->add('GET', '/', StoriesController::class . '@index', 'home');
 $router->add('GET', '/hot', StoriesController::class . '@index', 'stories.hot');

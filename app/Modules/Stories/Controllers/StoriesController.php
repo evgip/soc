@@ -598,54 +598,6 @@ class StoriesController extends BaseController
         ]);
     }
     
-    // =========================================================================
-    // МИГРАЦИЯ ДАННЫХ (Временный метод, можно удалить после миграции)
-    // =========================================================================
-    public function migration(): JsonResponse
-    {
-        $userContext = $this->getUserContext();
-        if (empty($userContext['isAdmin'])) {
-            return $this->json(['error' => 'Доступ запрещен.'], 403);
-        }
-
-        $isDryRun = (string) $this->request->getParams('dry_run', '1') === '1'; 
-        $limit = max(1, (int) $this->request->getParams('limit', 10));
-
-        $db = $this->container->get(\W3a\Core\Database\Database::class);
-        $logger = $this->container->get(\W3a\Core\Support\Logger::class);
-        
-        $sanitizer = null;
-        if (method_exists($this->container, 'has') && $this->container->has(\W3a\Core\Support\HtmlSanitizer::class)) {
-            $sanitizer = $this->container->get(\W3a\Core\Support\HtmlSanitizer::class);
-        }
-
-        $migrator = new \App\Modules\Stories\Models\StoryMigrator($db, $logger, $sanitizer);
-
-        try {
-            $result = $migrator->processOldStories(dryRun: $isDryRun, limit: $limit);
-
-            if ($isDryRun) {
-                return $this->json([
-                    'success' => true,
-                    'mode' => 'DRY_RUN',
-                    'message' => 'Тестовый режим. Данные не сохранены.',
-                    'limit' => $limit,
-                    'results' => $result
-                ]);
-            } else {
-                return $this->json([
-                    'success' => true,
-                    'mode' => 'REAL_MIGRATION',
-                    'message' => "Успешно мигрировано записей: " . ($result['migrated_count'] ?? 0),
-                    'migrated_count' => $result['migrated_count'] ?? 0
-                ]);
-            }
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Stories.migration');
-            return $this->json(['error' => 'Ошибка миграции: ' . $e->getMessage()], 500);
-        }
-    }
-	
     /**
      * Загрузка изображения для Editor.js с сохранением по папкам с датами.
      */

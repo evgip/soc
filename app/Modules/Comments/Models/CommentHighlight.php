@@ -94,4 +94,22 @@ class CommentHighlight extends Model
 		
 		return mb_substr((string)$value, 0, 50);
 	}
+	
+	/**
+	 * Получить highlights для массива ID комментариев
+	 */
+	public function getByCommentIds(array $commentIds): array
+	{
+		if (empty($commentIds)) {
+			return [];
+		}
+
+		$placeholders = implode(',', array_fill(0, count($commentIds), '?'));
+		
+		$sql = "SELECT comment_id, quoted_text 
+				FROM {$this->table} 
+				WHERE comment_id IN ({$placeholders})";
+		
+		return $this->db->fetchAll($sql, $commentIds);
+	}
 }

@@ -7,18 +7,16 @@ declare(strict_types=1);
  * @var bool $isModerator
  * @var bool $canDownvote
  * @var array $currentCommentVotes
- * @var string|null $lastReadAt (timestamp для вычисления "новых")
+ * @var array $highlightMap
+ * @var string|null $lastReadAt
  * @var array $comments
  */
 
-// Создаём единый контекст рендеринга ОДИН раз на всю страницу.
-// Это избавляет нас от передачи 6-7 переменных в каждый partial.
 $commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
     currentUserId: $currentUserId,
     isAdmin: $isAdmin,
     isModerator: $isModerator,
     canDownvote: $canDownvote,
-    // lastReadCommentId, commentsTree, renderTree не нужны в плоской ленте
 );
 ?>
 
@@ -32,11 +30,11 @@ $commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
             <?php 
             $dividerShown = false;
             foreach ($comments as $comment): 
-                // Логика определения "нового" комментария остаётся здесь,
-                // так как она специфична для плоской ленты (использует timestamp).
                 $isNew = $lastReadAt && strtotime($comment['created_at']) > strtotime($lastReadAt);
                 $commentId = (int)$comment['id'];
                 $currentVote = $currentCommentVotes[$commentId] ?? null;
+
+                $highlight = $highlightMap[$commentId] ?? null;
             ?>
                 
                 <?php if ($isNew && !$dividerShown): ?>
@@ -50,11 +48,13 @@ $commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
                 
                 <?php partial('Comments::_item', [
                     'comment' => $comment,
-                    'context' => $commentContext,       // ✅ Единый объект вместо 6 переменных
+                    'context' => $commentContext,
                     'currentVote' => $currentVote,
-                    'showStoryContext' => true,         // В плоской ленте показываем ссылку на историю
-                    'showCollapseToggle' => false,      // В плоской ленте нет вложенности
-                    'isNewParam' => $isNew,             // Передаём вычисленное значение в _item
+                    'showStoryContext' => true,
+                    'showCollapseToggle' => false,
+                    'isNewParam' => $isNew,
+                    'highlight' => $highlight,
+                    'isFlatFeed' => true,       // Флаг "плоская лента"
                 ]); ?>
                 
             <?php endforeach; ?>

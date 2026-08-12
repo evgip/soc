@@ -116,12 +116,12 @@ class StoryPageService
 			$highlightMap[(int)$h['comment_id']] = $h['quoted_text'];
 		}
 
-		// Рекурсивно добавляем highlight_quote в каждый комментарий
+		// Рекурсивно добавляем highlight в каждый комментарий
 		$addHighlights = function(array &$tree) use (&$addHighlights, $highlightMap) {
 			foreach ($tree as &$branch) {
 				foreach ($branch as &$comment) {
 					if (isset($highlightMap[(int)$comment['id']])) {
-						$comment['highlight_quote'] = $highlightMap[(int)$comment['id']];
+						$comment['highlight'] = $highlightMap[(int)$comment['id']];
 					}
 				}
 			}

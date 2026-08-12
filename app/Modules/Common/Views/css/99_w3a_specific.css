@@ -2690,6 +2690,47 @@ li.story .staff-pick-badge {
     animation: highlight-flash 2s ease;
 }
 
+
+/* Цитата как ссылка (в глобальной ленте) */
+a.inline-comment-quote--link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+a.inline-comment-quote--link:hover {
+    background-color: var(--color-box-bg-shaded);
+    filter: brightness(0.97);
+    text-decoration: none;
+}
+
+a.inline-comment-quote--link:hover .inline-comment-quote__arrow {
+    display: inline-block;
+    transform: translateX(2px);
+    color: var(--color-fg-accent);
+}
+
+a.inline-comment-quote--link blockquote {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--opacity-fg-84);
+    font-style: italic;
+    line-height: 1.5;
+}
+
+a.inline-comment-quote--link .inline-comment-quote__label {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--opacity-fg-54);
+}
+
+[data-theme="dark"] a.inline-comment-quote--link:hover {
+    filter: brightness(1.15);
+}
+
+
 @keyframes highlight-flash {
     0%   { background-color: rgba(255, 213, 79, 0.9); box-shadow: 0 0 0 4px rgba(255, 213, 79, 0.5); }
     50%  { background-color: rgba(255, 213, 79, 0.6); box-shadow: 0 0 0 8px rgba(255, 213, 79, 0.2); }
