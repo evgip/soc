@@ -741,12 +741,11 @@ if (!function_exists('render_editorjs_content')) {
 
             }
         }
-        
-		
+
         $html = trim($html);
         
         // 1. Санитайзер (защита от XSS)
-        $html = sanitize_html($html, 'article');
+        $html = sanitize_html($html, 'editorjs');
         
         // 2. Типограф (красивая типографика)
         $html = typography()->apply($html);
