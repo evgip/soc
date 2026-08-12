@@ -79,34 +79,55 @@ class CommentsController extends BaseController
     /**
      * Создание комментария
      */
-    public function create(): RedirectResponse
-    {
-        $storyId = (int)$this->request->getParams('story_id');
-        $parentIdRaw = $this->request->getParams('parent_id');
-        $commentText = (string)$this->request->getParams('comment_text');
+	public function create(): RedirectResponse
+	{
+		$storyId = (int)$this->request->getParams('story_id');
+		$parentIdRaw = $this->request->getParams('parent_id');
+		$commentText = (string)$this->request->getParams('comment_text');
+		
+		// Проверяем, есть ли данные для inline-комментария
+		$highlightQuote = trim((string)$this->request->getParams('highlight_quote'));
+		$isInline = !empty($highlightQuote);
 
-        if ($parentIdRaw === null || $parentIdRaw === '' || $parentIdRaw === '0' || (int)$parentIdRaw <= 0) {
-            $parentId = null;
-        } else {
-            $parentId = (int)$parentIdRaw;
-        }
+		if ($parentIdRaw === null || $parentIdRaw === '' || $parentIdRaw === '0' || (int)$parentIdRaw <= 0) {
+			$parentId = null;
+		} else {
+			$parentId = (int)$parentIdRaw;
+		}
 
-        $commentId = null;
+		$commentId = null;
 
-        try {
-            $commentId = $this->service(CommentService::class)->createComment($storyId, $commentText, $parentId);
-        } catch (CommentValidationException $e) {
-            MessageBag::flashMessage('error', $e->getMessage());
-            return $this->redirect("/story/{$storyId}");
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Comments.create');
-            MessageBag::flashMessage('error', 'Произошла ошибка при создании комментария.');
-            return $this->redirect("/story/{$storyId}");
-        }
+		try {
+			$commentService = $this->service(CommentService::class);
+			
+			// Создаём комментарий (обычный или inline — решает сервис)
+			$commentId = $commentService->createComment($storyId, $commentText, $parentId);
+			
+			// Если это inline-комментарий — сохраняем highlight
+			if ($isInline && $commentId > 0) {
+				$highlightModel = $this->container->get(\App\Modules\Comments\Models\CommentHighlight::class);
+				$highlightModel->saveHighlight([
+					'comment_id'   => $commentId,
+					'story_id'     => $storyId,
+					'quoted_text'  => $highlightQuote,
+					'block_index'  => $this->request->getParams('highlight_block_index'),
+					'block_type'   => $this->request->getParams('highlight_block_type'),
+					'start_offset' => $this->request->getParams('highlight_start_offset'),
+					'end_offset'   => $this->request->getParams('highlight_end_offset'),
+				]);
+			}
+		} catch (CommentValidationException $e) {
+			MessageBag::flashMessage('error', $e->getMessage());
+			return $this->redirect("/story/{$storyId}");
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Comments.create');
+			MessageBag::flashMessage('error', 'Произошла ошибка при создании комментария.');
+			return $this->redirect("/story/{$storyId}");
+		}
 
-        MessageBag::flashMessage('success', 'Ваш комментарий успешно опубликован!');
-        return $this->redirect(comment_url($storyId, $commentId));
-    }
+		MessageBag::flashMessage('success', 'Ваш комментарий успешно опубликован!');
+		return $this->redirect(comment_url($storyId, $commentId));
+	}
 
     /**
      * Редактирование комментария (поддерживает AJAX и обычный POST)
@@ -226,4 +247,55 @@ class CommentsController extends BaseController
             'title' => 'Комментарии пользователя ' . e($username),
         ]);
     }
+	
+	/**
+	 * Создание inline-комментария (с привязкой к выделенному фрагменту)
+	 */
+	public function createWithHighlight(): JsonResponse
+	{
+		$storyId = (int)$this->request->getParams('story_id');
+		$commentText = (string)$this->request->getParams('comment_text');
+		
+		$highlight = [
+			'quoted_text'  => (string)$this->request->getParams('quoted_text'),
+			'block_index'  => $this->request->getParams('block_index'),
+			'block_type'   => $this->request->getParams('block_type'),
+			'start_offset' => $this->request->getParams('start_offset'),
+			'end_offset'   => $this->request->getParams('end_offset'),
+		];
+
+		try {
+			$commentId = $this->service(CommentService::class)
+				->createCommentWithHighlight($storyId, $commentText, $highlight);
+			
+			return $this->json([
+				'success' => true,
+				'comment_id' => $commentId,
+			]);
+		} catch (CommentValidationException $e) {
+			return $this->json(['success' => false, 'error' => $e->getMessage()], 400);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Comments.createWithHighlight');
+			return $this->json(['success' => false, 'error' => 'Ошибка сервера'], 500);
+		}
+	}
+
+	/**
+	 * Получить все highlights для статьи (для подсветки при загрузке)
+	 */
+	public function highlights(string $storyId): JsonResponse
+	{
+		try {
+			$highlights = $this->service(CommentService::class)
+				->getHighlightsForStory((int)$storyId);
+			
+			return $this->json([
+				'success' => true,
+				'highlights' => $highlights,
+			]);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Comments.highlights');
+			return $this->json(['success' => false, 'highlights' => []]);
+		}
+	}
 }

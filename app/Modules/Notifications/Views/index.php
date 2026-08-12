@@ -17,9 +17,9 @@
     </div>
 
     <!-- Панель фильтров -->
-    <nav>
+    <nav class="nav br-none" aria-label="Фильтр уведомлений">
         <a href="/notifications?type=all"
-            class="<?= $currentType === 'all' ? 'active' : '' ?>">
+            class="<?= $currentType === 'all' ? 'is-active' : '' ?>">
             Все
             <?php if ($totalUnread > 0): ?>
                 <span class="nav-notification-badge"><?= $totalUnread ?></span>
@@ -27,7 +27,7 @@
         </a>
 
         <a href="/notifications?type=reply"
-            class="<?= $currentType === 'reply' ? 'active' : '' ?>">
+            class="<?= $currentType === 'reply' ? 'is-active' : '' ?>">
             💬 Ответы
             <?php if ($counts['reply'] > 0): ?>
                 <span class="nav-notification-badge"><?= $counts['reply'] ?></span>
@@ -35,7 +35,7 @@
         </a>
 
         <a href="/notifications?type=mention"
-            class="<?= $currentType === 'mention' ? 'active' : '' ?>">
+            class="<?= $currentType === 'mention' ? 'is-active' : '' ?>">
             @ Упоминания
             <?php if ($counts['mention'] > 0): ?>
                 <span class="nav-notification-badge"><?= $counts['mention'] ?></span>
@@ -43,7 +43,7 @@
         </a>
 
         <a href="/notifications?type=message"
-            class="<?= $currentType === 'message' ? 'active' : '' ?>">
+            class="<?= $currentType === 'message' ? 'is-active' : '' ?>">
             ✉️ Сообщения
             <?php if ($counts['message'] > 0): ?>
                 <span class="nav-notification-badge"><?= $counts['message'] ?></span>

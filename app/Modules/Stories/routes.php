@@ -23,6 +23,21 @@ $router->add('GET', '/top', StoriesController::class . '@index', 'stories.top');
 // Просмотр конкретной истории и комментариев
 $router->add('GET', '/story/{id}', StoriesController::class . '@show', 'story.show');
 
+
+// Friend Links - создание новой ссылки
+$router->add('POST', '/stories/{id}/friend-link', StoriesController::class . '@createFriendLink', 'story.friendLink.create');
+
+// Friend Links - получение списка ссылок для статьи (для UI автора)
+$router->add('GET', '/stories/{id}/friend-links', StoriesController::class . '@getFriendLinks', 'story.friendLink.list');
+
+// Friend Links - удаление (деактивация) ссылки
+$router->add('POST', '/stories/friend-link/{linkId}/delete', StoriesController::class . '@deleteFriendLink', 'story.friendLink.delete');
+
+// Friend Links - копирование/получение URL ссылки
+$router->add('GET', '/stories/friend-link/{linkId}/url', StoriesController::class . '@getFriendLinkUrl', 'story.friendLink.url');
+
+
+
 // Фильтр по тегу
 $router->add('GET', '/t/{tagslug}', StoriesController::class . '@index', 'tags.filter');
 
@@ -86,5 +101,3 @@ $router->add('POST', '/stories/upload-image', StoriesController::class . '@uploa
 
 
  
-
-	 

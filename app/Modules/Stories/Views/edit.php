@@ -48,6 +48,77 @@
         </small>
     </div>
 
+<?php if ($story['has_paywall'] && $story['user_id'] === $userContext['id']): ?>
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>🔗 Дружеские ссылки (Friend Links)</h5>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">
+            Создайте специальную ссылку, чтобы поделиться статьей с друзьями бесплатно
+        </p>
+        
+        <button id="create-friend-link" class="btn btn-primary mb-3">
+            Создать новую ссылку
+        </button>
+        
+        <div id="friend-links-list">
+            <!-- Здесь будут отображаться существующие ссылки -->
+        </div>
+        
+        <div id="new-link-container" class="d-none mt-3">
+            <label>Новая ссылка создана:</label>
+            <div class="input-group">
+                <input type="text" id="new-link-url" class="form-control" readonly>
+                <button class="btn btn-outline-secondary" onclick="copyLink()">
+                    Копировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce="<?= csp_nonce() ?>">
+document.getElementById('create-friend-link').addEventListener('click', async () => {
+    const response = await fetch('/stories/<?= $story['id'] ?>/friend-link', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': '<?= csrf_token() ?>'
+        }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+        const container = document.getElementById('new-link-container');
+        const input = document.getElementById('new-link-url');
+        
+        input.value = data.url;
+        container.classList.remove('d-none');
+        
+        // Обновить список ссылок
+        loadFriendLinks();
+    }
+});
+
+async function loadFriendLinks() {
+    // Загрузить и отобразить список существующих ссылок
+    // с кнопками "Копировать" и "Удалить"
+}
+
+function copyLink() {
+    const input = document.getElementById('new-link-url');
+    input.select();
+    document.execCommand('copy');
+    alert('Ссылка скопирована!');
+}
+</script>
+<?php endif; ?>
+
+
+
+
     <?php $isDraft = ($story['status'] ?? 'published') === 'draft'; ?>
 
     <div class="form-actions v-center">

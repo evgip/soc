@@ -40,16 +40,14 @@
    находятся в 01_reset_typo.css
    ============================================ */
 
-/* ============================================
-   1. HEADER (NAVBAR)
-   ============================================ */
+/* Header */
 .header {
   width: 100%;
-  height: 60px;
+  height: var(--header-height);
   border-bottom: 1px solid var(--color-fg-shape);
   position: sticky;
   top: 0;
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: var(--color-header-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   z-index: var(--z-header);
@@ -58,7 +56,7 @@
 }
 
 .navbar-container {
-  max-width: 1192px;
+  max-width: var(--content-width-wide);
   height: 100%;
   margin: 0 auto;
   padding: 0 var(--content-padding);
@@ -102,7 +100,6 @@ a.navbar-logo:hover {
   color: var(--color-fg);
 }
 
-/* User dropdown */
 .navbar-user-dropdown-container {
   position: relative;
 }
@@ -149,55 +146,42 @@ a.navbar-logo:hover {
   color: var(--opacity-fg-54);
 }
 
-.navbar-dropdown-menu {
-  display: none;
+.dropdown-avatar-badge-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-trigger-alert-dot {
   position: absolute;
-  top: 100%;
+  top: 0;
   right: 0;
-  min-width: 220px;
-  background-color: var(--color-box-bg);
-  border: 1px solid var(--color-box-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  z-index: var(--z-dropdown);
-  margin-top: 0.5rem;
-  padding: 0.5rem 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-fg-negative);
+  border: 2px solid var(--color-box-bg);
 }
 
-.navbar-dropdown-menu.active {
-  display: block;
-}
-
-.dropdown-menu-item {
-  display: flex;
+.nav-badge-counter {
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 1rem;
-  color: var(--color-fg);
-  font-size: 0.9rem;
-  text-decoration: none;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-fg-negative);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-left: auto;
 }
 
-.dropdown-menu-item:hover {
-  background-color: var(--color-box-bg-shaded);
+.dropdown-menu-item .red {
+  margin-left: auto;
+  font-weight: 600;
 }
 
-.dropdown-item-admin {
-  color: var(--color-fg-negative);
-}
-
-.dropdown-divider {
-  height: 1px;
-  background-color: var(--color-box-border);
-  margin: 0.4rem 0;
-}
-
-/* Кнопка флагов модератора */
 .nav-flag {
   position: relative;
   display: inline-flex;
@@ -220,47 +204,6 @@ a.navbar-logo:hover {
   color: var(--color-fg-negative);
 }
 
-/* Обёртка аватара в dropdown */
-.dropdown-avatar-badge-wrapper {
-  position: relative;
-  display: inline-flex;
-}
-
-/* Точка-индикатор непрочитанных уведомлений */
-.nav-trigger-alert-dot {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--color-fg-negative);
-  border: 2px solid var(--color-box-bg);
-}
-
-/* Счётчик в dropdown-меню */
-.nav-badge-counter {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-fg-negative);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: 600;
-  margin-left: auto;
-}
-
-/* Красный счётчик (для предложений) */
-.dropdown-menu-item .red {
-  margin-left: auto;
-  font-weight: 600;
-}
-
-/* Уведомления в header */
 .header-notification-link {
   position: relative;
   display: inline-flex;
@@ -295,7 +238,9 @@ a.navbar-logo:hover {
   color: white;
   min-width: 16px;
   text-align: center;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
   transform-origin: top right;
 }
 
@@ -311,16 +256,17 @@ a.navbar-logo:hover {
     opacity: 0;
     transform: scale(0.5);
   }
+
   70% {
     transform: scale(1.15);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-/* Theme toggle */
 .theme-toggle {
   background: none;
   border: none;
@@ -329,7 +275,9 @@ a.navbar-logo:hover {
   border-radius: var(--radius-full);
   color: var(--opacity-fg-67);
   display: inline-flex;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .theme-toggle:hover {
@@ -350,9 +298,15 @@ a.navbar-logo:hover {
   display: inline-block;
 }
 
-/* ============================================
-   2. FEED / ЛЕНТА СТАТЕЙ
-   ============================================ */
+[data-theme="dark"] .theme-toggle .icon-sun {
+  display: inline-block;
+}
+
+[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
+}
+
+/* Feed */
 ol.stories {
   list-style: none;
   margin: 0;
@@ -411,26 +365,6 @@ li .link a.title:visited {
 li .link .tags {
   display: block;
   margin-top: 0.25rem;
-}
-
-/* Теги (pill-форма) */
-.tag {
-  display: inline-block;
-  color: var(--opacity-fg-54);
-  font-size: var(--font-size-tags);
-  font-weight: 500;
-  margin-right: 0.5rem;
-  text-decoration: none;
-  background-color: var(--color-tag-bg);
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  transition: background-color var(--transition-fast), color var(--transition-fast);
-}
-
-.tag:hover {
-  background-color: var(--color-button-bg-shaded);
-  color: var(--color-fg);
-  text-decoration: none;
 }
 
 .story-thumbnail {
@@ -500,7 +434,9 @@ li .link .tags {
 }
 
 .byline .divider,
-.story-meta .divider {
+.story-meta .divider,
+.story-actions-bar .divider,
+.profile-stats .divider {
   color: var(--opacity-fg-40);
 }
 
@@ -508,9 +444,7 @@ li .link .tags {
   color: var(--color-fg-author);
 }
 
-/* ============================================
-   3. ARTICLE / СТРАНИЦА СТАТЬИ
-   ============================================ */
+/* Article */
 article {
   max-width: var(--content-width);
   margin: 0 auto;
@@ -635,9 +569,7 @@ article {
   border-bottom: 1px solid var(--color-box-bg-shaded);
 }
 
-/* ============================================
-   4. VOTING / ГОЛОСОВАНИЕ
-   ============================================ */
+/* Voting */
 .voters:not(.voters--inline) {
   display: none;
 }
@@ -669,7 +601,9 @@ article {
   border: none;
   padding: 6px 12px;
   border-radius: var(--radius-full);
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
   font-family: var(--font-sans);
   line-height: 1;
 }
@@ -716,8 +650,6 @@ article {
 .comment_votes .voters--inline {
   margin: 0;
   padding: 0;
-  border-top: none;
-  border-bottom: none;
   gap: 0.125rem;
 }
 
@@ -737,9 +669,7 @@ article {
   padding: 0 2px;
 }
 
-/* ============================================
-   5. COMMENTS
-   ============================================ */
+/* Comments */
 .comment-head {
   margin: 3rem 0 1.5rem;
   display: flex;
@@ -773,11 +703,9 @@ article {
 
 ol.comments {
   list-style: none;
-  margin: 0;
+  margin: 0 auto;
   padding: 0;
   max-width: var(--content-width);
-  margin-left: auto;
-  margin-right: auto;
 }
 
 ol.comments ol.comments {
@@ -878,12 +806,10 @@ li.comment {
   padding: 0.75rem;
   margin-left: -0.75rem;
   border-radius: var(--radius-md);
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--header-height) + 20px);
 }
 
-/* ============================================
-   6. PROFILE
-   ============================================ */
+/* Profile */
 .profile-header {
   display: flex;
   gap: 2rem;
@@ -941,23 +867,6 @@ li.comment {
   font-weight: 700;
 }
 
-.profile-stats .divider {
-  margin: 0 0.75rem;
-  color: var(--opacity-fg-40);
-}
-
-.text-positive {
-  color: var(--color-fg-affirmative);
-}
-
-.text-negative {
-  color: var(--color-fg-negative);
-}
-
-.text-muted {
-  color: var(--opacity-fg-54);
-}
-
 .story-card-medium {
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--color-fg-shape);
@@ -1006,9 +915,7 @@ li.comment {
   line-height: 1.55;
 }
 
-/* ============================================
-   7. EDITOR.JS IMAGES
-   ============================================ */
+/* Editor.js images */
 .editorjs-image {
   margin: 1.5rem 0;
   display: flex;
@@ -1031,7 +938,6 @@ li.comment {
   background: var(--color-box-bg-shaded);
   padding: 16px;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .editorjs-image--background img {
@@ -1047,9 +953,7 @@ li.comment {
   padding: 0 10px;
 }
 
-/* ============================================
-   8. SORT NAV (Hot / New / Top)
-   ============================================ */
+/* Sort nav */
 .nav.br-none {
   display: flex;
   gap: 0.25rem;
@@ -1065,7 +969,9 @@ li.comment {
   font-size: 0.9375rem;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .nav.br-none a:hover {
@@ -1077,268 +983,7 @@ li.comment {
   border-bottom-color: var(--color-fg);
 }
 
-/* ============================================
-   9. ALERTS / FLASH
-   ============================================ */
-.alert {
-  padding: 1rem 1.25rem;
-  border-radius: var(--radius-md);
-  margin: 1.5rem 0;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  border-left: 4px solid transparent;
-}
-
-.alert strong {
-  font-weight: 600;
-}
-
-.alert.is-danger {
-  background-color: var(--color-flash-bg-error);
-  border-left-color: var(--color-fg-negative);
-}
-
-.alert.is-success {
-  background-color: var(--color-flash-bg-success);
-  border-left-color: var(--color-fg-affirmative);
-}
-
-.alert.is-notice {
-  background-color: var(--color-flash-bg-notice);
-  border-left-color: var(--color-fg-author);
-}
-
-/* ============================================
-   10. PAGINATION
-   ============================================ */
-.pagination {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin: 3rem 0;
-  flex-wrap: wrap;
-}
-
-.pagination a,
-.pagination span {
-  padding: 0.5rem 0.875rem;
-  border-radius: var(--radius-md);
-  color: var(--color-fg);
-  text-decoration: none;
-  font-size: 0.875rem;
-  transition: background-color var(--transition-fast);
-}
-
-.pagination a:hover {
-  background-color: var(--color-box-bg-shaded);
-}
-
-.pagination .current,
-.pagination .active {
-  background-color: var(--color-fg);
-  color: var(--color-bg);
-  font-weight: 600;
-}
-
-/* ============================================
-   11. BUTTONS (все варианты)
-   ============================================ */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all var(--transition-fast);
-}
-
-.btn-rounded {
-  border-radius: var(--radius-md);
-}
-
-.btn-pill {
-  border-radius: var(--radius-full);
-}
-
-.btn-sm {
-  padding: 6px 14px;
-  font-size: 0.875rem;
-}
-
-/* Secondary */
-.btn-secondary {
-  background-color: var(--color-button-bg-shaded);
-  border-color: var(--color-box-border);
-  color: var(--color-fg);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-box-border);
-}
-
-/* Primary (accent) */
-.btn-primary {
-  background-color: var(--color-button-bg-accent);
-  border: 1px solid var(--color-button-bg-accent);
-  color: var(--color-button-fg-accent);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-button-bg-accent-hover);
-  border-color: var(--color-button-bg-accent-hover);
-}
-
-/* Danger */
-.btn-danger {
-  background-color: var(--color-fg-negative);
-  border: 1px solid var(--color-fg-negative);
-  color: #ffffff;
-}
-
-.btn-danger:hover {
-  background-color: var(--color-button-bg-danger-hover);
-  border-color: var(--color-button-bg-danger-hover);
-}
-
-/* Outline variants (объединённые) */
-.btn-outline,
-.btn-outline-primary,
-.btn-outline-secondary {
-  background-color: transparent;
-  border: 1px solid var(--color-box-border);
-  transition: all var(--transition-fast);
-}
-
-.btn-outline:hover,
-.btn-outline-primary:hover,
-.btn-outline-secondary:hover {
-  background-color: var(--color-box-bg-shaded);
-}
-
-.btn-outline,
-.btn-outline-primary {
-  color: var(--color-fg);
-}
-
-.btn-outline-secondary {
-  color: var(--opacity-fg-67);
-}
-
-.btn-outline-primary:hover {
-  border-color: var(--color-fg);
-}
-
-.btn-outline-secondary:hover {
-  color: var(--color-fg);
-}
-
-.btn-outline {
-  padding: 10px 24px;
-  font-weight: 500;
-}
-
-/* Accent */
-.btn-accent {
-  background-color: var(--color-button-bg-accent);
-  color: var(--color-button-fg-accent);
-  border: 1px solid var(--color-button-bg-accent);
-  padding: 10px 24px;
-  font-weight: 600;
-}
-
-.btn-accent:hover {
-  opacity: 0.9;
-}
-
-/* ============================================
-   12. FORMS
-   ============================================ */
-.form-input-wide {
-  width: 100%;
-  max-width: 600px;
-  display: block;
-}
-
-.form-actions {
-  margin-top: 1.5rem;
-  display: flex;
-  gap: 1rem;
-}
-
-.form-field-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-field-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  font-size: 0.9375rem;
-}
-
-.form-field-hint-inline {
-  color: var(--opacity-fg-54);
-  font-size: 0.8125rem;
-  margin-left: 0.5rem;
-}
-
-.form-error-text {
-  display: block;
-  margin-top: 0.375rem;
-  font-size: 0.8125rem;
-  color: var(--color-fg-negative);
-}
-
-.form-input-wide.is-danger {
-  border-color: var(--color-fg-negative);
-}
-
-.validation-errors-list {
-  margin-top: 0.5rem;
-  padding-left: 1.25rem;
-  margin-bottom: 0;
-  color: var(--color-fg-negative);
-  font-size: 0.875rem;
-}
-
-/* ============================================
-   13. TAGS CHECKBOXES
-   ============================================ */
-.tags-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.tag-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background-color: var(--color-tag-bg);
-  border: 1px solid var(--color-box-border);
-  border-radius: var(--radius-full);
-  padding: 0.4rem 0.875rem;
-  cursor: pointer;
-  font-size: 0.875rem;
-  text-decoration: none;
-  color: var(--color-fg);
-  transition: all var(--transition-fast);
-}
-
-.tag-checkbox:hover {
-  background-color: var(--color-button-bg-shaded);
-  border-color: var(--color-fg);
-}
-
-.tag-checkbox:has(input:checked) {
-  background-color: var(--color-fg);
-  color: var(--color-bg);
-  border-color: var(--color-fg);
-  font-weight: 500;
-}
-
-/* ============================================
-   14. NOTIFICATIONS PAGE
-   ============================================ */
+/* Notifications page */
 .notifications-page {
   margin-top: 1rem;
 }
@@ -1415,95 +1060,7 @@ ol.notification-list {
   background-color: var(--color-flash-bg-notice);
 }
 
-/* ============================================
-   15. UTILITIES
-   ============================================ */
-.hint {
-  color: var(--opacity-fg-54);
-  font-style: italic;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.clear {
-  clear: both;
-}
-
-.delete,
-.red,
-.is-link.red {
-  color: var(--color-fg-negative);
-}
-
-.delete:hover {
-  opacity: 0.8;
-}
-
-.green {
-  color: var(--color-fg-affirmative);
-}
-
-.bold {
-  font-weight: 700;
-}
-
-.mb1 {
-  margin-bottom: 1rem;
-}
-
-.mt2 {
-  margin-top: 1rem;
-}
-
-.mt3 {
-  margin-top: 1.5rem;
-}
-
-.my3 {
-  margin: 1.5rem 0;
-}
-
-.inline-form {
-  display: inline;
-}
-
-.flex {
-  display: flex;
-}
-
-.gap {
-  gap: 0.75rem;
-}
-
-.flex-end {
-  justify-content: flex-end;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.v-center {
-  align-items: center;
-}
-
-.hidden {
-  display: none;
-}
-
-.d-inline {
-  display: inline;
-}
-
-.right {
-  float: right;
-}
-
-img.avatar {
-  border-radius: 50%;
-  vertical-align: middle;
-}
-
+/* RSS and editor wrapper */
 .rss-link {
   color: var(--color-rss);
   font-size: 0.875rem;
@@ -1521,12 +1078,14 @@ img.avatar {
   min-height: 300px;
   padding: 1rem;
   background-color: var(--color-box-bg);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .editorjs-custom-wrapper:focus-within {
   border-color: var(--color-box-border-focus);
-  box-shadow: 0 0 0 3px rgba(41, 41, 41, 0.08);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .story-card--has-new {
@@ -1534,13 +1093,12 @@ img.avatar {
   padding-left: 1rem;
 }
 
-/* ============================================
-   16. EDITOR.JS CODE BLOCKS
-   ============================================ */
+/* Article/comment code */
 .story_content pre,
 .comment_text pre {
-  background-color: var(--color-box-bg-shaded);
-  border: 1px solid var(--color-fg-shape);
+  position: relative;
+  background-color: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.5rem;
   margin: 1.5rem 0;
@@ -1567,13 +1125,13 @@ img.avatar {
 
 .story_content code,
 .comment_text code {
-  background-color: var(--color-box-bg-shaded);
+  background-color: var(--color-code-bg);
   padding: 0.125rem 0.375rem;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 0.88em;
-  color: var(--color-fg-accent);
-  border: 1px solid var(--color-fg-shape);
+  color: var(--color-code-inline-fg);
+  border: 1px solid var(--color-code-border);
 }
 
 pre .copy-button {
@@ -1594,9 +1152,7 @@ pre:hover .copy-button {
   opacity: 1;
 }
 
-/* ============================================
-   17. STAFF PICK BADGE
-   ============================================ */
+/* Staff pick badge */
 .staff-pick-badge {
   display: inline-flex;
   align-items: center;
@@ -1623,18 +1179,18 @@ li.story .staff-pick-badge {
     transform: scale(0);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.2);
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-/* ============================================
-   18. FILTER HEADER
-   ============================================ */
+/* Filter header */
 .filter-header {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
@@ -1665,53 +1221,10 @@ li.story .staff-pick-badge {
   border-color: var(--color-fg);
 }
 
-/* ============================================
-   19. EMPTY STATE
-   ============================================ */
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  margin: 2rem 0;
-  color: var(--opacity-fg-67);
-}
-
-.empty-state h2 {
-  font-family: var(--font-sans);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
-  color: var(--color-fg);
-}
-
-.empty-state p {
-  font-size: 1rem;
-  line-height: 1.55;
-  margin: 0 0 1.5rem;
-}
-
-.empty-state__actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.empty-state--subscribed {
-  background-color: var(--color-box-bg-shaded);
-  border-radius: var(--radius-lg);
-  padding: 3rem 2rem;
-}
-
-/* ============================================
-   20. FEED SECTIONS (Medium-style)
-   ============================================ */
+/* Feed sections */
 .feed-section {
   margin-bottom: 3rem;
   padding-bottom: 2rem;
-}
-
-.feed-section:last-child {
-  border-bottom: none;
 }
 
 .section-header {
@@ -1742,9 +1255,7 @@ li.story .staff-pick-badge {
   border-bottom: none;
 }
 
-/* ============================================
-   21. HOME GRID (две колонки)
-   ============================================ */
+/* Home grid */
 .home-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -1755,13 +1266,13 @@ li.story .staff-pick-badge {
 
 .home-grid__main {
   min-width: 0;
-  max-width: 720px;
+  max-width: var(--content-width-default);
 }
 
 .home-grid__sidebar {
   position: sticky;
-  top: 80px;
-  max-height: calc(100vh - 100px);
+  top: calc(var(--header-height) + 20px);
+  max-height: calc(100vh - var(--header-height) - 40px);
   padding-right: 8px;
 }
 
@@ -1778,9 +1289,7 @@ li.story .staff-pick-badge {
   border-radius: var(--radius-sm);
 }
 
-/* ============================================
-   22. SIDEBAR SECTIONS
-   ============================================ */
+/* Sidebar */
 .sidebar-section {
   padding: 1.25rem 0;
   border-bottom: 1px solid var(--color-fg-shape);
@@ -1816,7 +1325,6 @@ li.story .staff-pick-badge {
   margin: 0 0 1rem;
 }
 
-/* SIDEBAR: TRENDING */
 .sidebar-section--trending .trending-list {
   list-style: none;
   padding: 0;
@@ -1882,7 +1390,6 @@ li.story .staff-pick-badge {
   text-decoration: underline;
 }
 
-/* SIDEBAR: STAFF PICKS (compact и card — объединённые стили) */
 .staff-pick-compact__title,
 .staff-pick-card__title {
   font-family: var(--font-sans);
@@ -1944,7 +1451,7 @@ li.story .staff-pick-badge {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal);
   display: block;
 }
 
@@ -1976,7 +1483,6 @@ li.story .staff-pick-badge {
 .staff-picks-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .staff-pick-compact {
@@ -1993,7 +1499,6 @@ li.story .staff-pick-badge {
   padding-bottom: 0;
 }
 
-/* SIDEBAR: POPULAR TAGS */
 .sidebar-tags {
   display: flex;
   flex-wrap: wrap;
@@ -2006,7 +1511,6 @@ li.story .staff-pick-badge {
   margin: 0;
 }
 
-/* SIDEBAR: SUBSCRIBE BLOCK */
 .sidebar-section--subscribe {
   background-color: var(--color-box-bg-shaded);
   margin: 0 -16px;
@@ -2029,9 +1533,7 @@ li.story .staff-pick-badge {
   flex-wrap: wrap;
 }
 
-/* ============================================
-   23. STAFF PICKS PAGE
-   ============================================ */
+/* Staff picks page */
 .staff-picks-page {
   padding: 2rem 0 4rem;
 }
@@ -2055,10 +1557,8 @@ li.story .staff-pick-badge {
 .staff-picks-page__subtitle {
   font-size: 1.0625rem;
   color: var(--opacity-fg-67);
-  margin: 0 0 0.5rem;
+  margin: 0 auto 0.5rem;
   max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
   line-height: 1.55;
 }
 
@@ -2080,7 +1580,9 @@ li.story .staff-pick-badge {
   border-radius: var(--radius-lg);
   overflow: hidden;
   background-color: var(--color-box-bg);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
   display: flex;
   flex-direction: column;
 }
@@ -2175,9 +1677,7 @@ li.story .staff-pick-badge {
   font-weight: 600;
 }
 
-/* ============================================
-   24. SCROLL TO TOP BUTTON
-   ============================================ */
+/* Scroll to top */
 .scroll-to-top {
   position: fixed;
   bottom: 32px;
@@ -2197,8 +1697,12 @@ li.story .staff-pick-badge {
   visibility: hidden;
   transform: translateY(10px);
   pointer-events: none;
-  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease,
-              background-color var(--transition-fast), border-color var(--transition-fast);
+  transition:
+    opacity var(--transition-normal),
+    visibility var(--transition-normal),
+    transform var(--transition-normal),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
   z-index: var(--z-floating);
 }
 
@@ -2224,9 +1728,7 @@ li.story .staff-pick-badge {
   display: block;
 }
 
-/* ============================================
-   25. READING PROGRESS BAR
-   ============================================ */
+/* Reading progress */
 .reading-progress {
   position: fixed;
   top: 0;
@@ -2241,15 +1743,17 @@ li.story .staff-pick-badge {
 .reading-progress__bar {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--color-fg-accent) 0%, var(--color-fg) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--color-fg-accent) 0%,
+    var(--color-fg) 100%
+  );
   border-radius: 0 2px 2px 0;
   transition: width 0.1s linear;
   will-change: width;
 }
 
-/* ============================================
-   26. EDITOR.JS PAYWALL MARKER
-   ============================================ */
+/* Paywall */
 .editorjs-paywall__marker {
   display: flex;
   align-items: center;
@@ -2278,9 +1782,12 @@ li.story .staff-pick-badge {
   opacity: 0.8;
 }
 
-/* ============================================
-   27. PAYWALL CTA
-   ============================================ */
+[data-theme="dark"] .editorjs-paywall__marker {
+  background: linear-gradient(135deg, #3a2f10, #4a3a15);
+  border-color: #d97706;
+  color: #fbbf24;
+}
+
 .paywall-cta {
   position: relative;
   margin: 3rem 0;
@@ -2292,7 +1799,7 @@ li.story .staff-pick-badge {
 }
 
 .paywall-cta::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -60px;
   left: 0;
@@ -2357,89 +1864,7 @@ li.story .staff-pick-badge {
   opacity: 0.7;
 }
 
-/* ============================================
-   28. ICON BUTTON (универсальная иконочная кнопка)
-   ============================================ */
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: none;
-  border-radius: 50%;
-  color: var(--opacity-fg-54);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-}
-
-.icon-btn:hover {
-  background-color: var(--color-box-bg-shaded);
-  color: var(--color-fg);
-}
-
-.icon-btn:active {
-  transform: scale(0.92);
-}
-
-.icon-btn:focus-visible {
-  outline: 2px solid var(--color-fg-accent);
-  outline-offset: 2px;
-}
-
-.icon-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.icon-btn svg {
-  display: block;
-  width: 20px;
-  height: 20px;
-  transition: all 0.2s ease;
-}
-
-.icon-btn.is-active {
-  color: var(--color-fg-accent);
-}
-
-.icon-btn.is-active svg {
-  fill: currentColor;
-}
-
-.icon-btn.is-active:hover {
-  color: var(--color-fg);
-  background-color: var(--color-box-bg-shaded);
-}
-
-.icon-btn--danger.is-active {
-  color: var(--color-fg-negative);
-}
-
-.icon-btn--success.is-active {
-  color: var(--color-fg-affirmative);
-}
-
-@keyframes icon-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.icon-btn.just-toggled svg {
-  animation: icon-pop 0.3s ease;
-}
-
+/* Icon actions */
 .icon-actions {
   display: inline-flex;
   align-items: center;
@@ -2451,7 +1876,7 @@ li.story .staff-pick-badge {
 }
 
 .icon-actions > form + form::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -2px;
   top: 50%;
@@ -2461,131 +1886,340 @@ li.story .staff-pick-badge {
   background-color: var(--color-fg-shape);
 }
 
-/* ============================================
-   29. ACTION LINKS (текстовые действия)
-   ============================================ */
-.action-link {
+/* Story actions */
+.story-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-fg-shape);
+  border-bottom: 1px solid var(--color-fg-shape);
+}
+
+.story-menu-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.story-menu-dropdown {
+  min-width: 240px;
+}
+
+/* Friend links modal */
+.friend-links-modal__body {
+  padding: 1.25rem;
+}
+
+.friend-links-modal__description {
+  color: var(--opacity-fg-67);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.friend-links-list {
+  margin-top: 1rem;
+}
+
+.friend-link-item {
+  padding: 0.875rem;
+  border: 1px solid var(--color-box-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-box-bg-shaded);
+  margin-bottom: 0.75rem;
+}
+
+.friend-link-item:last-child {
+  margin-bottom: 0;
+}
+
+.friend-link-item__url {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.friend-link-item__url input {
+  flex: 1;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--color-box-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-box-bg);
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+}
+
+.friend-link-item__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: var(--opacity-fg-54);
+}
+
+.friend-link-item__meta small {
+  flex: 1;
+}
+
+/* Social auth */
+.social-auth {
+  margin: 1.5rem 0;
+}
+
+.social-auth__divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: var(--opacity-fg-54);
+  font-size: 0.875rem;
+}
+
+.social-auth__divider::before,
+.social-auth__divider::after {
+  content: "";
+  display: block;
+  flex: 1;
+  height: 1px;
+  background: var(--color-fg-shape);
+}
+
+.social-auth__buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-social {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: 0.8125rem;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-lg);
   font-weight: 500;
-  color: var(--opacity-fg-67);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-social:hover {
+  opacity: 0.9;
+}
+
+.btn-yandex {
+  background: #FC3F1D;
+  color: white;
+}
+
+.btn-vk {
+  background: #0077FF;
+  color: white;
+}
+
+/* Lightbox */
+.lightbox-trigger {
+  position: relative;
+  display: block;
+  cursor: zoom-in;
+  line-height: 0;
+}
+
+.lightbox-trigger img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  transition: transform var(--transition-normal);
+}
+
+.lightbox-trigger:hover img {
+  transform: scale(1.02);
+}
+
+.lightbox-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: var(--color-box-bg);
+  border: 1px solid var(--color-box-border);
+  border-radius: 50%;
   cursor: pointer;
-  text-decoration: none;
-  transition: color 0.2s ease;
-  line-height: 1;
-}
-
-.action-link:hover {
-  color: var(--color-fg);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.action-link--danger {
-  color: var(--color-fg-negative);
-  opacity: 0.8;
-}
-
-.action-link--danger:hover {
-  color: var(--color-fg-negative);
-  opacity: 1;
-}
-
-.action-link--restore {
-  color: var(--color-fg-affirmative);
-  opacity: 0.8;
-}
-
-.action-link--restore:hover {
-  color: var(--color-fg-affirmative);
-  opacity: 1;
-}
-
-.action-link--neutral {
-  color: var(--opacity-fg-67);
-}
-
-.action-link--neutral:hover {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--color-fg);
 }
 
-.action-link:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  text-decoration: none;
+.lightbox-icon svg {
+  width: 18px;
+  height: 18px;
 }
 
-/* ============================================
-   30. ТЁМНАЯ ТЕМА (все переопределения)
-   ============================================ */
-[data-theme="dark"] header {
-  background-color: rgba(18, 18, 18, 0.92);
+.lightbox-trigger:hover .lightbox-icon {
+  opacity: 1;
+  transform: scale(1);
 }
 
-[data-theme="dark"] .theme-toggle .icon-sun {
-  display: inline-block;
+.lightbox-icon:hover {
+  background: var(--color-box-bg-shaded);
+  transform: scale(1.1);
 }
 
-[data-theme="dark"] .theme-toggle .icon-moon {
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-bg);
+  z-index: var(--z-lightbox);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--transition-normal),
+    visibility var(--transition-normal);
+}
+
+.lightbox-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  box-shadow: var(--shadow-lg);
+  transition: opacity var(--transition-normal);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox-caption {
+  color: var(--color-overlay-fg);
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: var(--color-overlay-control-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-overlay-control-fg);
+  transition: background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.lightbox-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.lightbox-close:hover {
+  background: var(--color-overlay-control-hover-bg);
+}
+
+.lightbox-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: none;
 }
 
-[data-theme="dark"] .story_content pre,
-[data-theme="dark"] .comment_text pre {
-  background-color: #1e1e1e;
-  border-color: #333;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-spinner-track);
+  border-top-color: var(--color-spinner-thumb);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-[data-theme="dark"] .story_content code,
-[data-theme="dark"] .comment_text code {
-  background-color: #2a2a2a;
-  color: #e06c75;
-}
-
-[data-theme="dark"] .staff-pick-badge {
-  filter: brightness(0.9);
-}
-
-[data-theme="dark"] .editorjs-paywall__marker {
-  background: linear-gradient(135deg, #3a2f10, #4a3a15);
-  border-color: #d97706;
-  color: #fbbf24;
-}
-
-[data-theme="dark"] .scroll-to-top {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme="dark"] .reading-progress__bar {
-  background: linear-gradient(90deg, var(--color-fg-accent) 0%, rgb(220 220 220) 100%);
-}
-
-[data-theme="dark"] .icon-btn.is-active {
-  color: #60a5fa;
-}
-
-[data-theme="dark"] .icon-btn--danger.is-active {
-  color: #f87171;
-}
-
-/* ============================================
-   31. МЕДИА-ЗАПРОСЫ (все @media)
-   ============================================ */
-
-/* Планшеты и небольшие десктопы */
-@media (max-width: 1240px) {
-  main .content.content-wide {
-    max-width: 100%;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
+/* Editor.js broken image */
+.ce-block .image-tool__image {
+  position: relative;
+  min-height: 100px;
+}
+
+.ce-block .image-tool__image img[src=""],
+.ce-block .image-tool__image img:not([src]),
+.ce-block .image-tool__image img.broken {
+  display: none !important;
+}
+
+.ce-block .image-tool__image.has-error::after {
+  content: "⚠️ Изображение не найдено. Кликните, чтобы удалить блок.";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-flash-bg-error);
+  border: 2px dashed var(--color-fg-negative);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  color: var(--color-fg-negative);
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  min-height: 100px;
+}
+
+.ce-block .image-tool__image.has-error:hover::after {
+  background: var(--color-flash-bg-error);
+  border-color: var(--color-button-bg-danger-hover);
+  color: var(--color-button-bg-danger-hover);
+}
+
+.ce-block .image-tool__image.has-error ~ .image-tool__caption {
+  display: none;
+}
+
+.ce-block .image-tool__image.has-error::before {
+  content: "❌";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  z-index: 10;
+}
+
+/* Media */
 @media (min-width: 768px) {
   .editorjs-image {
     margin: 2.5rem 0;
@@ -2674,27 +2308,46 @@ li.story .staff-pick-badge {
   .filter-header__title {
     font-size: 1.5rem;
   }
+
+  .lightbox-icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .lightbox-close {
+    top: 12px;
+    right: 12px;
+  }
+
+  .lightbox-image {
+    max-width: 95vw;
+    max-height: 75vh;
+  }
 }
 
 @media (max-width: 640px) {
-  main .content,
-  article,
-  .comment_form_container,
-  ol.comments {
-    padding-left: 20px;
-    padding-right: 20px;
+  .header {
+    height: auto;
+    min-height: var(--header-height);
   }
 
-  main .content.content-wide {
-    padding: 0 16px;
+  .navbar-container {
+    padding: 8px 16px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--header-height);
   }
 
-  main .content.content-full {
-    padding: 0 16px;
+  .navbar-links {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
   }
 
-  .home-grid {
-    gap: 30px;
+  .navbar-user-dropdown-container {
+    margin-left: auto;
   }
 
   .article-header h1 {
@@ -2715,33 +2368,14 @@ li.story .staff-pick-badge {
     gap: 1rem;
   }
 
-  .profile-avatar-large {
+  .profile-avatar-large,
+  .profile-avatar-placeholder-large {
     width: 80px;
     height: 80px;
   }
 
   .profile-username {
     font-size: 1.5rem;
-  }
-
-  .navbar-container {
-    padding: 0 16px;
-    flex-wrap: wrap;
-    height: auto;
-    min-height: 60px;
-    padding-block: 8px;
-  }
-
-  .navbar-links {
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-    font-size: 0.8125rem;
-  }
-
-  .navbar-user-dropdown-container {
-    margin-left: auto;
   }
 
   ol.comments ol.comments {
@@ -2803,15 +2437,26 @@ li.story .staff-pick-badge {
     padding: 1rem;
     font-size: 0.875rem;
   }
-  
+
+  .friend-links-modal__content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .friend-link-item__url {
+    flex-direction: column;
+  }
+
+  .friend-link-item__url input {
+    width: 100%;
+  }
+
   .mb-none {
-	  display: none;
-	}
+    display: none;
+  }
 }
 
-/* ============================================
-   32. PRINT СТИЛИ
-   ============================================ */
+/* Print */
 @media print {
   header,
   footer,
@@ -2819,7 +2464,12 @@ li.story .staff-pick-badge {
   .comment_actions,
   .comment_form_container,
   .scroll-to-top,
-  .reading-progress {
+  .reading-progress,
+  .navbar-dropdown-menu,
+  .story-menu-dropdown,
+  .friend-links-modal,
+  .lightbox-overlay,
+  .notification {
     display: none !important;
   }
 
@@ -2834,500 +2484,247 @@ li.story .staff-pick-badge {
 }
 
 /* ============================================
-   STORY ACTIONS BAR (панель действий)
+   INLINE COMMENTS (Medium-style)
+   Полная реализация: popup, форма, подсветка, цитаты
    ============================================ */
-.story-actions-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0;
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--color-fg-shape);
-  border-bottom: 1px solid var(--color-fg-shape);
+
+/* --------------------------------------------
+   1. POPUP при выделении текста в статье
+   -------------------------------------------- */
+.inline-comment-popup {
+    position: absolute;
+    z-index: var(--z-dropdown);
+    display: none;
+    transform: translateX(-50%);
+    animation: inline-popup-appear 0.15s ease-out;
 }
 
-.story-actions-bar .divider {
-  color: var(--opacity-fg-40);
+.inline-comment-popup button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-fg);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ============================================
-   STORY MENU (dropdown "три точки")
-   ============================================ */
-.story-menu-wrapper {
-  position: relative;
-  display: inline-flex;
+.inline-comment-popup button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
-.story-menu-trigger {
-  /* Стили наследуются от .icon-btn */
+@keyframes inline-popup-appear {
+    from { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(5px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0); 
+    }
 }
 
-.story-menu-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 240px;
-  background-color: var(--color-box-bg);
-  border: 1px solid var(--color-box-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  z-index: var(--z-dropdown);
-  padding: 0.5rem 0;
-  animation: story-menu-appear 0.15s ease-out;
+/* --------------------------------------------
+   2. БЛОК ЦИТАТЫ внутри формы комментария
+   (появляется когда пользователь выделил текст)
+   -------------------------------------------- */
+.inline-quote-block {
+	display: none;
+    margin-bottom: 1rem;
+    padding: 0.875rem 1rem;
+    background-color: var(--color-box-bg-shaded);
+    border-left: 3px solid var(--color-fg-accent);
+    border-radius: var(--radius-md);
+    position: relative;
 }
 
-.story-menu-dropdown.active {
-  display: block;
+.inline-quote-block.is-visible {
+    display: block;
 }
 
-@keyframes story-menu-appear {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.inline-quote-block__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
 }
 
-/* ============================================
-   STORY MENU (dropdown "три точки")
-   ============================================ */
-.story-menu-wrapper {
-  position: relative;
-  display: inline-flex;
+.inline-quote-block__label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--opacity-fg-67);
 }
 
-.story-menu-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 240px;
-  background-color: var(--color-box-bg);
-  border: 1px solid var(--color-box-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  z-index: var(--z-dropdown);
-  padding: 0.5rem 0;
-  animation: story-menu-appear 0.15s ease-out;
+.inline-quote-block__close {
+    background: none;
+    border: none;
+    color: var(--opacity-fg-54);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    line-height: 1;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
 }
 
-.story-menu-dropdown.active {
-  display: block;
+.inline-quote-block__close:hover {
+    background-color: var(--color-box-border);
+    color: var(--color-fg-negative);
 }
 
-@keyframes story-menu-appear {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.inline-quote-block__text {
+    margin: 0;
+    padding: 0 0 0 5px;
+    font-size: 0.9375rem;
+    font-style: italic;
+    color: var(--opacity-fg-84);
+    line-height: 1.5;
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
 }
 
-.story-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 0.6rem 1rem;
-  color: var(--color-fg);
-  font-size: 0.9rem;
-  font-weight: 400;
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-  transition: background-color var(--transition-fast);
-}
-
-.story-menu-item:hover {
-  background-color: var(--color-box-bg-shaded);
-}
-
-.story-menu-item__icon {
-  flex-shrink: 0;
-  font-size: 1rem;
-  width: 20px;
-  text-align: center;
-}
-
-.story-menu-item--danger {
-  color: var(--color-fg-negative);
-}
-
-.story-menu-item--danger:hover {
-  background-color: var(--color-flash-bg-error);
-}
-
-.story-menu-item--success {
-  color: var(--color-fg-affirmative);
-}
-
-.story-menu-item--success:hover {
-  background-color: var(--color-flash-bg-success);
-}
-
-.story-menu-divider {
-  height: 1px;
-  background-color: var(--color-box-border);
-  margin: 0.4rem 0;
-}
-
-.story-menu-form {
-  margin: 0;
-  display: block;
-}
-
-/* Мобильная версия: bottom sheet */
-@media (max-width: 640px) {
-  .story-menu-dropdown {
-    position: fixed;
+.inline-quote-block__text::after {
+    content: '';
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    top: auto;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    max-height: 70vh;
-    overflow-y: auto;
-  }
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, var(--color-box-bg-shaded));
+    pointer-events: none;
 }
 
-/* Выпадающий контейнер с инфой */
-.summary-container {
-    margin: 1em 0;
-    padding: 1em;
-    background: var(--color-box-bg-shaded, #f8f9fa);
-    border: 1px solid var(--color-box-border, #dee2e6);
-    border-radius: 3px;
-}
-
-
-/* Регистрация через сервисы */
-.social-auth {
-    margin: 1.5rem 0;
-}
-.social-auth__divider {
-    text-align: center;
-    margin: 1rem 0;
-    color: #888;
-    font-size: 0.875rem;
-}
-.social-auth__divider::before,
-.social-auth__divider::after {
-    content: '';
-    display: inline-block;
-    width: 30%;
-    height: 1px;
-    background: #ddd;
-    vertical-align: middle;
-    margin: 0 0.5rem;
-}
-.social-auth__buttons {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-.btn-social {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
-    border-radius: 8px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: opacity 0.2s;
-}
-.btn-social:hover {
-    opacity: 0.9;
-}
-.btn-yandex {
-    background: #FC3F1D;
-    color: white;
-}
-.btn-vk {
-    background: #0077FF;
-    color: white;
-}
-
-
-/* ═══════════════════════════════════════════
-   Lightbox (Medium-style)
-   ═══════════════════════════════════════════ */
-
-/* Контейнер картинки — нужен для позиционирования лупы */
-.lightbox-trigger {
-    position: relative;
-    display: block;
-    cursor: zoom-in;
-    line-height: 0;
-}
-
-.lightbox-trigger img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-/* При hover — лёгкое увеличение картинки */
-.lightbox-trigger:hover img {
-    transform: scale(1.02);
-}
-
-/* Иконка лупы (скрыта по умолчанию) */
-.lightbox-icon {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.95);
-    border: none;
-    border-radius: 50%;
+/* --------------------------------------------
+   3. ПОДСВЕТКА выделенного текста в статье
+   (жёлтые маркеры как в Medium)
+   -------------------------------------------- */
+.inline-comment-highlight {
+    background-color: rgba(255, 213, 79, 0.4);
     cursor: pointer;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #333;
+    border-radius: 2px;
+    padding: 0 1px;
+    transition: background-color 0.2s ease;
 }
 
-.lightbox-icon svg {
-    width: 18px;
-    height: 18px;
+.inline-comment-highlight:hover {
+    background-color: rgba(255, 213, 79, 0.65);
 }
 
-/* Показываем лупу при hover на картинку */
-.lightbox-trigger:hover .lightbox-icon {
-    opacity: 1;
-    transform: scale(1);
+/* --------------------------------------------
+   4. ЦИТАТА в шапке самого комментария
+   (показывается над текстом inline-комментария)
+   -------------------------------------------- */
+.inline-comment-quote {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--color-box-bg-shaded);
+    border-left: 3px solid var(--color-fg-accent);
+    border-radius: var(--radius-sm);
 }
 
-.lightbox-icon:hover {
-    background: #fff;
-    transform: scale(1.1);
-}
-
-/* ═══════════════════════════════════════════
-   Модальное окно лайтбокса
-   ═══════════════════════════════════════════ */
-
-.lightbox-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(255, 255, 255, 0.97);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.lightbox-overlay.is-open {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Тёмная тема для лайтбокса */
-@media (prefers-color-scheme: dark) {
-    .lightbox-overlay {
-        background: rgba(20, 20, 20, 0.97);
-    }
-}
-
-.lightbox-content {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.lightbox-image {
-    max-width: 90vw;
-    max-height: 80vh;
-    object-fit: contain;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.3s ease;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-.lightbox-caption {
-    color: #555;
-    font-size: 0.95rem;
-    text-align: center;
-    max-width: 80%;
+.inline-comment-quote blockquote {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--opacity-fg-84);
+    font-style: italic;
     line-height: 1.5;
 }
 
-@media (prefers-color-scheme: dark) {
-    .lightbox-caption {
-        color: #aaa;
-    }
+.inline-comment-quote__label {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--opacity-fg-54);
 }
 
-/* Кнопка закрытия */
-.lightbox-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 44px;
-    height: 44px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.05);
-    border: none;
-    border-radius: 50%;
+/* --------------------------------------------
+   5. ВРЕМЕННАЯ ПОДСВЕТКА комментария
+   (когда пользователь кликнул на highlight в статье
+   и страница прокрутилась к комментарию)
+   -------------------------------------------- */
+.comment.is-highlighted-temp {
+    background-color: rgba(255, 213, 79, 0.25) !important;
+    transition: background-color 0.3s ease;
+}
+
+
+/* Цитата кликабельна */
+.inline-comment-quote {
     cursor: pointer;
-    color: #333;
-    transition: background 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
+    transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
-.lightbox-close svg {
-    width: 20px;
-    height: 20px;
+.inline-comment-quote:hover {
+    background-color: var(--color-box-bg-shaded);
+    filter: brightness(0.97);
 }
 
-.lightbox-close:hover {
-    background: rgba(0, 0, 0, 0.1);
+.inline-comment-quote:hover .inline-comment-quote__arrow {
+    display: inline-block;
+    transform: translateX(2px);
+    color: var(--color-fg-accent);
 }
 
-@media (prefers-color-scheme: dark) {
-    .lightbox-close {
-        background: rgba(255, 255, 255, 0.1);
-        color: #fff;
-    }
-    .lightbox-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
+.inline-comment-quote__arrow {
+    display: inline-block;
+    transition: transform 0.15s ease, color 0.15s ease;
+    margin-left: 0.25rem;
 }
 
-/* Спиннер загрузки */
-.lightbox-spinner {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: none;
+.inline-comment-quote:focus-visible {
+    outline: 2px solid var(--color-fg-accent);
+    outline-offset: 2px;
 }
 
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(0, 0, 0, 0.1);
-    border-top-color: #333;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+/* Эффект "вспышки" при прокрутке к highlight */
+.inline-comment-highlight.is-flash {
+    animation: highlight-flash 2s ease;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+@keyframes highlight-flash {
+    0%   { background-color: rgba(255, 213, 79, 0.9); box-shadow: 0 0 0 4px rgba(255, 213, 79, 0.5); }
+    50%  { background-color: rgba(255, 213, 79, 0.6); box-shadow: 0 0 0 8px rgba(255, 213, 79, 0.2); }
+    100% { background-color: rgba(255, 213, 79, 0.4); box-shadow: none; }
 }
 
-@media (prefers-color-scheme: dark) {
-    .spinner {
-        border-color: rgba(255, 255, 255, 0.1);
-        border-top-color: #fff;
-    }
+/* --------------------------------------------
+   6. ТЁМНАЯ ТЕМА
+   -------------------------------------------- */
+[data-theme="dark"] .inline-comment-popup button {
+    background-color: var(--color-fg);
+    color: var(--color-bg);
 }
 
-/* ═══════════════════════════════════════════
-   Мобильные устройства
-   ═══════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-    .lightbox-icon {
-        opacity: 1;
-        transform: scale(1);
-    }
-    
-    .lightbox-close {
-        top: 12px;
-        right: 12px;
-    }
-    
-    .lightbox-image {
-        max-width: 95vw;
-        max-height: 75vh;
-    }
+[data-theme="dark"] .inline-comment-highlight {
+    background-color: rgba(255, 213, 79, 0.25);
 }
 
-
-/* Показ битого изображения в редакторе */
-/* Обработка битых изображений в Editor.js */
-
-/* Контейнер изображения */
-.ce-block .image-tool__image {
-    position: relative;
-    min-height: 100px;
+[data-theme="dark"] .inline-comment-highlight:hover {
+    background-color: rgba(255, 213, 79, 0.4);
 }
 
-/* Битое изображение */
-.ce-block .image-tool__image img[src=""],
-.ce-block .image-tool__image img:not([src]),
-.ce-block .image-tool__image img.broken {
-    display: none !important;
+[data-theme="dark"] .inline-comment-quote {
+    background-color: var(--color-box-bg-shaded);
+	filter: brightness(1.15);
 }
 
-/* Placeholder для битого изображения */
-.ce-block .image-tool__image::after {
-    content: '';
-    display: none;
+[data-theme="dark"] .inline-quote-block {
+    background-color: var(--color-box-bg-shaded);
 }
 
-.ce-block .image-tool__image.has-error::after {
-    content: '⚠️ Изображение не найдено. Кликните, чтобы удалить блок.';
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fee;
-    border: 2px dashed #c33;
-    border-radius: 8px;
-    padding: 20px;
-    color: #c33;
-    font-size: 14px;
-    text-align: center;
-    cursor: pointer;
-    min-height: 100px;
+[data-theme="dark"] .inline-quote-block__text::after {
+    background: linear-gradient(to bottom, transparent, var(--color-box-bg-shaded));
 }
 
-.ce-block .image-tool__image.has-error:hover::after {
-    background: #fdd;
-    border-color: #900;
-}
-
-/* Скрываем caption если изображение битое */
-.ce-block .image-tool__image.has-error ~ .image-tool__caption {
-    display: none;
-}
-
-/* Индикатор ошибки */
-.ce-block .image-tool__image.has-error::before {
-    content: '❌';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    z-index: 10;
+[data-theme="dark"] .comment.is-highlighted-temp {
+    background-color: rgba(255, 213, 79, 0.15) !important;
 }

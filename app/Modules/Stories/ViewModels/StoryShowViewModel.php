@@ -38,6 +38,9 @@ readonly class StoryShowViewModel
         public array $currentTagIds,
         public int $newCommentsCount,
         public int $lastReadCommentId,
+		
+        public readonly bool $canSeeFullContent = true,
+        public readonly bool $hasFriendLinkAccess = false,
     ) {}
 
     // =========================================================================

@@ -92,7 +92,9 @@ abstract class BaseController extends CoreController
             ];
 
             $data['unreadNotificationsCount'] = $this->getUnreadNotificationsCount((int)$userId);
-			$data['newSubscribedCount'] = $this->getNewSubscribedStoriesCount((int)$userId);
+			
+			// Пока убрана. Роль не очевидна: показывает количество новых статей (публикаций), опубликованных пользователями (или в тегах), на которых вы подписаны, за последние 24 часа.
+			//$data['newSubscribedCount'] = $this->getNewSubscribedStoriesCount((int)$userId);
 
             if ($data['currentUser']['isModerator']) {
                 $data['pendingFlagsCount'] = $this->getPendingFlagsCount();

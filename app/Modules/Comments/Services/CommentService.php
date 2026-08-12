@@ -18,6 +18,8 @@ use App\Modules\Comments\Events\CommentDeleted;
 use App\Modules\Comments\Events\CommentRestored;
 use App\Modules\Comments\Events\CommentUpdated;
 
+use App\Modules\Comments\Models\CommentHighlight;
+
 /**
  * Сервис для работы с комментариями.
  */
@@ -28,23 +30,26 @@ class CommentService
     private EventDispatcher $eventDispatcher;
     private Validator $validator;
     private UserContext $currentUser;
+	private CommentHighlight $highlightModel;
 
     /**
      * Все 5 зависимостей строго обязательны.
      */
-    public function __construct(
-        Comment $commentModel,
-        Validator $validator,
-        NotificationService $notificationService,
-        EventDispatcher $eventDispatcher,
-        UserContext $currentUser
-    ) {
-        $this->commentModel = $commentModel;
-        $this->validator = $validator;
-        $this->notificationService = $notificationService;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->currentUser = $currentUser;
-    }
+	public function __construct(
+		Comment $commentModel,
+		CommentHighlight $highlightModel,  // ← НОВОЕ
+		Validator $validator,
+		NotificationService $notificationService,
+		EventDispatcher $eventDispatcher,
+		UserContext $currentUser
+	) {
+		$this->commentModel = $commentModel;
+		$this->highlightModel = $highlightModel;  // ← НОВОЕ
+		$this->validator = $validator;
+		$this->notificationService = $notificationService;
+		$this->eventDispatcher = $eventDispatcher;
+		$this->currentUser = $currentUser;
+	}
 
     /**
      * Создаёт новый комментарий.
@@ -255,4 +260,54 @@ class CommentService
     {
         return (int) $comment['user_id'] === $this->currentUser->id;
     }
+	
+	/**
+	 * Создаёт комментарий с привязкой к выделенному фрагменту (inline comment).
+	 * 
+	 * @throws CommentValidationException
+	 * @return int ID созданного комментария
+	 */
+	public function createCommentWithHighlight(int $storyId, string $text, array $highlight): int
+	{
+		// 1. Валидация цитаты
+		if (empty($highlight['quoted_text']) || mb_strlen($highlight['quoted_text']) < 3) {
+			throw new CommentValidationException('Выделенный текст слишком короткий.');
+		}
+		
+		if (mb_strlen($highlight['quoted_text']) > 500) {
+			throw new CommentValidationException('Выделенный текст слишком длинный (макс. 500 символов).');
+		}
+
+		// 2. Создаём обычный комментарий (без parent_id — inline-комментарии корневые)
+		$commentId = $this->createComment($storyId, $text, null);
+
+		// 3. Сохраняем highlight
+		$this->highlightModel->saveHighlight([
+			'comment_id'   => $commentId,
+			'story_id'     => $storyId,
+			'quoted_text'  => trim($highlight['quoted_text']),
+			'block_index'  => isset($highlight['block_index']) ? (int)$highlight['block_index'] : null,
+			'block_type'   => $highlight['block_type'] ?? null,
+			'start_offset' => isset($highlight['start_offset']) ? (int)$highlight['start_offset'] : null,
+			'end_offset'   => isset($highlight['end_offset']) ? (int)$highlight['end_offset'] : null,
+		]);
+
+		return $commentId;
+	}
+
+	/**
+	 * Получить все highlights для статьи
+	 */
+	public function getHighlightsForStory(int $storyId): array
+	{
+		return $this->highlightModel->getByStory($storyId);
+	}
+
+	/**
+	 * Получить highlight для конкретного комментария
+	 */
+	public function getHighlightForComment(int $commentId): ?array
+	{
+		return $this->highlightModel->getByCommentId($commentId);
+	}
 }

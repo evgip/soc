@@ -162,7 +162,8 @@ class StoriesController extends BaseController
 		}
 
 		$userContext = $this->getUserContext();
-		$viewModel = $this->service(StoryPageService::class)->buildShowPageData($storyId, $userContext);
+		$friendLinkToken = $this->request->query('fl', null);
+		$viewModel = $this->service(StoryPageService::class)->buildShowPageData($storyId, $userContext, $friendLinkToken);
 
 		$ogImage = get_story_first_image($viewModel->story, 'large');
 
@@ -876,5 +877,79 @@ class StoriesController extends BaseController
 			'total' => $data['total'],
 			'currentPage' => $page,
 		]);
+	}
+	
+	/**
+	 * Создание новой friend link для статьи
+	 */
+	public function createFriendLink(string $id): JsonResponse
+	{
+		$userContext = $this->getUserContext();
+		if (!$userContext['isLoggedIn']) {
+			return $this->json(['error' => 'Требуется авторизация'], 401);
+		}
+
+		try {
+			$service = $this->service(\App\Modules\Stories\Services\FriendLinkService::class);
+			$token = $service->createLink((int)$id, $userContext['id']);
+			
+			return $this->json([
+				'success' => true,
+				'token' => $token,
+				'url' => config('app.url') . "/story/{$id}?fl={$token}"
+			]);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.createFriendLink');
+			return $this->json(['error' => $e->getMessage()], 400);
+		}
+	}
+
+	/**
+	 * Получить список всех friend links для статьи (только для автора)
+	 */
+	public function getFriendLinks(string $id): JsonResponse
+	{
+		$userContext = $this->getUserContext();
+		if (!$userContext['isLoggedIn']) {
+			return $this->json(['error' => 'Требуется авторизация'], 401);
+		}
+
+		$storyId = (int)$id;
+		
+		try {
+			$service = $this->service(\App\Modules\Stories\Services\FriendLinkService::class);
+			$links = $service->getLinksForStory($storyId, $userContext['id']);
+			
+			return $this->json([
+				'success' => true,
+				'links' => $links
+			]);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Stories.getFriendLinks');
+			return $this->json(['error' => 'Ошибка получения ссылок'], 500);
+		}
+	}
+
+	/**
+	 * Удалить (деактивировать) friend link
+	 */
+	public function deleteFriendLink(string $linkId): RedirectResponse
+	{
+		$userContext = $this->getUserContext();
+		if (!$userContext['isLoggedIn']) {
+			MessageBag::flashMessage('error', 'Требуется авторизация.');
+			return $this->redirectBack();
+		}
+
+		try {
+			$service = $this->service(\App\Modules\Stories\Services\FriendLinkService::class);
+			$service->deactivateLink((int)$linkId, $userContext['id']);
+			
+			MessageBag::flashMessage('success', 'Ссылка удалена.');
+		} catch (\Throwable $e) {
+			MessageBag::flashMessage('error', 'Ошибка удаления ссылки.');
+		}
+
+		return $this->redirectBack();
 	}
 }

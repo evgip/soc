@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-/** 
+/** _item.php
  * @var array $comment 
  * @var App\Modules\Comments\ViewModels\CommentRenderContext $context
  * @var ?int $currentVote (Голос за этот конкретный комментарий)
@@ -32,8 +32,28 @@ if ($context->lastReadCommentId !== null) {
     data-comment-id="<?= $commentId ?>" 
     id="comment-block-<?= $commentId ?>">
 
+	<?php
+	// Получаем highlight для этого комментария (если есть)
+	$highlight = null;
+	if (!empty($comment['highlight_quote'])) {
+		$highlight = $comment['highlight_quote'];
+	}
+	?>
 
-
+	<?php if ($highlight): ?>
+		<div class="inline-comment-quote" 
+			 data-highlight-target="<?= $commentId ?>"
+			 role="button"
+			 tabindex="0"
+			 title="Перейти к выделенному фрагменту в статье">
+			<blockquote>
+				«<?= e(mb_substr($highlight, 0, 200)) ?><?= mb_strlen($highlight) > 200 ? '...' : '' ?>»
+			</blockquote>
+			<span class="inline-comment-quote__label">
+				↑ Комментарий к фрагменту статьи <span class="inline-comment-quote__arrow">↗</span>
+			</span>
+		</div>
+	<?php endif; ?>
 
     <div class="comment_body">
         <div class="comment-header">

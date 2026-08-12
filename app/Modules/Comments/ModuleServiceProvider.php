@@ -25,6 +25,8 @@ use App\Modules\Comments\Models\Comment;
 use App\Modules\Comments\Services\CommentService;
 use App\Modules\Notifications\Services\NotificationService;
 
+use App\Modules\Comments\Models\CommentHighlight;
+
 class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
 {
     public function register(Container $container): void
@@ -39,10 +41,18 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
             );
         });
 
+		$container->singleton(CommentHighlight::class, function(Container $c) {
+			return new CommentHighlight(
+				$c->get(Database::class),
+				$c->get(Logger::class)
+			);
+		});
+
         // === СЕРВИС ===
         $container->singleton(CommentService::class, function (Container $c) {
             return new CommentService(
                 $c->get(Comment::class),
+				$c->get(CommentHighlight::class),
                 $c->get(Validator::class),
                 $c->get(NotificationService::class),
                 $c->get(EventDispatcher::class),

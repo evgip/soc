@@ -44,6 +44,9 @@ use App\Modules\Subscriptions\Services\SubscriptionService;
 use App\Modules\Stories\Services\ImageCleaner;
 use App\Modules\Common\Support\CacheHelper;
 
+use App\Modules\Stories\Models\FriendLink;
+use App\Modules\Stories\Services\FriendLinkService;
+
 class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
 {
     public function register(Container $container): void
@@ -187,6 +190,20 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
             );
         });
 		
+		$container->bind(FriendLink::class, function($c) {
+			return new FriendLink(
+				$c->get(\W3a\Core\Database\Database::class),
+				$c->get(\W3a\Core\Support\Logger::class)
+			);
+		});
+
+		$container->bind(FriendLinkService::class, function($c) {
+			return new FriendLinkService(
+				$c->get(FriendLink::class),
+				$c->get(\App\Modules\Stories\Models\Story::class),
+				$c->get(\W3a\Core\Support\Logger::class)
+			);
+		});
 		
     }
 

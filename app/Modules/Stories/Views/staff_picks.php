@@ -116,7 +116,7 @@
             </p>
             <?php if ($currentUserId > 0): ?>
                 <div class="empty-state__actions">
-                    <a href="<?= route('story.form') ?>" class="btn btn-pill btn-accent">
+                    <a href="<?= route('story.form') ?>" class="btn btn-pill btn-primary">
                         Написать статью
                     </a>
                 </div>

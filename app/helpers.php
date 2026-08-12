@@ -617,6 +617,10 @@ if (!function_exists('render_editorjs_content')) {
             $type = $block['type'] ?? '';
             $d = $block['data'] ?? [];
 
+
+			$dataAttrs = " data-block-index=\"{$index}\" data-block-type=\"{$type}\"";
+
+
             // Пропускаем первый заголовок, если нужно
             if ($skipFirstHeader && !$firstHeaderSkipped && $type === 'header') {
                 $level = (int)($d['level'] ?? 2);
@@ -630,18 +634,18 @@ if (!function_exists('render_editorjs_content')) {
                 case 'header':
                     $level = min((int)($d['level'] ?? 2), 4);
                     $text = strip_tags($d['text'] ?? '', $inlineTags);
-                    $html .= "<h{$level}>{$text}</h{$level}>\n";
+                    $html .= "<h{$level}{$dataAttrs}>{$text}</h{$level}>\n";
                     break;
 
                 case 'paragraph':
                     $text = strip_tags($d['text'] ?? '', $inlineTags);
-                    $html .= "<p>{$text}</p>\n";
+                    $html .= "<p{$dataAttrs}>{$text}</p>\n";
                     break;
 
                 case 'quote':
                     $text = strip_tags($d['text'] ?? '', $inlineTags);
                     $caption = !empty($d['caption']) ? '<footer>' . e($d['caption']) . '</footer>' : '';
-                    $html .= "<blockquote>{$text}{$caption}</blockquote>\n";
+                    $html .= "<blockquote{$dataAttrs}>{$text}{$caption}</blockquote>\n";
                     break;
 
                 case 'list':
@@ -657,7 +661,7 @@ if (!function_exists('render_editorjs_content')) {
                 case 'code':
                     $code = e($d['code'] ?? '');
                     $lang = e($d['language'] ?? 'plaintext');
-                    $html .= "<pre><code class=\"language-{$lang}\">{$code}</code></pre>\n";
+                    $html .= "<pre{$dataAttrs}><code class=\"language-{$lang}\">{$code}</code></pre>\n";
                     break;
                     
 				case 'image':

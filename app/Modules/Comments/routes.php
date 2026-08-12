@@ -13,4 +13,7 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
     $router->add('POST', '/comments/{id}/edit', CommentsController::class . '@edit', 'comment.edit');
     $router->add('POST', '/comments/{id}/delete', CommentsController::class . '@delete', 'comment.delete');
     $router->add('POST', '/comments/{id}/restore', CommentsController::class . '@restore', 'comment.restore');
+	$router->add('POST', '/comments/create-highlight', CommentsController::class . '@createWithHighlight', 'comment.createHighlight');
 });
+
+$router->add('GET', '/comments/highlights/{storyId}', CommentsController::class . '@highlights', 'comments.highlights');

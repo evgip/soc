@@ -86,7 +86,7 @@ if ($useViewModel):
                 <div class="empty-state">
                     <p class="hint">Пока нет новых статей.</p>
                     <?php if ($currentUserId > 0): ?>
-                        <a href="<?= route('story.form') ?>" class="btn btn-pill btn-accent">
+                        <a href="<?= route('story.form') ?>" class="btn btn-pill btn-primary">
                             Написать первую статью
                         </a>
                     <?php endif; ?>
@@ -194,9 +194,9 @@ if ($useViewModel):
             <div class="sidebar-actions">
                 <a href="<?= route('auth.login') ?>" class="btn btn-pill btn-outline">Войти</a>
                 <?php if (config('invitations.config.invitations_enabled')): ?>
-                    <a href="<?= route('home') ?>invite/request" class="btn btn-pill btn-accent">Запросить приглашение</a>
+                    <a href="<?= route('home') ?>invite/request" class="btn btn-pill btn-primary">Запросить приглашение</a>
                 <?php else: ?>
-                    <a href="<?= route('auth.register') ?>" class="btn btn-pill btn-accent">Зарегистрироваться</a>
+                    <a href="<?= route('auth.register') ?>" class="btn btn-pill btn-primary">Зарегистрироваться</a>
                 <?php endif; ?>
             </div>
         </section>
@@ -272,7 +272,7 @@ $isSubscribedEmpty = (($title ?? '') === 'Мои подписки' && !empty($is
         </p>
         <div class="empty-state__actions">
             <a href="/tags" class="btn btn-pill btn-outline">🏷️ Посмотреть популярные теги</a>
-            <a href="/" class="btn btn-pill btn-accent">🏠 Вернуться на главную</a>
+            <a href="/" class="btn btn-pill btn-primary">🏠 Вернуться на главную</a>
         </div>
     </div>
 

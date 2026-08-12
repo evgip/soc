@@ -1498,6 +1498,59 @@ ALTER TABLE `wiki_revisions`
   ADD CONSTRAINT `fk_wiki_revisions_page` FOREIGN KEY (`wiki_page_id`) REFERENCES `wiki_pages` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_wiki_revisions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
+
+
+CREATE TABLE `friend_links` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `story_id` INT UNSIGNED NOT NULL,
+    `user_id` INT UNSIGNED NOT NULL COMMENT 'Автор статьи',
+    `token` VARCHAR(64) NOT NULL COMMENT 'Уникальный токен ссылки',
+    `uses_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Количество переходов',
+    `max_uses` INT UNSIGNED NULL COMMENT 'NULL = безлимит',
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `expires_at` TIMESTAMP NULL COMMENT 'NULL = бессрочная',
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT 'Мягкое удаление',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `token_unique` (`token`),
+    KEY `story_user_idx` (`story_id`, `user_id`),
+    KEY `idx_active` (`is_active`, `deleted_at`),
+    CONSTRAINT `friend_links_story_fk` FOREIGN KEY (`story_id`) 
+        REFERENCES `stories` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `friend_links_user_fk` FOREIGN KEY (`user_id`) 
+        REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+CREATE TABLE `comment_highlights` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `comment_id` INT UNSIGNED NOT NULL,
+    `story_id` INT UNSIGNED NOT NULL,
+    `quoted_text` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Выделенный фрагмент текста',
+    `block_index` INT UNSIGNED NULL COMMENT 'Индекс блока в JSON Editor.js',
+    `block_type` VARCHAR(50) NULL COMMENT 'Тип блока (paragraph, header, etc)',
+    `start_offset` INT UNSIGNED NULL COMMENT 'Начальная позиция символа в блоке',
+    `end_offset` INT UNSIGNED NULL COMMENT 'Конечная позиция символа в блоке',
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_comment` (`comment_id`),
+    KEY `idx_story` (`story_id`),
+    CONSTRAINT `fk_highlights_comment` FOREIGN KEY (`comment_id`) 
+        REFERENCES `comments` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_highlights_story` FOREIGN KEY (`story_id`) 
+        REFERENCES `stories` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+
+
+
+
+
 DELIMITER $$
 --
 -- События

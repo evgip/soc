@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
             e.preventDefault();
             
-            const isActive = menu.classList.toggle('active');
+            const isActive = menu.classList.toggle('is-open');
             trigger.setAttribute('aria-expanded', isActive ? 'true' : 'false');
         });
         
@@ -191,8 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Закрываем только если клик был вне wrapper
             if (!dropdownWrapper.contains(e.target)) {
-                if (menu.classList.contains('active')) {
-                    menu.classList.remove('active');
+                if (menu.classList.contains('is-open')) {
+                    menu.classList.remove('is-open');
                     trigger.setAttribute('aria-expanded', 'false');
                 }
             }
@@ -200,8 +200,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Закрытие при Escape
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && menu.classList.contains('active')) {
-                menu.classList.remove('active');
+            if (e.key === 'Escape' && menu.classList.contains('is-open')) {
+                menu.classList.remove('is-open');
                 trigger.setAttribute('aria-expanded', 'false');
                 trigger.focus();
             }
@@ -226,13 +226,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.stopPropagation();
                 const wrapper = trigger.closest('.story-menu-wrapper');
                 const dropdown = wrapper.querySelector('.story-menu-dropdown');
-                const isOpen = dropdown.classList.toggle('active');
+                const isOpen = dropdown.classList.toggle('is-open');
                 trigger.setAttribute('aria-expanded', isOpen);
                 
                 // Закрываем все другие открытые dropdown
-                document.querySelectorAll('.story-menu-dropdown.active').forEach(other => {
+                document.querySelectorAll('.story-menu-dropdown.is-open').forEach(other => {
                     if (other !== dropdown) {
-                        other.classList.remove('active');
+                        other.classList.remove('is-open');
                         other.closest('.story-menu-wrapper')
                             .querySelector('.story-menu-trigger')
                             .setAttribute('aria-expanded', 'false');
@@ -243,8 +243,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // === 2. Закрытие при клике вне dropdown ===
             if (!e.target.closest('.story-menu-wrapper')) {
-                document.querySelectorAll('.story-menu-dropdown.active').forEach(dropdown => {
-                    dropdown.classList.remove('active');
+                document.querySelectorAll('.story-menu-dropdown.is-open').forEach(dropdown => {
+                    dropdown.classList.remove('is-open');
                     dropdown.closest('.story-menu-wrapper')
                         .querySelector('.story-menu-trigger')
                         .setAttribute('aria-expanded', 'false');
@@ -255,8 +255,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // === 3. Закрытие по Escape ===
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.story-menu-dropdown.active').forEach(dropdown => {
-                    dropdown.classList.remove('active');
+                document.querySelectorAll('.story-menu-dropdown.is-open').forEach(dropdown => {
+                    dropdown.classList.remove('is-open');
                     const trigger = dropdown.closest('.story-menu-wrapper')
                         .querySelector('.story-menu-trigger');
                     trigger.setAttribute('aria-expanded', 'false');
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Закрываем родительский dropdown
                 const dropdown = button.closest('.story-menu-dropdown');
                 if (dropdown) {
-                    dropdown.classList.remove('active');
+                    dropdown.classList.remove('is-open');
                     dropdown.closest('.story-menu-wrapper')
                         .querySelector('.story-menu-trigger')
                         .setAttribute('aria-expanded', 'false');
