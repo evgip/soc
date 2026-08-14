@@ -90,7 +90,7 @@ $totalStories = count($stories);
                         : $clean;
                 }
                 
-                // 🔒 Защита от NULL: используем story_created_at (COALESCE(published_at, created_at))
+                // Защита от NULL: используем story_created_at (COALESCE(published_at, created_at))
                 $storyDate = $story['story_created_at'] ?? null;
                 ?>
                 <li class="collection-toc__item" data-story-id="<?= (int) $story['story_id'] ?>">
@@ -106,7 +106,7 @@ $totalStories = count($stories);
                         <?php endif; ?>
                         
                         <div class="collection-toc__meta">
-                            <!-- 🆕 Дата публикации с защитой от NULL -->
+                            <!-- Дата публикации с защитой от NULL -->
                             <?php if ($storyDate): ?>
                                 <span><?= adaptive_time($storyDate) ?></span>
                                 <span class="divider">•</span>
@@ -242,39 +242,72 @@ $totalStories = count($stories);
         }
     }
 
-    // Добавить/удалить статью
-    async function toggleStory(storyId, action) {
-        const url = action === 'add' 
-            ? `/collections/${collectionId}/stories/add`
-            : `/collections/${collectionId}/stories/remove`;
+	// Добавить/удалить статью
+	async function toggleStory(storyId, action) {
+		const url = action === 'add' 
+			? `/collections/${collectionId}/stories/add`
+			: `/collections/${collectionId}/stories/remove`;
 
-        try {
-            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-            const csrfToken = csrfMeta ? csrfMeta.content : '';
+		try {
+			const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+			const csrfToken = csrfMeta ? csrfMeta.content : '';
 
-            const formData = new FormData();
-            formData.append('story_id', storyId);
-            if (csrfToken) formData.append('csrf_token', csrfToken);
+			const formData = new FormData();
+			formData.append('story_id', storyId);
+			if (csrfToken) formData.append('csrf_token', csrfToken);
 
-            const resp = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            });
+			const resp = await fetch(url, {
+				method: 'POST',
+				body: formData,
+				headers: { 'X-Requested-With': 'XMLHttpRequest' }
+			});
 
-            const data = await resp.json();
+			const data = await resp.json();
 
-            if (data.success) {
-                await loadAvailableStories();
-                setTimeout(() => location.reload(), 500);
-            } else {
-                alert(data.error || 'Ошибка');
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Ошибка сети');
-        }
-    }
+			if (data.success) {
+				// Обновляем только список статей, БЕЗ перезагрузки страницы
+				await loadAvailableStories();
+				
+				// Обновляем счётчик статей в шапке
+				updateStoriesCount(action === 'add' ? 1 : -1);
+			} else {
+				alert(data.error || 'Ошибка');
+			}
+		} catch (e) {
+			console.error(e);
+			alert('Ошибка сети');
+		}
+	}
+
+	// Обновляем счётчик статей без перезагрузки страницы
+	function updateStoriesCount(delta) {
+		const metaEl = document.querySelector('.collection-show-header__meta');
+		if (!metaEl) return;
+		
+		// Находим span со счётчиком (третий span после divider)
+		const spans = metaEl.querySelectorAll('span');
+		for (const span of spans) {
+			const text = span.textContent.trim();
+			// Ищем span вида "3 статьи" или "5 статей"
+			if (/^\d+\s+(статья|статьи|статей)$/i.test(text)) {
+				const match = text.match(/^(\d+)/);
+				if (match) {
+					const currentCount = parseInt(match[1], 10);
+					const newCount = currentCount + delta;
+					
+					// Правильное склонение
+					const plural = (n) => {
+						if (n % 10 === 1 && n % 100 !== 11) return 'статья';
+						if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) return 'статьи';
+						return 'статей';
+					};
+					
+					span.textContent = `${newCount} ${plural(newCount)}`;
+				}
+				break;
+			}
+		}
+	}
 
     // Удаление статьи из коллекции (на странице оглавления)
     document.querySelectorAll('.collection-toc__remove').forEach(btn => {

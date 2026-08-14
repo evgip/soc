@@ -168,7 +168,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 "Quote": "Цитата", "Code": "Блок кода", "Link": "Ссылка",
                 "Bold": "Жирный", "Italic": "Курсив", "InlineCode": "Встроенный код",
                 "Замок (paywall)": "Замок (paywall)",
-                "Image": "Изображение"
+                "Image": "Изображение",
+				"Ordered List": "Нумерованный",    
+				"Unordered List": "Маркированный",  
+				"Checklist": "Чеклист",  
             },
             tools: {
                 heading: { "Heading": "Заголовок" },
@@ -179,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 image: {
                     "Image": "Изображение",
                     "Select an image": "Выберите изображение",
+					 "Select an Image": "Выберите изображение",
                     "Paste an image URL": "Вставьте URL изображения",
                     "Uploading...": "Загрузка...",
                     "Loading...": "Загрузка...",

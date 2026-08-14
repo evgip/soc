@@ -76,12 +76,17 @@ class CollectionService
 
         $this->validateCollectionData($data, $collectionId);
 
-        $updateData = [
-            'title'       => trim($data['title']),
-            'description' => $data['description'] ?? null,
-            'cover_image' => $data['cover_image'] ?? null,
-            'is_public'   => isset($data['is_public']) ? 1 : 0,
-        ];
+		$updateData = [
+			'title'       => trim($data['title']),
+			'description' => $data['description'] ?? null,
+			'is_public'   => isset($data['is_public']) ? 1 : 0,
+		];
+
+		// Обновляем cover_image только если он явно передан
+		// (загрузка/удаление обложки обрабатывается отдельно в контроллере)
+		if (array_key_exists('cover_image', $data)) {
+			$updateData['cover_image'] = $data['cover_image'];
+		}
 
         // Если изменили title — можно перегенерировать slug (опционально)
         if (!empty($data['regenerate_slug'])) {
