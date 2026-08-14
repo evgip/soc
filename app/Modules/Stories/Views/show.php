@@ -69,6 +69,47 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 				</div>
 			</div>
 
+			<?php if (!empty($viewModel->storyCollections)): ?>
+				<?php foreach ($viewModel->storyCollections as $collectionNav): ?>
+					<div class="collection-nav">
+						<div class="collection-nav__info">
+							<span class="collection-nav__label">📚 Часть <?= (int) $collectionNav['position'] ?> из <?= (int) $collectionNav['total'] ?></span>
+							<a href="/collections/<?= e($collectionNav['author_name']) ?>/<?= e($collectionNav['collection_slug']) ?>" class="collection-nav__title">
+								<?= e($collectionNav['collection_title']) ?>
+							</a>
+						</div>
+
+						<div class="collection-nav__actions">
+							<?php if ($collectionNav['prev']): ?>
+								<a href="<?= route('story.show', ['id' => $collectionNav['prev']['story_id']]) ?>" 
+								   class="btn btn-sm btn-outline-secondary" 
+								   title="<?= e($collectionNav['prev']['title']) ?>">
+									← Предыдущая
+								</a>
+							<?php else: ?>
+								<span class="btn btn-sm btn-outline-secondary is-disabled">← Предыдущая</span>
+							<?php endif; ?>
+
+							<a href="/collections/<?= e($collectionNav['author_name']) ?>/<?= e($collectionNav['collection_slug']) ?>" 
+							   class="btn btn-sm btn-outline-secondary">
+								Оглавление
+							</a>
+
+							<?php if ($collectionNav['next']): ?>
+								<a href="<?= route('story.show', ['id' => $collectionNav['next']['story_id']]) ?>" 
+								   class="btn btn-sm btn-primary"
+								   title="<?= e($collectionNav['next']['title']) ?>">
+									Следующая →
+								</a>
+							<?php else: ?>
+								<span class="btn btn-sm btn-outline-secondary is-disabled">Следующая →</span>
+							<?php endif; ?>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			<?php endif; ?>
+
+
 			<?php if (!empty($viewModel->story['description_json'])): ?>
 				<?php
 				// === ИСПОЛЬЗУЕМ НОВОЕ СВОЙСТВО canSeeFullContent ИЗ VIEWMODEL ===
@@ -414,7 +455,57 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
     <?php endif; ?>
 </div>
 
+ 
+<?php if (!empty($viewModel->storyCollections)): ?>
+    <?php foreach ($viewModel->storyCollections as $collectionNav): ?>
+        <!-- Навигация внизу статьи -->
+        <nav class="collection-nav collection-nav--bottom" aria-label="Навигация по серии">
+            <div class="collection-nav__bottom-header">
+                <span class="collection-nav__bottom-label">
+                    📚 <?= e($collectionNav['collection_title']) ?>
+                </span>
+                <span class="collection-nav__bottom-position">
+                    Часть <?= (int) $collectionNav['position'] ?> из <?= (int) $collectionNav['total'] ?>
+                </span>
+            </div>
+
+            <div class="collection-nav__bottom-links">
+                <?php if ($collectionNav['prev']): ?>
+                    <a href="<?= route('story.show', ['id' => $collectionNav['prev']['story_id']]) ?>" 
+                       class="collection-nav__bottom-link collection-nav__bottom-link--prev">
+                        <span class="collection-nav__bottom-link-label">← Предыдущая часть</span>
+                        <span class="collection-nav__bottom-link-title"><?= e($collectionNav['prev']['title']) ?></span>
+                    </a>
+                <?php else: ?>
+                    <span class="collection-nav__bottom-link is-disabled">
+                        <span class="collection-nav__bottom-link-label">← Предыдущая часть</span>
+                    </span>
+                <?php endif; ?>
+
+                <a href="/collections/<?= e($collectionNav['author_name']) ?>/<?= e($collectionNav['collection_slug']) ?>" 
+                   class="collection-nav__bottom-link collection-nav__bottom-link--toc">
+                    <span class="collection-nav__bottom-link-label">📚 Оглавление серии</span>
+                </a>
+
+                <?php if ($collectionNav['next']): ?>
+                    <a href="<?= route('story.show', ['id' => $collectionNav['next']['story_id']]) ?>" 
+                       class="collection-nav__bottom-link collection-nav__bottom-link--next">
+                        <span class="collection-nav__bottom-link-label">Следующая часть →</span>
+                        <span class="collection-nav__bottom-link-title"><?= e($collectionNav['next']['title']) ?></span>
+                    </a>
+                <?php else: ?>
+                    <span class="collection-nav__bottom-link is-disabled">
+                        <span class="collection-nav__bottom-link-label">Следующая часть →</span>
+                    </span>
+                <?php endif; ?>
+            </div>
+        </nav>
+    <?php endforeach; ?>
+<?php endif; ?>
+
 <hr>
+
+
 
 <!-- КОММЕНТАРИИ -->
 <div class="comment-head">

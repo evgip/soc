@@ -223,6 +223,14 @@ class StoriesController extends BaseController
 			return $this->redirectBack();
 		}
 
+		// Rate limiting (после валидации, до создания)
+		try {
+			$this->container->get(\W3a\Core\Security\RateLimiter::class)->check('story.create');
+		} catch (\W3a\Core\Exceptions\RateLimitExceededException $e) {
+			MessageBag::flashMessage('error', 'Превышен лимит: максимум 5 статей в сутки.');
+			return $this->redirectBack();
+		}
+
 		$status = ($validated['action'] ?? '') === 'draft' ? 'draft' : 'published';
 
 		try {

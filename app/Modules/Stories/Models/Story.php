@@ -724,6 +724,22 @@ class Story extends Model
         return $result ?: null;
     }
 
+	/**
+	 * Получить все опубликованные статьи автора.
+	 * Используется в модуле Collections для добавления статей в коллекции.
+	 */
+	public function getPublishedByAuthor(int $userId): array
+	{
+		$sql = "SELECT id, title, slug, created_at, comments_count
+				FROM stories
+				WHERE user_id = :user_id
+				  AND status = 'published'
+				  AND deleted_at IS NULL
+				ORDER BY created_at DESC";
+
+		return $this->db->fetchAll($sql, ['user_id' => $userId]);
+	}
+
     /**
      * Генерация slug (приватный метод)
      */

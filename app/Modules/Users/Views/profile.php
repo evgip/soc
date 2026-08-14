@@ -22,9 +22,14 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
         <?php endif; ?>
 
         <div class="profile-stats">
-            <span><strong><?= (int)$storiesCount ?></strong> публикаций</span>
+            <?php if ($collectionsCount > 0): ?>
+                <span><strong><?= (int)$collectionsCount ?></strong> <?= plural($collectionsCount, ['коллекция', 'коллекции', 'коллекций']) ?></span>
+                <span class="divider">·</span>
+            <?php endif; ?>
+            
+            <span><strong><?= (int)$storiesCount ?></strong> <?= plural($storiesCount, ['публикация', 'публикации', 'публикаций']) ?></span>
             <span class="divider">·</span>
-            <span><strong><?= (int)$commentsCount ?></strong> комментариев</span>
+            <span><strong><?= (int)$commentsCount ?></strong> <?= plural($commentsCount, ['комментарий', 'комментария', 'комментариев']) ?></span>
             <span class="divider">·</span>
             <?php
             $karmaClass = $userKarma > 0 ? 'text-positive' : ($userKarma < 0 ? 'text-negative' : 'text-muted');
@@ -90,9 +95,9 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
                     'currentUserId' => $currentUserId,
                     'isAdmin' => \W3a\Core\Auth\Auth::isModerator(),
                     'canUserDownvote' => true,
-                    'currentVotes' => [], // В профиле обычно не подгружают голоса для всех статей сразу для экономии, или подгрузите из $feed
+                    'currentVotes' => [],
                     'newCommentsMap' => [],
-                    'hideAuthor' => true, // скрываем имя и аватар, так как мы уже в профиле автора
+                    'hideAuthor' => true,
                 ]); ?>
             <?php endforeach; ?>
         </div>
@@ -104,3 +109,44 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
         <?php endif; ?>
     <?php endif; ?>
 </section>
+
+<?php if (!empty($collections)): ?>
+<section class="user-collections">
+    <div class="section-header">
+        <h2 class="section-title">Коллекции</h2>
+        <?php if ($collectionsCount > 3): ?>
+            <a href="/collections/<?= e($profileUser['username']) ?>" class="section-header__link">
+                Все <?= $collectionsCount ?> →
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <div class="collections-preview-grid">
+        <?php foreach ($collections as $collection): ?>
+            <?php $collectionUrl = '/collections/' . e($profileUser['username']) . '/' . e($collection['slug']); ?>
+            <a href="<?= $collectionUrl ?>" class="collection-preview-card">
+                <?php if (!empty($collection['cover_url'])): ?>
+                    <div class="collection-preview-card__cover">
+                        <img src="<?= e($collection['cover_url']) ?>" 
+                             alt="<?= e($collection['title']) ?>" 
+                             loading="lazy">
+                    </div>
+                <?php else: ?>
+                    <div class="collection-preview-card__cover collection-preview-card__cover--placeholder">
+                        <span>📚</span>
+                    </div>
+                <?php endif; ?>
+
+                <div class="collection-preview-card__body">
+                    <h3 class="collection-preview-card__title">
+                        <?= e($collection['title']) ?>
+                    </h3>
+                    <div class="collection-preview-card__meta">
+                        <span>📖 <?= (int)$collection['stories_count'] ?> <?= plural((int)$collection['stories_count'], ['статья', 'статьи', 'статей']) ?></span>
+                    </div>
+                </div>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>

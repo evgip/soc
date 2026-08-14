@@ -129,6 +129,18 @@ class StoryPageService
 		$addHighlights($commentsTree);
 
 
+		// 4.2 === Коллекции, в которых есть эта статья (для навигации) ===
+		$collectionItemModel = $this->container->get(\App\Modules\Collections\Models\CollectionItem::class);
+		$storyCollections = $collectionItemModel->getCollectionsForStory($storyId);
+
+		// Добавляем prev/next для каждой коллекции
+		foreach ($storyCollections as &$c) {
+			$prevNext = $collectionItemModel->getPrevNextStories((int) $c['collection_id'], $storyId);
+			$c['prev'] = $prevNext['prev'];
+			$c['next'] = $prevNext['next'];
+		}
+		unset($c);
+
 		// 5. Read Ribbon (лента прочтения)
 		$readRibbonModel = $this->container->get(ReadRibbon::class);
 		$ribbonData = $readRibbonModel->getForStories($userContext['id'], [$storyId]);
@@ -211,9 +223,11 @@ class StoryPageService
 			currentTagIds: $currentTagIds,
 			newCommentsCount: $newCommentsCount,
 			lastReadCommentId: $lastReadCommentId,
-			// === НОВЫЕ ПАРАМЕТРЫ для Friend Links ===
+			// === для Friend Links ===
 			canSeeFullContent: $canSeeFullContent,
 			hasFriendLinkAccess: $hasFriendLinkAccess,
+			// === для Collections ===
+			storyCollections: $storyCollections,
 		);
 	}
 }

@@ -127,14 +127,4 @@ class Collection extends Model
         );
     }
 
-    /**
-     * Мягкое удаление коллекции.
-     */
-    public function softDelete(int $collectionId): bool
-    {
-        return $this->db->execute(
-            "UPDATE {$this->table} SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL",
-            [$collectionId]
-        ) > 0;
-    }
 }

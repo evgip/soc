@@ -125,6 +125,8 @@ $bodyClass = Layout::getBodyClass();
 
 							<a href="<?= route('drafts.index') ?>" class="dropdown-menu-item">📝 Черновики</a>
 
+							<a href="<?= route('collections.index', ['username' => $currentUser['name']]) ?>" class="dropdown-menu-item">📚 Коллекции</a>
+
 							<a href="/subscribed" class="dropdown-menu-item">
 								<span>📡 Подписки</span>
 								<?php if (($newSubscribedCount ?? 0) > 0): ?>

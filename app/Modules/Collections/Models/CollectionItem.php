@@ -53,16 +53,23 @@ class CollectionItem extends Model
         ]);
     }
 
-    /**
-     * Удалить статью из коллекции.
-     */
-    public function removeStory(int $collectionId, int $storyId): bool
-    {
-        return $this->db->execute(
-            "DELETE FROM {$this->table} WHERE collection_id = ? AND story_id = ?",
-            [$collectionId, $storyId]
-        ) > 0;
-    }
+	/**
+	 * Удалить статью из коллекции.
+	 */
+	public function removeStory(int $collectionId, int $storyId): bool
+	{
+		$deleted = $this->db->execute(
+			"DELETE FROM {$this->table} WHERE collection_id = ? AND story_id = ?",
+			[$collectionId, $storyId]
+		) > 0;
+
+		// 🆕 Нормализуем позиции после удаления
+		if ($deleted) {
+			$this->normalizePositions($collectionId);
+		}
+
+		return $deleted;
+	}
 
     /**
      * Проверить, находится ли статья в коллекции.
@@ -88,6 +95,7 @@ class CollectionItem extends Model
                     s.title,
                     s.slug,
                     s.cover_image,
+					s.description_text,
                     s.reading_time,
                     s.comments_count,
                     s.score,
@@ -131,77 +139,130 @@ class CollectionItem extends Model
         return $this->db->fetchAll($sql, ['story_id' => $storyId]);
     }
 
-    /**
-     * Получить предыдущую и следующую статьи в коллекции.
-     * 
-     * @return array{prev: ?array, next: ?array}
-     */
-    public function getPrevNextStories(int $collectionId, int $storyId): array
-    {
-        $current = $this->db->fetchOne(
-            "SELECT position FROM {$this->table} 
-             WHERE collection_id = ? AND story_id = ?",
-            [$collectionId, $storyId]
-        );
+	/**
+	 * Получить предыдущую и следующую статьи в коллекции.
+	 * 
+	 * Устойчив к пропускам в позициях: ищет БЛИЖАЙШУЮ статью
+	 * с меньшей/большей позицией, а не строго position ± 1.
+	 * 
+	 * @return array{prev: ?array, next: ?array}
+	 */
+	public function getPrevNextStories(int $collectionId, int $storyId): array
+	{
+		// Получаем текущую позицию
+		$current = $this->db->fetchOne(
+			"SELECT position FROM {$this->table} 
+			 WHERE collection_id = ? AND story_id = ?",
+			[$collectionId, $storyId]
+		);
 
-        if (!$current) {
-            return ['prev' => null, 'next' => null];
-        }
+		if (!$current) {
+			return ['prev' => null, 'next' => null];
+		}
 
-        $position = (int) $current['position'];
+		$position = (int) $current['position'];
 
-        $sql = "SELECT 
-                    ci.position,
-                    s.id as story_id,
-                    s.title,
-                    s.slug
-                FROM {$this->table} ci
-                JOIN stories s ON ci.story_id = s.id
-                WHERE ci.collection_id = :collection_id
-                  AND ci.position = :position
-                  AND s.deleted_at IS NULL
-                  AND s.status = 'published'";
+		$selectSql = "SELECT 
+						ci.position,
+						s.id as story_id,
+						s.title,
+						s.slug
+					FROM {$this->table} ci
+					JOIN stories s ON ci.story_id = s.id
+					WHERE ci.collection_id = :collection_id
+					  AND s.deleted_at IS NULL
+					  AND s.status = 'published'";
 
-        $prev = $this->db->fetchOne($sql, [
-            'collection_id' => $collectionId,
-            'position'      => $position - 1,
-        ]);
+		// 🆕 Ищем ближайшую статью с МЕНЬШЕЙ позицией (prev)
+		$prev = $this->db->fetchOne(
+			$selectSql . " AND ci.position < :position
+			ORDER BY ci.position DESC
+			LIMIT 1",
+			[
+				'collection_id' => $collectionId,
+				'position'      => $position,
+			]
+		);
 
-        $next = $this->db->fetchOne($sql, [
-            'collection_id' => $collectionId,
-            'position'      => $position + 1,
-        ]);
+		// 🆕 Ищем ближайшую статью с БОЛЬШЕЙ позицией (next)
+		$next = $this->db->fetchOne(
+			$selectSql . " AND ci.position > :position
+			ORDER BY ci.position ASC
+			LIMIT 1",
+			[
+				'collection_id' => $collectionId,
+				'position'      => $position,
+			]
+		);
 
-        return ['prev' => $prev, 'next' => $next];
-    }
+		return ['prev' => $prev, 'next' => $next];
+	}
 
-    /**
-     * Изменить порядок статей (drag-and-drop).
-     * 
-     * @param array $orderedStoryIds Массив story_id в новом порядке
-     */
-    public function reorder(int $collectionId, array $orderedStoryIds): bool
-    {
-        try {
-            $this->db->beginTransaction();
+	/**
+	 * Изменить порядок статей (drag-and-drop).
+	 */
+	public function reorder(int $collectionId, array $orderedStoryIds): bool
+	{
+		try {
+			$this->db->beginTransaction();
 
-            foreach ($orderedStoryIds as $index => $storyId) {
-                $this->db->execute(
-                    "UPDATE {$this->table} 
-                     SET position = ? 
-                     WHERE collection_id = ? AND story_id = ?",
-                    [$index + 1, $collectionId, (int) $storyId]
-                );
-            }
+			foreach ($orderedStoryIds as $index => $storyId) {
+				$this->db->execute(
+					"UPDATE {$this->table} 
+					 SET position = ? 
+					 WHERE collection_id = ? AND story_id = ?",
+					[$index + 1, $collectionId, (int) $storyId]
+				);
+			}
 
-            $this->db->commit();
-            return true;
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
-            if ($this->logger) {
-                $this->logger->error("Reorder failed: " . $e->getMessage());
-            }
-            return false;
-        }
-    }
+			$this->db->commit();
+			return true;
+		} catch (\Throwable $e) {
+			$this->db->rollBack();
+			if ($this->logger) {
+				$this->logger->error("Reorder failed: " . $e->getMessage());
+			}
+			return false;
+		}
+	}
+	
+	/**
+	 * Нормализовать позиции после удаления статьи.
+	 * 
+	 * Пересчитывает позиции так, чтобы они были последовательными: 1, 2, 3...
+	 * Вызывается автоматически после removeStory().
+	 */
+	public function normalizePositions(int $collectionId): void
+	{
+		// Получаем все статьи коллекции в текущем порядке
+		$items = $this->db->fetchAll(
+			"SELECT id FROM {$this->table} 
+			 WHERE collection_id = ? 
+			 ORDER BY position ASC, id ASC",
+			[$collectionId]
+		);
+
+		if (empty($items)) {
+			return;
+		}
+
+		// Обновляем позиции последовательно
+		try {
+			$this->db->beginTransaction();
+			
+			foreach ($items as $index => $item) {
+				$this->db->execute(
+					"UPDATE {$this->table} SET position = ? WHERE id = ?",
+					[$index + 1, (int) $item['id']]
+				);
+			}
+			
+			$this->db->commit();
+		} catch (\Throwable $e) {
+			$this->db->rollBack();
+			if ($this->logger) {
+				$this->logger->error("normalizePositions failed: " . $e->getMessage());
+			}
+		}
+	}
 }

@@ -96,6 +96,19 @@ return [
             'window' => 60
         ],
 
+		'story.create' => [
+			'enabled' => true,
+			'max_requests' => 5, // Статей в день
+			'window' => 86400, // 24 часа
+		],
+
+		'collection.create' => [
+			'enabled' => true,
+			'max_requests' => 3, // Коллекций в день
+			'window' => 86400,
+		],
+
+
         /**
          * Пример дополнительного правила для API
          * 
