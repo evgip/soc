@@ -90,15 +90,15 @@
                     <td>
                         <?php
                         $statusLabels = [
-                            'published' => '<span style="color: green;">✓ Опубликована</span>',
-                            'draft'     => '<span style="color: orange;">✎ Черновик</span>',
-                            'archived'  => '<span style="color: gray;">📦 В архиве</span>',
+                            'published' => '<span class="text-success">✓ Опубликована</span>',
+                            'draft'     => '<span class="text-danger">✎ Черновик</span>',
+                            'archived'  => '<span class="text-muted">📦 В архиве</span>',
                         ];
                         echo $statusLabels[$page['status']] ?? e($page['status']);
                         ?>
                     </td>
                     <td>
-                        <?= !empty($page['is_primary']) ? '<strong style="color: green;">★ Да</strong>' : 'Нет' ?>
+                        <?= !empty($page['is_primary']) ? '<strong class="text-success">★ Да</strong>' : 'Нет' ?>
                     </td>
                     <td><?= (int)$page['view_count'] ?></td>
                     <td>

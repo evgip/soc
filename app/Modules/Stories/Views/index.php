@@ -104,7 +104,7 @@ if ($useViewModel):
 		<?php if ($viewModel->shouldShowTrending()): ?>
 		<section class="sidebar-section sidebar-section--trending">
 			<header class="sidebar-header">
-				<h3 class="sidebar-title">Сейчас в тренде</h3>
+				<h3 class="section-title">Сейчас в тренде</h3>
 			</header>
 			
 			<ol class="trending-list">
@@ -135,7 +135,7 @@ if ($useViewModel):
 		<?php if ($viewModel->shouldShowStaffPicks()): ?>
 		<section class="sidebar-section sidebar-section--staff-picks">
 			<header class="sidebar-header">
-				<h3 class="sidebar-title">Выбор редакции</h3>
+				<h3 class="section-title">Выбор редакции</h3>
 			</header>
 			
 			<div class="staff-picks-list">
@@ -172,7 +172,7 @@ if ($useViewModel):
         <?php if (!empty($allTags) && is_array($allTags)): ?>
         <section class="sidebar-section sidebar-section--tags">
             <header class="sidebar-header">
-                <h3 class="sidebar-title">Популярные темы</h3>
+                <h3 class="section-title">Популярные темы</h3>
             </header>
             <div class="sidebar-tags">
                 <?php foreach (array_slice($allTags, 0, 10) as $tag): ?>
@@ -187,7 +187,7 @@ if ($useViewModel):
         <!-- СЕКЦИЯ: ПРИСОЕДИНЯЙТЕСЬ (для гостей) -->
         <?php if (!$viewModel->isLoggedIn): ?>
         <section class="sidebar-section sidebar-section--subscribe">
-            <h3 class="sidebar-title">Присоединяйтесь</h3>
+            <h3 class="section-title">Присоединяйтесь</h3>
             <p class="sidebar-text">
                 Читайте лучшие публикации, подписывайтесь на авторов и участвуйте в обсуждениях.
             </p>
@@ -230,7 +230,7 @@ $isSubscribedEmpty = (($title ?? '') === 'Мои подписки' && !empty($is
 <!-- Заголовок страницы для фильтров -->
 <?php if (!empty($tagInfo['slug'])): ?>
     <div class="filter-header">
-	    <center class="mb1">
+	    <center>
 			<h1 class="title">
 				<?= e($tagInfo['name']) ?>
 			</h1>
@@ -249,7 +249,7 @@ $isSubscribedEmpty = (($title ?? '') === 'Мои подписки' && !empty($is
 <?php endif; ?>
 
 <?php if (!empty($author)): ?>
-    <div class="filter-header">
+    <div class="filter-header mt-4">
         <h1 class="filter-header__title">Публикации пользователя: <?= e($author) ?></h1>
         <a href="/" class="filter-header__reset">× Сбросить фильтр</a>
     </div>

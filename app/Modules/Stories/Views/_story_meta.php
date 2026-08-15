@@ -107,12 +107,12 @@ $showMenu = $canManageStory
                     </svg>
                 </button>
 
-                <div class="story-menu-dropdown" role="menu">
+                <div class="dropdown-menu" role="menu">
                     
                     <!-- Редактировать (автор или админ) -->
                     <?php if ($canManageStory): ?>
                         <a href="<?= route('story.edit', ['id' => $story['id']]) ?>" 
-                           class="story-menu-item" 
+                           class="dropdown-menu__item" 
                            role="menuitem">
                             <span class="story-menu-item__icon">✏️</span>
                             Редактировать
@@ -121,7 +121,7 @@ $showMenu = $canManageStory
 
                     <!-- Скопировать ссылку (для всех) -->
                     <button type="button" 
-                            class="story-menu-item" 
+                            class="dropdown-menu__item" 
                             role="menuitem"
                             data-copy-link="<?= route('story.show', ['id' => $story['id']]) ?>">
                         <span class="story-menu-item__icon">🔗</span>
@@ -131,7 +131,7 @@ $showMenu = $canManageStory
                     <!-- Пожаловаться (для залогиненных, не автор, не удалено) -->
                     <?php if ($currentUserId > 0 && !$isAuthor && !$isDeleted): ?>
                         <a href="<?= route('flags.report', ['type' => 'story', 'id' => (int)$story['id']]) ?>"
-                           class="story-menu-item"
+                           class="dropdown-menu__item"
                            role="menuitem"
                            data-confirm="Вы уверены, что хотите подать жалобу?">
                             <span class="story-menu-item__icon">🚩</span>
@@ -141,7 +141,7 @@ $showMenu = $canManageStory
 
                     <!-- Админские действия -->
                     <?php if ($isAdmin): ?>
-                        <div class="story-menu-divider"></div>
+                        <div class="dropdown-menu__divider"></div>
                         
                         <!-- Staff Pick -->
                         <?php if (!$isDeleted): ?>
@@ -149,7 +149,7 @@ $showMenu = $canManageStory
                                   action="/admin/stories/<?= (int)$story['id'] ?>/toggle-pick" 
                                   class="story-menu-form">
                                 <?= csrf_field() ?>
-                                <button type="submit" class="story-menu-item" role="menuitem">
+                                <button type="submit" class="dropdown-menu__item" role="menuitem">
                                     <span class="story-menu-item__icon">⭐</span>
                                     <?= !empty($story['is_staff_pick']) ? 'Убрать из выбора' : 'В выбор редакции' ?>
                                 </button>
@@ -163,7 +163,7 @@ $showMenu = $canManageStory
                                   class="story-menu-form">
                                 <?= csrf_field() ?>
                                 <button type="submit" 
-                                        class="story-menu-item story-menu-item--success" 
+                                        class="dropdown-menu__item dropdown-menu__item--success" 
                                         role="menuitem"
                                         data-confirm="Восстановить статью?">
                                     <span class="story-menu-item__icon">♻️</span>
@@ -176,7 +176,7 @@ $showMenu = $canManageStory
                                   class="story-menu-form">
                                 <?= csrf_field() ?>
                                 <button type="submit" 
-                                        class="story-menu-item story-menu-item--danger" 
+                                        class="dropdown-menu__item dropdown-menu__item--danger" 
                                         role="menuitem"
                                         data-confirm="Удалить статью?">
                                     <span class="story-menu-item__icon">🗑️</span>

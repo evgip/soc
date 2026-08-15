@@ -225,12 +225,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (trigger) {
                 e.stopPropagation();
                 const wrapper = trigger.closest('.story-menu-wrapper');
-                const dropdown = wrapper.querySelector('.story-menu-dropdown');
+                const dropdown = wrapper.querySelector('.dropdown-menu');
                 const isOpen = dropdown.classList.toggle('is-open');
                 trigger.setAttribute('aria-expanded', isOpen);
                 
                 // Закрываем все другие открытые dropdown
-                document.querySelectorAll('.story-menu-dropdown.is-open').forEach(other => {
+                document.querySelectorAll('.dropdown-menu.is-open').forEach(other => {
                     if (other !== dropdown) {
                         other.classList.remove('is-open');
                         other.closest('.story-menu-wrapper')
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // === 2. Закрытие при клике вне dropdown ===
             if (!e.target.closest('.story-menu-wrapper')) {
-                document.querySelectorAll('.story-menu-dropdown.is-open').forEach(dropdown => {
+                document.querySelectorAll('.dropdown-menu.is-open').forEach(dropdown => {
                     dropdown.classList.remove('is-open');
                     dropdown.closest('.story-menu-wrapper')
                         .querySelector('.story-menu-trigger')
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // === 3. Закрытие по Escape ===
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.story-menu-dropdown.is-open').forEach(dropdown => {
+                document.querySelectorAll('.dropdown-menu.is-open').forEach(dropdown => {
                     dropdown.classList.remove('is-open');
                     const trigger = dropdown.closest('.story-menu-wrapper')
                         .querySelector('.story-menu-trigger');
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 2000);
                 
                 // Закрываем родительский dropdown
-                const dropdown = button.closest('.story-menu-dropdown');
+                const dropdown = button.closest('.dropdown-menu');
                 if (dropdown) {
                     dropdown.classList.remove('is-open');
                     dropdown.closest('.story-menu-wrapper')

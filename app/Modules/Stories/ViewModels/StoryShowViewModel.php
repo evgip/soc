@@ -43,7 +43,7 @@ readonly class StoryShowViewModel
         public readonly bool $hasFriendLinkAccess = false,
 		
 		
-		public readonly array $storyCollections,
+		public readonly array $storyCollections = [],
     ) {}
 
     // =========================================================================

@@ -35,7 +35,7 @@
             <div class="user-meta">
                 Добро пожаловать, <b><?= e($_SESSION['user_name'] ?? 'Администратор') ?></b> |
 				
-							<form class="dropdown-menu-item" action="<?= route('auth.logout') ?>" method="POST">
+							<form class="dropdown-menu__item" action="<?= route('auth.logout') ?>" method="POST">
 								<?= csrf_field() ?>
 								<button type="submit" class="is-link bold">🚪 <?= __('logout') ?></button>
 							</form>

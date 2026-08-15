@@ -241,13 +241,12 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                 </svg>
             </button>
 
-            <!-- Выпадающее меню -->
-            <div class="story-menu-dropdown" id="story-menu-dropdown" role="menu">
+            <div class="dropdown-menu" id="story-menu-dropdown" role="menu">
                 
                 <!-- Редактировать (автор или админ) -->
                 <?php if ($viewModel->currentUserId > 0 && ($viewModel->isAuthor || $viewModel->isAdmin) && !$isStoryDeleted): ?>
                     <a href="<?= route('story.edit', ['id' => $viewModel->story['id']]) ?>" 
-                       class="story-menu-item" role="menuitem">
+                       class="dropdown-menu__item" role="menuitem">
                         <span class="story-menu-item__icon">✏️</span>
                         Редактировать
                     </a>
@@ -255,7 +254,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 
                 <?php if ($viewModel->isAuthor && !empty($viewModel->story['has_paywall']) && !$isStoryDeleted): ?>
                     <button type="button" 
-                            class="story-menu-item" 
+                            class="dropdown-menu__item" 
                             role="menuitem"
                             id="btn-show-friend-links"
                             data-story-id="<?= (int)$viewModel->story['id'] ?>">
@@ -265,7 +264,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                 <?php endif; ?>
 
                 <button type="button" 
-                        class="story-menu-item" 
+                        class="dropdown-menu__item" 
                         role="menuitem"
                         data-copy-link="<?= route('story.show', ['id' => $viewModel->story['id']]) ?>">
                     <span class="story-menu-item__icon">🔗</span>
@@ -274,7 +273,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 
                 <?php if ($viewModel->currentUserId > 0 && !$viewModel->isAuthor): ?>
                     <a href="<?= route('flags.report', ['type' => 'story', 'id' => (int)$viewModel->story['id']]) ?>"
-                       class="story-menu-item"
+                       class="dropdown-menu__item"
                        role="menuitem"
                        data-confirm="Вы уверены, что хотите подать жалобу?">
                         <span class="story-menu-item__icon">🚩</span>
@@ -283,7 +282,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                 <?php endif; ?>
 
                 <?php if ($viewModel->isAdmin): ?>
-                    <div class="story-menu-divider"></div>
+                    <div class="dropdown-menu__divider"></div>
                     
                     <!-- Staff Pick -->
                     <?php if (!$isStoryDeleted): ?>
@@ -291,7 +290,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                               action="/admin/stories/<?= (int)$viewModel->story['id'] ?>/toggle-pick" 
                               class="story-menu-form">
                             <?= csrf_field() ?>
-                            <button type="submit" class="story-menu-item" role="menuitem">
+                            <button type="submit" class="dropdown-menu__item" role="menuitem">
                                 <span class="story-menu-item__icon">⭐</span>
                                 <?= !empty($viewModel->story['is_staff_pick']) ? 'Убрать из выбора' : 'В выбор редакции' ?>
                             </button>
@@ -304,7 +303,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                               method="POST" class="story-menu-form">
                             <?= csrf_field() ?>
                             <button type="submit" 
-                                    class="story-menu-item story-menu-item--success" 
+                                    class="dropdown-menu__item dropdown-menu__item--success" 
                                     role="menuitem"
                                     data-confirm="Восстановить статью?">
                                 <span class="story-menu-item__icon">♻️</span>
@@ -316,7 +315,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                               method="POST" class="story-menu-form">
                             <?= csrf_field() ?>
                             <button type="submit" 
-                                    class="story-menu-item story-menu-item--danger" 
+                                    class="dropdown-menu__item dropdown-menu__item--danger" 
                                     role="menuitem"
                                     data-confirm="Удалить статью?">
                                 <span class="story-menu-item__icon">🗑️</span>
@@ -443,7 +442,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
             <textarea name="comment_text" id="form-comment-textarea" required
                 placeholder="Ваш комментарий... (поддерживается Markdown)"></textarea>
 
-			<div class="mt1">
+			<div class="mt-2">
 				<button type="submit">Опубликовать комментарий</button>
 				<button type="button" id="btn-cancel-reply">Отмена</button>
 			</div>

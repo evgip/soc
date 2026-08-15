@@ -30,11 +30,10 @@
                         </span>
                     <?php endif; ?>
                     
-                    <form action="/filters/remove" method="POST">
+                    <form action="/filters/remove" method="POST" data-confirm="Удалить этот тег из фильтров?">
                         <?= csrf_field() ?>
                         <input type="hidden" name="tag_id" value="<?= e($filter['tag_id']) ?>">
-                        <button type="submit" class="is-link text-sm red" 
-                                onclick="return confirm('Удалить этот тег из фильтров?')">
+                        <button type="submit" class="is-link text-sm red">
                             удалить
                         </button>
                     </form>

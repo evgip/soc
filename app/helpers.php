@@ -622,7 +622,7 @@ if (!function_exists('render_editorjs_content')) {
         $html = '';
         $firstHeaderSkipped = false;
         
-        foreach ($data['blocks'] as $block) {
+        foreach ($data['blocks'] as $index => $block) {
             $type = $block['type'] ?? '';
             $d = $block['data'] ?? [];
 

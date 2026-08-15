@@ -37,6 +37,25 @@ $bodyClass = Layout::getBodyClass();
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		})();
+		// Делегированные confirm-диалоги: заменяют инлайн-обработчики onclick/onsubmit,
+		// которые запрещены строгим CSP. Используйте data-confirm="..." на форме или кнопке.
+		document.addEventListener('submit', function (e) {
+			var msg = e.target && e.target.getAttribute ? e.target.getAttribute('data-confirm') : null;
+			if (msg && !window.confirm(msg)) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		}, true);
+
+		document.addEventListener('click', function (e) {
+			var el = e.target && e.target.closest ? e.target.closest('[data-confirm]') : null;
+			if (el) {
+				if (!window.confirm(el.getAttribute('data-confirm'))) {
+					e.preventDefault();
+					e.stopPropagation();
+				}
+			}
+		}, true);
 	</script>
     
 	<link rel="stylesheet" href="<?= \W3a\Core\View\Asset::css(); ?>">
@@ -108,46 +127,46 @@ $bodyClass = Layout::getBodyClass();
 							<span class="dropdown-arrow-icon">▼</span>
 						</button>
 
-						<div class="navbar-dropdown-menu" id="user-dropdown-menu">
-							<a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="dropdown-menu-item">🙍 <?= __('profile') ?></a>
+						<div class="dropdown-menu" id="user-dropdown-menu">
+							<a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item">🙍 <?= __('profile') ?></a>
 							
-							<a href="<?= route('account.settings') ?>" class="dropdown-menu-item">⚙️ <?= __('settings') ?></a>
+							<a href="<?= route('account.settings') ?>" class="dropdown-menu__item">⚙️ <?= __('settings') ?></a>
 							
-						    <div class="dropdown-divider"></div>
+						    <div class="dropdown-menu__divider"></div>
 							
-							<a href="<?= route('story.create') ?>" class="dropdown-menu-item">➕ <?= __('share') ?></a>
+							<a href="<?= route('story.create') ?>" class="dropdown-menu__item">➕ <?= __('share') ?></a>
 
-							<a href="<?= route('messages.index') ?>" class="dropdown-menu-item">
+							<a href="<?= route('messages.index') ?>" class="dropdown-menu__item">
 								<span>✉️ <?= __('messages') ?></span>
 							</a>
 
-							<a href="<?= route('saved.index') ?>" class="dropdown-menu-item">🔖 <?= __('bookmarks') ?></a>
+							<a href="<?= route('saved.index') ?>" class="dropdown-menu__item">🔖 <?= __('bookmarks') ?></a>
 
-							<a href="<?= route('drafts.index') ?>" class="dropdown-menu-item">📝 Черновики</a>
+							<a href="<?= route('drafts.index') ?>" class="dropdown-menu__item">📝 Черновики</a>
 
-							<a href="<?= route('collections.index', ['username' => $currentUser['name']]) ?>" class="dropdown-menu-item">📚 Коллекции</a>
+							<a href="<?= route('collections.index', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item">📚 Коллекции</a>
 
-							<a href="/subscribed" class="dropdown-menu-item">
+							<a href="/subscribed" class="dropdown-menu__item">
 								<span>📡 Подписки</span>
 								<?php if (($newSubscribedCount ?? 0) > 0): ?>
 									<span class="nav-badge-counter"><?= (int)$newSubscribedCount ?></span>
 								<?php endif; ?>
 							</a>
 
-							<a href="/muted" class="dropdown-menu-item">🔇 <?= __('muted') ?></a>
+							<a href="/muted" class="dropdown-menu__item">🔇 <?= __('muted') ?></a>
 
 							<?php if (!empty($currentUser['isAdmin'])): ?>
-								<div class="dropdown-divider"></div>
-								<a href="/admin" class="dropdown-menu-item dropdown-item-admin">📊 <?= __('admin_panel') ?></a>
+								<div class="dropdown-menu__divider"></div>
+								<a href="/admin" class="dropdown-menu__item dropdown-menu__item--danger">📊 <?= __('admin_panel') ?></a>
 							<?php endif; ?>
 
 							<?php if (!empty($currentUser['isModerator'])): ?>
-								<div class="dropdown-divider"></div>
-								<a href="/mod/log" class="dropdown-menu-item dropdown-item-mod">📋 <?= __('moderation_log') ?></a>
-								<a href="/mod/notes" class="dropdown-menu-item dropdown-item-mod">🔒 <?= __('notes') ?></a>
-								<a href="/mod/stats" class="dropdown-menu-item dropdown-item-mod">📈 <?= __('activity') ?></a>
+								<div class="dropdown-menu__divider"></div>
+								<a href="/mod/log" class="dropdown-menu__item dropdown-item-mod">📋 <?= __('moderation_log') ?></a>
+								<a href="/mod/notes" class="dropdown-menu__item dropdown-item-mod">🔒 <?= __('notes') ?></a>
+								<a href="/mod/stats" class="dropdown-menu__item dropdown-item-mod">📈 <?= __('activity') ?></a>
 				
-								<a href="/mod/suggestions" class="dropdown-menu-item dropdown-item-mod">
+								<a href="/mod/suggestions" class="dropdown-menu__item dropdown-item-mod">
 									💡 <?= __('suggestions') ?>
 									<?php if (($activeSuggestionsCount ?? 0) > 0): ?>
 										<span class="red">
@@ -157,8 +176,8 @@ $bodyClass = Layout::getBodyClass();
 								</a>
 							<?php endif; ?>
 
-							<div class="dropdown-divider"></div>
-							<form class="dropdown-menu-item" action="<?= route('auth.logout') ?>" method="POST">
+							<div class="dropdown-menu__divider"></div>
+							<form class="dropdown-menu__item" action="<?= route('auth.logout') ?>" method="POST">
 								<?= csrf_field() ?>
 								<button type="submit" class="is-link bold">🚪 <?= __('logout') ?></button>
 							</form>

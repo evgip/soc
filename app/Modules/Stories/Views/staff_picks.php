@@ -31,14 +31,14 @@
                     <?php $firstImage = get_story_first_image($story); ?>
                     
                     <?php if ($firstImage): ?>
-                        <a href="<?= route('story.show', ['id' => $story['id']]) ?>" class="staff-pick-card__image">
+                        <a href="<?= route('story.show', ['id' => $story['id']]) ?>" class="staff-pick-compact__image">
                             <img src="<?= e($firstImage) ?>" alt="" loading="lazy">
                         </a>
                     <?php endif; ?>
                     
                     <div class="staff-pick-card__content">
                         <!-- Автор и дата -->
-                        <div class="staff-pick-card__meta">
+                        <div class="staff-pick-compact__meta">
                             <?php if (!empty($story['author_avatar'])): ?>
                                 <img src="/uploads/avatars/<?= substr($story['author_avatar'], 0, 2) ?>/<?= e($story['author_avatar']) ?>" 
                                      class="staff-pick-card__avatar" alt="">
@@ -47,14 +47,14 @@
                                class="staff-pick-card__author">
                                 <?= e($story['author_name']) ?>
                             </a>
-                            <span class="staff-pick-card__divider">·</span>
+                            <span class="staff-pick-compact__divider">·</span>
                             <span class="staff-pick-card__date">
                                 <?= format_date_ru($story['created_at'], 'long') ?>
                             </span>
                         </div>
                         
                         <!-- Заголовок -->
-                        <h2 class="staff-pick-card__title">
+                        <h2 class="staff-pick-compact__title">
                             <a href="<?= route('story.show', ['id' => $story['id']]) ?>">
                                 <?= e($story['title']) ?>
                             </a>

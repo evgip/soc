@@ -32,14 +32,14 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
             <span><strong><?= (int)$commentsCount ?></strong> <?= plural($commentsCount, ['комментарий', 'комментария', 'комментариев']) ?></span>
             <span class="divider">·</span>
             <?php
-            $karmaClass = $userKarma > 0 ? 'text-positive' : ($userKarma < 0 ? 'text-negative' : 'text-muted');
+            $karmaClass = $userKarma > 0 ? 'text-success' : ($userKarma < 0 ? 'text-danger' : 'text-muted');
             ?>
             <span class="<?= $karmaClass ?>"><strong><?= $userKarma > 0 ? '+' : '' ?><?= (int)$userKarma ?></strong> кармы</span>
         </div>
 
       
         <?php if (!$isOwnProfile && $currentUserId > 0): ?>
-            <div class="profile-actions flex gap mt2">
+            <div class="profile-actions flex gap mt-4">
                 <form action="<?= route('messages.start', ['userId' => $profileUser['id']]) ?>" method="POST">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-sm">✉️ Написать</button>
@@ -62,7 +62,7 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
         <?php endif; ?>
         
         <?php if (\W3a\Core\Auth\Auth::isModerator() && $profileUser['id'] !== \W3a\Core\Auth\Auth::id()): ?>
-            <div class="mod-actions mt2">
+            <div class="mod-actions mt-4">
                 <a href="/mod/notes?user_id=<?= $profileUser['id'] ?>" class="btn btn-sm btn-outline">📝 Заметка</a>
                 <?php if (empty($profileUser['is_banned'])): ?>
                     <form method="POST" action="<?= route('mod.ban', ['id' => $profileUser['id']]) ?>" class="d-inline">
@@ -103,7 +103,7 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
         </div>
 
         <?php if ($totalPages > 1): ?>
-            <div class="mt3">
+            <div class="mt-6">
                 <?= pagination($currentPage, $totalPages) ?>
             </div>
         <?php endif; ?>

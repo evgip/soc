@@ -58,7 +58,7 @@ $totalStories = count($stories);
 			?>
 
 			<?php if ($canSubscribe): ?>
-				<form action="<?= route('subscribe.collection.toggle', ['id' => $collection['id']]) ?>" method="POST" class="mt2">
+				<form action="<?= route('subscribe.collection.toggle', ['id' => $collection['id']]) ?>" method="POST" class="mt-4">
 					<?= csrf_field() ?>
 					<button type="submit" class="btn btn-sm btn-pill <?= $isFollowingCollection ? 'btn-secondary' : 'btn-primary' ?>">
 						<?= $isFollowingCollection ? '✓ Подписаны на серию' : '🔔 Подписаться на серию' ?>

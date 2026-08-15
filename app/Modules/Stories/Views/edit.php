@@ -70,7 +70,7 @@
             <label>Новая ссылка создана:</label>
             <div class="input-group">
                 <input type="text" id="new-link-url" class="form-control" readonly>
-                <button class="btn btn-outline-secondary" onclick="copyLink()">
+				<button class="btn btn-outline-secondary" id="copy-link-btn">
                     Копировать
                 </button>
             </div>
@@ -112,6 +112,10 @@ function copyLink() {
     input.select();
     document.execCommand('copy');
     alert('Ссылка скопирована!');
+}
+var copyLinkBtn = document.getElementById('copy-link-btn');
+ if (copyLinkBtn) {
+    copyLinkBtn.addEventListener('click', copyLink);
 }
 </script>
 <?php endif; ?>
