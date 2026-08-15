@@ -31,8 +31,8 @@ class RssController extends BaseController
 
         $rssService = $this->service(RssService::class);
         $xml = $rssService->generate([
-            'title' => config('config.app.name', 'w3a') . ' — Новые истории',
-            'link' => config('config.app.url', '/'),
+            'title' => config('app.name', 'w3a') . ' — Новые истории',
+            'link' => config('app.url', '/'),
             'description' => 'Свежие публикации',
         ], $items);
 
@@ -61,7 +61,7 @@ class RssController extends BaseController
 
         $rssService = $this->service(RssService::class);
         $xml = $rssService->generate([
-            'title' => config('config.app.name', 'w3a') . ' — Тег #' . e($tagInfo['name']),
+            'title' => config('app.name', 'w3a') . ' — Тег #' . e($tagInfo['name']),
             'link' => route('tags.filter', ['tagslug' => $tagslug]),
             'description' => 'Публикации с тегом ' . e($tagInfo['name']),
         ], $items);
@@ -91,7 +91,7 @@ class RssController extends BaseController
 
         $rssService = $this->service(RssService::class);
         $xml = $rssService->generate([
-            'title' => config('config.app.name', 'w3a') . ' — Публикации ' . e($username),
+            'title' => config('app.name', 'w3a') . ' — Публикации ' . e($username),
             'link' => route('user.stories', ['username' => $username]),
             'description' => 'Публикации пользователя ' . e($username),
         ], $items);
@@ -114,7 +114,7 @@ class RssController extends BaseController
 
         $rssService = $this->service(RssService::class);
         $xml = $rssService->generate([
-            'title' => config('config.app.name', 'w3a') . ' — Новые комментарии',
+            'title' => config('app.name', 'w3a') . ' — Новые комментарии',
             'link' => route('comments.index'),
             'description' => 'Свежие комментарии со всего сайта',
         ], $items);

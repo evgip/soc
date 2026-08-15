@@ -23,7 +23,7 @@ class VKOAuthService
         $this->logger = $logger;
         $this->clientId = (string)config('social_auth.vk.client_id', '');
         $this->clientSecret = (string)config('social_auth.vk.client_secret', '');
-        $this->redirectUri = config('config.app.url') . '/auth/vk/callback';
+        $this->redirectUri = config('app.url') . '/auth/vk/callback';
     }
 
     /**

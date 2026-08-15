@@ -22,7 +22,7 @@ class YandexOAuthService
         $this->logger = $logger;
         $this->clientId = (string)config('social_auth.yandex.client_id', '');
         $this->clientSecret = (string)config('social_auth.yandex.client_secret', '');
-        $this->redirectUri = config('config.app.url') . '/auth/yandex/callback';
+        $this->redirectUri = config('app.url') . '/auth/yandex/callback';
     }
 
     /**

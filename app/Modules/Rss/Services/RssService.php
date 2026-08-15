@@ -12,9 +12,9 @@ class RssService
 
     public function __construct()
     {
-        $this->siteName = config('config.app.name', 'w3a');
-        $this->siteUrl = rtrim(config('config.app.url', 'http://localhost'), '/');
-        $this->siteDescription = config('config.app.description', 'Интересные ссылки и обсуждения');
+        $this->siteName = config('app.name', 'w3a');
+        $this->siteUrl = rtrim(config('app.url', 'http://localhost'), '/');
+        $this->siteDescription = config('app.description', 'Интересные статьи и обсуждения');
     }
 
     /**

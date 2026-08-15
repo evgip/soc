@@ -446,7 +446,7 @@ class StoriesController extends BaseController
                 'type' => 'article',
                 'title' => $ogData['title'],
                 'description' => $ogData['description'],
-                'image' => config('config.app.url') . '/',
+                'image' => config('app.url') . '/',
             ]);
 
             $data['tagInfo'] = $tagFilterService->getByInfoSlug($tagslug);
@@ -516,7 +516,7 @@ class StoriesController extends BaseController
             'type' => 'article',
             'title' => $pageTitle,
             'description' => null,
-            'image' => config('config.app.url') . '/',
+            'image' => config('app.url') . '/',
         ]);
 
         $feed = $this->service(StoryFeedBuilder::class)->build(
