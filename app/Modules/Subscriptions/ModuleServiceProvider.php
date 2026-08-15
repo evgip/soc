@@ -8,6 +8,7 @@ use W3a\Core\Foundation\Container;
 use W3a\Core\Contracts\DatabaseInterface;
 use App\Modules\Subscriptions\Models\FollowedUser;
 use App\Modules\Subscriptions\Models\FollowedTag;
+use App\Modules\Subscriptions\Models\FollowedCollection;
 use App\Modules\Subscriptions\Services\SubscriptionService;
 
 class ModuleServiceProvider
@@ -22,10 +23,15 @@ class ModuleServiceProvider
             return new FollowedTag($c->get(DatabaseInterface::class));
         });
 
+        $container->singleton(FollowedCollection::class, function (Container $c) {
+            return new FollowedCollection($c->get(DatabaseInterface::class));
+        });
+
         $container->singleton(SubscriptionService::class, function (Container $c) {
             return new SubscriptionService(
                 $c->get(FollowedUser::class),
-                $c->get(FollowedTag::class)
+                $c->get(FollowedTag::class),
+                $c->get(FollowedCollection::class)
             );
         });
     }

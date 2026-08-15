@@ -61,16 +61,17 @@ class UserService
         return $this->userModel->updateProfile($userId, $data);
     }
 
-    public function updateSettings(int $userId, array $data): bool
-    {
-        return $this->userModel->updateSettings($userId, [
-            'notify_on_reply' => $data['notify_on_reply'] ?? 0,
-            'notify_on_story_comment' => $data['notify_on_story_comment'] ?? 0,
-            'notify_on_mention' => $data['notify_on_mention'] ?? 0,
-            'notify_on_message' => $data['notify_on_message'] ?? 0,
-            'email_notifications' => $data['email_notifications'] ?? 0,
-        ]);
-    }
+	public function updateSettings(int $userId, array $data): bool
+	{
+		return $this->userModel->updateSettings($userId, [
+			'notify_on_reply'             => $data['notify_on_reply'] ?? 0,
+			'notify_on_story_comment'     => $data['notify_on_story_comment'] ?? 0,
+			'notify_on_mention'           => $data['notify_on_mention'] ?? 0,
+			'notify_on_message'           => $data['notify_on_message'] ?? 0,
+			'notify_on_collection_update' => $data['notify_on_collection_update'] ?? 1,
+			'email_notifications'         => $data['email_notifications'] ?? 0,
+		]);
+	}
 
     /**
      * Меняет пароль пользователя.
@@ -98,13 +99,14 @@ class UserService
         $settings = $this->userModel->getSettings($userId);
         
         if (!$settings) {
-            return [
-                'notify_on_reply' => 1,
-                'notify_on_story_comment' => 1,
-                'notify_on_mention' => 1,
-                'notify_on_message' => 1,
-                'email_notifications' => 0,
-            ];
+			return [
+				'notify_on_reply'             => 1,
+				'notify_on_story_comment'     => 1,
+				'notify_on_mention'           => 1,
+				'notify_on_message'           => 1,
+				'notify_on_collection_update' => 1,
+				'email_notifications'         => 0,
+			];
         }
         
         return $settings;

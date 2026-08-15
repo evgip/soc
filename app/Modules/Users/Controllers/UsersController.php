@@ -198,11 +198,12 @@ class UsersController extends BaseController
 			]);
 
 			$this->getUserService()->updateSettings($userContext['id'], [
-				'notify_on_reply'         => (int)($validated['notify_on_reply'] ?? 0),
-				'notify_on_story_comment' => (int)($validated['notify_on_story_comment'] ?? 0),
-				'notify_on_mention'       => (int)($validated['notify_on_mention'] ?? 0),
-				'notify_on_message'       => (int)($validated['notify_on_message'] ?? 0),
-				'email_notifications'     => (int)($validated['email_notifications'] ?? 0),
+				'notify_on_reply'               => (int)($validated['notify_on_reply'] ?? 0),
+				'notify_on_story_comment'       => (int)($validated['notify_on_story_comment'] ?? 0),
+				'notify_on_mention'             => (int)($validated['notify_on_mention'] ?? 0),
+				'notify_on_message'             => (int)($validated['notify_on_message'] ?? 0),
+				'notify_on_collection_update'   => (int)($validated['notify_on_collection_update'] ?? 0),
+				'email_notifications'           => (int)($validated['email_notifications'] ?? 0),
 			]);
 
 			$this->container->get(Session::class)->set('user_avatar', $newAvatarFilename);

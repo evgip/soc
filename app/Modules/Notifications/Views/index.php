@@ -49,6 +49,14 @@
                 <span class="nav-notification-badge"><?= $counts['message'] ?></span>
             <?php endif; ?>
         </a>
+		
+		<a href="/notifications?type=collection_new_part"
+			class="<?= $currentType === 'collection_new_part' ? 'is-active' : '' ?>">
+			📚 Серии
+			<?php if ($counts['collection_new_part'] > 0): ?>
+				<span class="nav-notification-badge"><?= $counts['collection_new_part'] ?></span>
+			<?php endif; ?>
+		</a>
     </nav>
 
     <!-- Список уведомлений -->
@@ -72,6 +80,13 @@
                     $icon = '💬';
                     $actionText = 'ответил на ваш комментарий';
                     $link = '/story/' . $notif['story_id'] . '#comment-block-' . $notif['notifiable_id']; // /story/2#comment-block-7
+					
+				} elseif ($notif['type'] === 'collection_new_part') {
+					$icon = '📚';
+					$actionText = $notif['notification_message'];  // Полный текст уже в message
+					$link = '/story/' . $notif['story_id'];
+	
+					
                 } elseif ($notif['type'] === 'story_comment') {
                     $icon = '💬';
                     $actionText = 'ответил на ваш пост';

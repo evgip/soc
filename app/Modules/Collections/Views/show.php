@@ -48,6 +48,24 @@ $totalStories = count($stories);
                     <span>Создана <?= adaptive_time($collection['created_at']) ?></span>
                 <?php endif; ?>
             </div>
+			
+			
+			<?php 
+			// Кнопка подписки для авторизованных не-владельцев
+			$userContext = $this->getUserContext ?? null;
+			$isLoggedIn = $userContext['isLoggedIn'] ?? \W3a\Core\Auth\Auth::check();
+			$canSubscribe = $isLoggedIn && !$isOwner;
+			?>
+
+			<?php if ($canSubscribe): ?>
+				<form action="<?= route('subscribe.collection.toggle', ['id' => $collection['id']]) ?>" method="POST" class="mt2">
+					<?= csrf_field() ?>
+					<button type="submit" class="btn btn-sm btn-pill <?= $isFollowingCollection ? 'btn-secondary' : 'btn-primary' ?>">
+						<?= $isFollowingCollection ? '✓ Подписаны на серию' : '🔔 Подписаться на серию' ?>
+					</button>
+				</form>
+			<?php endif; ?>
+			
         </div>
 
         <!-- Действия владельца -->

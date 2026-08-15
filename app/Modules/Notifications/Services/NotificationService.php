@@ -8,6 +8,7 @@ use App\Modules\Notifications\Models\Notification;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Users\Models\User;
 use App\Modules\Muted\Services\MuteService;
+use App\Modules\Subscriptions\Services\SubscriptionService;
 use W3a\Core\Support\Logger;
 
 class NotificationService
@@ -17,23 +18,26 @@ class NotificationService
     private User $userModel;
     private Logger $logger;
     private ?MuteService $muteService;
+	
+	private ?SubscriptionService $subscriptionService;
 
-    private const ALLOWED_TYPES = ['reply', 'mention', 'message'];
+    private const ALLOWED_TYPES = ['reply', 'mention', 'message', 'collection_new_part'];
     private const DEFAULT_PER_PAGE = 25;
-
 
     public function __construct(
         Notification $notificationModel,
         Comment $commentModel,
         User $userModel,
         Logger $logger,
-        ?MuteService $muteService = null
+        ?MuteService $muteService = null,
+        ?SubscriptionService $subscriptionService = null
     ) {
         $this->notificationModel = $notificationModel;
         $this->commentModel = $commentModel;
         $this->userModel = $userModel;
         $this->logger = $logger;
         $this->muteService = $muteService;
+        $this->subscriptionService = $subscriptionService;
     }
 
     // =========================================================================
@@ -94,13 +98,13 @@ class NotificationService
 
     public function getUnreadCountsByType(int $userId, array $mutedUserIds = []): array
     {
-        if ($userId <= 0) {
-            return ['reply' => 0, 'mention' => 0, 'message' => 0];
-        }
+		if ($userId <= 0) {
+			return ['reply' => 0, 'mention' => 0, 'message' => 0, 'collection_new_part' => 0];
+		}
 
         $unreadCounts = $this->notificationModel->getUnreadCountByType($userId, $mutedUserIds);
 
-        $counts = ['reply' => 0, 'mention' => 0, 'message' => 0];
+        $counts = ['reply' => 0, 'mention' => 0, 'message' => 0, 'collection_new_part' => 0];
 
         if (is_array($unreadCounts)) {
             foreach ($unreadCounts as $row) {
@@ -231,6 +235,94 @@ class NotificationService
             $this->logger->error("[NOTIFICATIONS] Error in notifyMessageSent: " . $e->getMessage());
         }
     }
+
+	/**
+	 * Уведомить всех подписчиков коллекции о новой части серии.
+	 * 
+	 * Вызывается после успешного добавления статьи в коллекцию.
+	 * Учитывает:
+	 * - Настройку пользователя notify_on_collection_update
+	 * - Мьюты (не уведомляем от замьюченных авторов)
+	 * - Не уведомляем самого автора коллекции
+	 * 
+	 * @param int $collectionId ID коллекции
+	 * @param int $storyId ID добавленной статьи
+	 * @param int $authorId ID автора коллекции
+	 * @param string $collectionTitle Название коллекции (для текста уведомления)
+	 * @param string $storyTitle Название новой статьи
+	 */
+	public function notifyCollectionSubscribers(
+		int $collectionId,
+		int $storyId,
+		int $authorId,
+		string $collectionTitle,
+		string $storyTitle
+	): void {
+		if ($collectionId <= 0 || $storyId <= 0 || $authorId <= 0) {
+			return;
+		}
+
+		if ($this->subscriptionService === null) {
+			$this->logger->error("[NOTIFICATIONS] SubscriptionService not injected");
+			return;
+		}
+
+		try {
+			$followerIds = $this->subscriptionService->getCollectionFollowerIds($collectionId);
+
+			if (empty($followerIds)) {
+				return;
+			}
+
+			$message = sprintf(
+				'Добавил новую часть в серию «%s»: «%s»',
+				$collectionTitle,
+				$storyTitle
+			);
+
+			$notifiedCount = 0;
+
+			foreach ($followerIds as $followerId) {
+				$followerId = (int) $followerId;
+
+				// Не уведомляем автора коллекции
+				if ($followerId === $authorId) {
+					continue;
+				}
+
+				// Не уведомляем, если автор замьючен подписчиком
+				if ($this->isMutedBy($authorId, $followerId)) {
+					continue;
+				}
+
+				// Проверяем настройку уведомлений
+				if (!$this->notificationModel->userWantsNotification($followerId, 'notify_on_collection_update')) {
+					continue;
+				}
+
+				try {
+					$this->notificationModel->createCollectionNewPartNotification(
+						$followerId,
+						$storyId,
+						$authorId,
+						$message
+					);
+					$notifiedCount++;
+				} catch (\Throwable $e) {
+					$this->logger->error(
+						"[NOTIFICATIONS] Error notifying follower {$followerId}: " . $e->getMessage()
+					);
+				}
+			}
+
+			$this->logger->info(
+				"[NOTIFICATIONS] Collection {$collectionId}: notified {$notifiedCount} subscribers about story {$storyId}"
+			);
+		} catch (\Throwable $e) {
+			$this->logger->error("[NOTIFICATIONS] Error in notifyCollectionSubscribers: " . $e->getMessage());
+		}
+	}
+
 
     // =========================================================================
     // ПРИВАТНЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ

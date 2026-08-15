@@ -131,6 +131,18 @@
             <p class="hint">Отправлять копии уведомлений на ваш email (<?= e($errors->getOld('email', $user['email'])) ?>)</p>
         </div>
         
+		<!-- Уведомления о новых частях в подписанных сериях -->
+		<div class="form-field-group">
+			<label class="checkbox-label">
+				<?php $val = $errors->getOld('notify_on_collection_update', $settings['notify_on_collection_update'] ?? 1); ?>
+				<input type="checkbox" name="notify_on_collection_update" value="1" <?= $val ? 'checked' : '' ?>>
+				<span class="checkmark"></span>
+				<strong>Уведомления о новых частях в сериях</strong>
+			</label>
+			<p class="hint">Получать уведомления, когда авторы добавляют новые части в серии, на которые вы подписаны</p>
+		</div>
+		
+		
     </div>
     
     <div class="form-actions">

@@ -11,6 +11,8 @@ use App\Modules\Muted\Services\MuteService;
 use App\Modules\Notifications\Services\NotificationService;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Users\Models\User;
+use App\Modules\Notifications\Models\Notification;
+use App\Modules\Subscriptions\Services\SubscriptionService;
 
 /**
  * Провайдер сервисов модуля Notifications.
@@ -31,11 +33,12 @@ class ModuleServiceProvider extends BaseModuleServiceProvider
         // - User → Users/ModuleServiceProvider
         $container->singleton(NotificationService::class, function (Container $c) {
             return new NotificationService(
-                $c->get(\App\Modules\Notifications\Models\Notification::class),
+                $c->get(Notification::class),
                 $c->get(Comment::class),
                 $c->get(User::class),
                 $c->get(Logger::class),
-				$c->get(MuteService::class)
+				$c->get(MuteService::class),
+				 $c->get(SubscriptionService::class)
             );
         });
     }

@@ -30,6 +30,8 @@ class Notification extends Model
     public const TYPE_UNBAN = 'unban';
     public const TYPE_DEACTIVATED = 'deactivated';
     public const TYPE_ACTIVATED = 'activated';
+	
+	public const TYPE_COLLECTION_NEW_PART = 'collection_new_part';
 
     // Типы сущностей для полиморфной связи
     public const ENTITY_COMMENT = 'Comment';
@@ -112,6 +114,28 @@ class Notification extends Model
         );
     }
 
+	/**
+	 * Создать уведомление о новой части в коллекции (серии).
+	 * 
+	 * notifiable_type = 'Story', notifiable_id = ID новой статьи.
+	 * Это позволяет вести читателя прямо на новую часть серии.
+	 */
+	public function createCollectionNewPartNotification(
+		int $userId,
+		int $storyId,
+		int $actorId,
+		string $message = null
+	): int {
+		return $this->createNotification(
+			$userId,
+			self::TYPE_COLLECTION_NEW_PART,
+			self::ENTITY_STORY,
+			$storyId,
+			$actorId,
+			$message ?? 'Добавил новую часть в серию'
+		);
+	}
+
     /**
      * Создать уведомление о деактивации аккаунта
      */
@@ -153,17 +177,25 @@ class Notification extends Model
         int $actorId,
         string $message
     ): int {
-        // Защита от дубликатов
-        $existing = $this->findFirst([
-            'user_id' => $userId,
-            'type' => $type,
-            'notifiable_type' => $entityType,
-            'notifiable_id' => $entityId
-        ]);
 
-        if ($existing) {
-            return (int)$existing['id'];
-        }
+	// Защита от дубликатов: если уже есть такое уведомление — обновляем его
+	$existing = $this->findFirst([
+		'user_id' => $userId,
+		'type' => $type,
+		'notifiable_type' => $entityType,
+		'notifiable_id' => $entityId
+	]);
+
+	if ($existing) {
+		// Обновляем message и сбрасываем статус прочтения
+		$this->db->execute(
+			"UPDATE `{$this->table}` 
+			 SET message = :message, is_read = 0, created_at = NOW() 
+			 WHERE id = :id",
+			['id' => $existing['id'], 'message' => $message]
+		);
+		return (int)$existing['id'];
+	}
 
         return $this->create([
             'user_id' => $userId,
@@ -224,24 +256,34 @@ class Notification extends Model
         $params['offset'] = ($page - 1) * $limit;
 
         $sql = "
-            SELECT
-                n.*,
-                u.username as actor_name,
-                up.avatar as actor_avatar,
-                c.comment as comment_text,
-                COALESCE(c.story_id, 0) as story_id,
-                s.title as story_title,
-                m.message,
-                m.conversation_id
-            FROM `{$this->table}` n
-            LEFT JOIN users u ON n.actor_id = u.id
-            LEFT JOIN `user_profiles` up ON u.id = up.user_id
-            LEFT JOIN comments c ON n.notifiable_type = 'Comment' AND n.notifiable_id = c.id
-            LEFT JOIN stories s ON c.story_id = s.id
-            LEFT JOIN messages m ON n.notifiable_type = 'Message' AND n.notifiable_id = m.id
-            WHERE {$where}
-            ORDER BY n.created_at DESC
-            LIMIT :limit OFFSET :offset
+			SELECT
+				n.id,
+				n.user_id,
+				n.type,
+				n.notifiable_type,
+				n.notifiable_id,
+				n.actor_id,
+				n.message as notification_message,
+				n.is_read,
+				n.read_at,
+				n.created_at,
+				u.username as actor_name,
+				up.avatar as actor_avatar,
+				c.comment as comment_text,
+				COALESCE(c.story_id, cs.id, 0) as story_id,
+				COALESCE(s.title, cs.title) as story_title,
+				m.message as message_text,
+				m.conversation_id
+					FROM `{$this->table}` n
+					LEFT JOIN users u ON n.actor_id = u.id
+					LEFT JOIN `user_profiles` up ON u.id = up.user_id
+					LEFT JOIN comments c ON n.notifiable_type = 'Comment' AND n.notifiable_id = c.id
+					LEFT JOIN stories s ON c.story_id = s.id
+					LEFT JOIN messages m ON n.notifiable_type = 'Message' AND n.notifiable_id = m.id
+					LEFT JOIN stories cs ON n.notifiable_type = 'Story' AND n.notifiable_id = cs.id
+						WHERE {$where}
+							ORDER BY n.created_at DESC
+							LIMIT :limit OFFSET :offset
         ";
 
         return $this->db->fetchAll($sql, $params);

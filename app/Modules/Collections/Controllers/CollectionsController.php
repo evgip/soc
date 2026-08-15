@@ -118,11 +118,32 @@ class CollectionsController extends BaseController
         $userContext = $this->getUserContext();
         $isOwner = $userContext['isLoggedIn'] && $userContext['id'] === (int) $collection['author_id'];
 
+		// Проверяем подписку на коллекцию
+		$isFollowingCollection = false;
+		$followersCount = 0;
+		if ($userContext['isLoggedIn'] && !$isOwner) {
+			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+			$isFollowingCollection = $subscriptionService->isFollowingCollection(
+				$userContext['id'], 
+				(int) $collection['id']
+			);
+		}
+		
+		// Считаем подписчиков для всех (кроме приватных для не-владельцев)
+		if (!empty($collection['is_public']) || $isOwner) {
+			$subscriptionService = $subscriptionService 
+				?? $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+			$followersCount = $subscriptionService->getCollectionFollowersCount((int) $collection['id']);
+		}
+
+
         return $this->render('show', [
             'title' => e($collection['title']),
             'collection' => $collection,
             'profileUser' => $user,
             'isOwner' => $isOwner,
+			'isFollowingCollection' => $isFollowingCollection,
+			'followersCount' => $followersCount,  
         ]);
     }
 
@@ -302,29 +323,72 @@ class CollectionsController extends BaseController
     // AJAX: УПРАВЛЕНИЕ СТАТЬЯМИ В КОЛЛЕКЦИИ
     // =========================================================================
 
-    /**
-     * Добавить статью в коллекцию.
-     * URL: POST /collections/{id}/stories/add
-     */
-    public function addStory(string $id): JsonResponse
-    {
-        $collectionId = (int) $id;
-        $storyId = (int) $this->request->post('story_id', 0);
+	/**
+	 * Добавить статью в коллекцию.
+	 * URL: POST /collections/{id}/stories/add
+	 * 
+	 * После успешного добавления уведомляет всех подписчиков коллекции.
+	 */
+	public function addStory(string $id): JsonResponse
+	{
+		$collectionId = (int) $id;
+		$storyId = (int) $this->request->post('story_id', 0);
 
-        if ($storyId <= 0) {
-            return $this->json(['success' => false, 'error' => 'Некорректный ID статьи'], 400);
-        }
+		if ($storyId <= 0) {
+			return $this->json(['success' => false, 'error' => 'Некорректный ID статьи'], 400);
+		}
 
-        try {
-            $this->service(CollectionService::class)->addStory($collectionId, $storyId);
-            return $this->json(['success' => true]);
-        } catch (CollectionValidationException $e) {
-            return $this->json(['success' => false, 'error' => $e->getMessage()], 400);
-        } catch (\Throwable $e) {
-            $this->logError($e, 'Collections.addStory');
-            return $this->json(['success' => false, 'error' => 'Ошибка сервера'], 500);
-        }
-    }
+		try {
+			$this->service(CollectionService::class)->addStory($collectionId, $storyId);
+
+			// Уведомляем подписчиков коллекции о новой части
+			$this->notifyCollectionSubscribers($collectionId, $storyId);
+
+			return $this->json(['success' => true]);
+		} catch (CollectionValidationException $e) {
+			return $this->json(['success' => false, 'error' => $e->getMessage()], 400);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Collections.addStory');
+			return $this->json(['success' => false, 'error' => 'Ошибка сервера'], 500);
+		}
+	}
+
+	/**
+	 * Отправить уведомления подписчикам коллекции о новой части.
+	 * 
+	 * Вспомогательный метод для addStory(). Ошибки логируются,
+	 * но не прерывают основное действие (добавление статьи уже успешно).
+	 */
+	private function notifyCollectionSubscribers(int $collectionId, int $storyId): void
+	{
+		try {
+			$collectionModel = $this->container->get(Collection::class);
+			$collection = $collectionModel->find($collectionId);
+
+			if (!$collection) {
+				return;
+			}
+
+			$storyModel = $this->container->get(Story::class);
+			$story = $storyModel->find($storyId);
+
+			if (!$story) {
+				return;
+			}
+
+			$notificationService = $this->service(\App\Modules\Notifications\Services\NotificationService::class);
+			$notificationService->notifyCollectionSubscribers(
+				$collectionId,
+				$storyId,
+				(int) $collection['author_id'],
+				(string) $collection['title'],
+				(string) $story['title']
+			);
+		} catch (\Throwable $e) {
+			// Не прерываем добавление статьи из-за ошибки уведомлений
+			$this->logError($e, 'Collections.notifySubscribers');
+		}
+	}
 
     /**
      * Удалить статью из коллекции.

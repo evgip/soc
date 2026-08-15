@@ -61,4 +61,46 @@ class SubscriptionController extends BaseController
 
         return $this->redirectBack();
     }
+	
+	/**
+	 * Переключить подписку на коллекцию (серию).
+	 */
+	public function toggleCollection(string $id): RedirectResponse
+	{
+		$userContext = $this->getUserContext();
+		$collectionId = (int)$id;
+
+		if (!$userContext['isLoggedIn']) {
+			return $this->redirect('/');
+		}
+
+		try {
+			// Проверяем, не является ли пользователь автором коллекции
+			$collectionModel = $this->container->get(\App\Modules\Collections\Models\Collection::class);
+			$collection = $collectionModel->find($collectionId);
+
+			if (!$collection || !empty($collection['deleted_at'])) {
+				MessageBag::flashMessage('error', 'Коллекция не найдена');
+				return $this->redirectBack();
+			}
+
+			if ((int)$collection['author_id'] === $userContext['id']) {
+				MessageBag::flashMessage('error', 'Нельзя подписаться на свою коллекцию');
+				return $this->redirectBack();
+			}
+
+			$service = $this->service(SubscriptionService::class);
+			$isFollowing = $service->toggleCollection($userContext['id'], $collectionId);
+
+			$message = $isFollowing 
+				? 'Вы подписались на серию. Будем уведомлять о новых частях.' 
+				: 'Вы отписались от серии';
+			MessageBag::flashMessage('success', $message);
+		} catch (\Throwable $e) {
+			$this->logError($e, 'Subscription.toggleCollection');
+			MessageBag::flashMessage('error', 'Произошла ошибка при изменении подписки');
+		}
+
+		return $this->redirectBack();
+	}
 }
