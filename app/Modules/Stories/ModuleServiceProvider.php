@@ -38,6 +38,7 @@ use App\Modules\Stories\Services\RecommendationService;
 use App\Modules\Stories\Services\TrendingService;
 use App\Modules\Stories\Services\StaffPicksService;
 use App\Modules\Tags\Services\TagValidator;
+use App\Modules\Tags\Models\TagFilter;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Subscriptions\Services\SubscriptionService;
 
@@ -150,7 +151,8 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
             return new RecommendationService(
                 $c->get(Database::class),
                 $c->get(StoryView::class),
-                $c->get(SubscriptionService::class)
+                $c->get(SubscriptionService::class),
+                $c->get(TagFilter::class)
             );
         });
 

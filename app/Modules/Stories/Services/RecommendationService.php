@@ -8,21 +8,25 @@ use W3a\Core\Foundation\Container;
 use W3a\Core\Database\Database;
 use App\Modules\Stories\Models\StoryView;
 use App\Modules\Subscriptions\Services\SubscriptionService;
+use App\Modules\Tags\Models\TagFilter;
 
 class RecommendationService
 {
     private Database $db;
     private StoryView $storyView;
     private SubscriptionService $subscriptionService;
+    private TagFilter $tagFilter;
 
     public function __construct(
         Database $db,
         StoryView $storyView,
-        SubscriptionService $subscriptionService
+        SubscriptionService $subscriptionService,
+        TagFilter $tagFilter
     ) {
         $this->db = $db;
         $this->storyView = $storyView;
         $this->subscriptionService = $subscriptionService;
+        $this->tagFilter = $tagFilter;
     }
 
     public function getForYouFeed(int $userId, int $limit = 10): array
@@ -35,9 +39,10 @@ class RecommendationService
         $followedTagIds = $this->subscriptionService->getFollowedTagIds($userId);
         $topTags = $this->storyView->getUserTopTags($userId, 5);
         $viewedStoryIds = $this->storyView->getViewedStoryIds($userId, 50);
+        $excludedTagIds = $this->tagFilter->getFilteredTagIds($userId);
 
         if (empty($followedUserIds) && empty($followedTagIds) && empty($topTags)) {
-            return $this->getPopularFallback($limit);
+            return $this->getPopularFallback($limit, [], $excludedTagIds);
         }
 
         $readTagIds = array_column($topTags, 'tag_id');
@@ -47,12 +52,13 @@ class RecommendationService
             $followedUserIds,
             $allTagIds,
             $viewedStoryIds,
-            $limit
+            $limit,
+            $excludedTagIds
         );
 
         if (count($stories) < $limit) {
             $excludeIds = array_column($stories, 'id');
-            $popular = $this->getPopularFallback($limit - count($stories), $excludeIds);
+            $popular = $this->getPopularFallback($limit - count($stories), $excludeIds, $excludedTagIds);
             $stories = array_merge($stories, $popular);
         }
 
@@ -63,7 +69,8 @@ class RecommendationService
         array $followedUserIds,
         array $tagIds,
         array $excludeStoryIds,
-        int $limit
+        int $limit,
+        array $excludedTagIds = []
     ): array {
         $where = ['s.deleted_at IS NULL'];
         $bindings = [];
@@ -73,6 +80,17 @@ class RecommendationService
             $placeholders = implode(',', array_fill(0, count($excludeStoryIds), '?'));
             $where[] = "s.id NOT IN ($placeholders)";
             $bindings = array_merge($bindings, $excludeStoryIds);
+        }
+
+        // Не показываем истории, содержащие отфильтрованные (скрытые) теги
+        if (!empty($excludedTagIds)) {
+            $excludedTagIds = array_map('intval', $excludedTagIds);
+            $placeholders = implode(',', array_fill(0, count($excludedTagIds), '?'));
+            $where[] = "NOT EXISTS (
+                SELECT 1 FROM taggings tg_ex
+                WHERE tg_ex.story_id = s.id AND tg_ex.tag_id IN ($placeholders)
+            )";
+            $bindings = array_merge($bindings, $excludedTagIds);
         }
 
         $interestConditions = [];
@@ -118,7 +136,7 @@ class RecommendationService
         return $this->attachTags($stories);
     }
 
-    private function getPopularFallback(int $limit, array $excludeIds = []): array
+    private function getPopularFallback(int $limit, array $excludeIds = [], array $excludedTagIds = []): array
     {
         $where = [
             's.deleted_at IS NULL',
@@ -130,6 +148,17 @@ class RecommendationService
             $placeholders = implode(',', array_fill(0, count($excludeIds), '?'));
             $where[] = "s.id NOT IN ($placeholders)";
             $bindings = array_merge($bindings, $excludeIds);
+        }
+
+        // Не показываем истории, содержащие отфильтрованные (скрытые) теги
+        if (!empty($excludedTagIds)) {
+            $excludedTagIds = array_map('intval', $excludedTagIds);
+            $placeholders = implode(',', array_fill(0, count($excludedTagIds), '?'));
+            $where[] = "NOT EXISTS (
+                SELECT 1 FROM taggings tg_ex
+                WHERE tg_ex.story_id = s.id AND tg_ex.tag_id IN ($placeholders)
+            )";
+            $bindings = array_merge($bindings, $excludedTagIds);
         }
 
         $whereClause = implode(' AND ', $where);
