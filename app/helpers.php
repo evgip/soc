@@ -30,18 +30,6 @@ if (!function_exists('get_cached_container')) {
 
 
 /**
- * Format a datetime string (nullable input)
- * Форматирование даты и времени (допускается null)
- */
-if (!function_exists('dt')) {
-	function dt(?string $datetime, string $format = 'd.m.Y H:i'): string
-	{
-		if (!$datetime) return '';
-		return date($format, strtotime($datetime));
-	}
-}
-
-/**
  * Склонение существительных для русского языка
  * 
  * @param int $n Число для склонения
