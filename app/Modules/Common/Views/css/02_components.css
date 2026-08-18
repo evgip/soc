@@ -800,6 +800,16 @@ dialog form,
   display: inline;
 }
 
+.search-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-form-row input[type=text] {
+  flex: 1;
+}
+
 .flex {
   display: flex;
 }

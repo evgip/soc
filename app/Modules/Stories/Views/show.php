@@ -241,7 +241,7 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
                 </svg>
             </button>
 
-            <div class="dropdown-menu" id="story-menu-dropdown" role="menu">
+            <div class="dropdown-menu story-menu-dropdown" id="story-menu-dropdown" role="menu">
                 
                 <!-- Редактировать (автор или админ) -->
                 <?php if ($viewModel->currentUserId > 0 && ($viewModel->isAuthor || $viewModel->isAdmin) && !$isStoryDeleted): ?>

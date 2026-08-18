@@ -107,7 +107,7 @@ $showMenu = $canManageStory
                     </svg>
                 </button>
 
-                <div class="dropdown-menu" role="menu">
+                <div class="dropdown-menu story-menu-dropdown" role="menu">
                     
                     <!-- Редактировать (автор или админ) -->
                     <?php if ($canManageStory): ?>

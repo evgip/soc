@@ -8,12 +8,11 @@ $currentVotes = $currentVotes ?? [];
 <h1>Поиск</h1>
 
 <form action="/search" method="GET">
-    <p>
+    <div class="search-form-row">
         <input type="text" name="q" value="<?= e($query) ?>" 
-               placeholder="Поисковый запрос..." required autofocus
-			   class="w-60">
+               placeholder="Поисковый запрос..." required autofocus>
         <button type="submit">Искать</button>
-    </p>
+    </div>
 
     <p class="hint">
         Искать в:
