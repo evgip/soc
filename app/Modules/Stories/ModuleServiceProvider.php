@@ -37,6 +37,7 @@ use App\Modules\Stories\Services\RankingService;
 use App\Modules\Stories\Services\RecommendationService;
 use App\Modules\Stories\Services\TrendingService;
 use App\Modules\Stories\Services\StaffPicksService;
+use App\Modules\Stories\Services\TagAttachmentService;
 use App\Modules\Tags\Services\TagValidator;
 use App\Modules\Tags\Models\TagFilter;
 use App\Modules\Muted\Services\MuteService;
@@ -144,6 +145,16 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
 		});
 
         // ================================================================
+        // TagAttachmentService (общий для Recommendation и Trending)
+        // ================================================================
+
+        $container->singleton(TagAttachmentService::class, function(Container $c) {
+            return new TagAttachmentService(
+                $c->get(Database::class)
+            );
+        });
+
+        // ================================================================
         // СЕРВИСЫ (с кэшированием через CacheHelper)
         // ================================================================
 
@@ -152,14 +163,16 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
                 $c->get(Database::class),
                 $c->get(StoryView::class),
                 $c->get(SubscriptionService::class),
-                $c->get(TagFilter::class)
+                $c->get(TagFilter::class),
+                $c->get(TagAttachmentService::class)
             );
         });
 
         $container->singleton(TrendingService::class, function(Container $c) {
             return new TrendingService(
                 $c->get(Database::class),
-                $c->get(CacheHelper::class)
+                $c->get(CacheHelper::class),
+                $c->get(TagAttachmentService::class)
             );
         });
 

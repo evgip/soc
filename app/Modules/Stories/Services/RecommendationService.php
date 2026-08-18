@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Stories\Services;
 
-use W3a\Core\Foundation\Container;
 use W3a\Core\Database\Database;
 use App\Modules\Stories\Models\StoryView;
 use App\Modules\Subscriptions\Services\SubscriptionService;
@@ -16,17 +15,20 @@ class RecommendationService
     private StoryView $storyView;
     private SubscriptionService $subscriptionService;
     private TagFilter $tagFilter;
+    private TagAttachmentService $tagAttachment;
 
     public function __construct(
         Database $db,
         StoryView $storyView,
         SubscriptionService $subscriptionService,
-        TagFilter $tagFilter
+        TagFilter $tagFilter,
+        TagAttachmentService $tagAttachment
     ) {
         $this->db = $db;
         $this->storyView = $storyView;
         $this->subscriptionService = $subscriptionService;
         $this->tagFilter = $tagFilter;
+        $this->tagAttachment = $tagAttachment;
     }
 
     public function getForYouFeed(int $userId, int $limit = 10): array
@@ -42,13 +44,14 @@ class RecommendationService
         $excludedTagIds = $this->tagFilter->getFilteredTagIds($userId);
 
         if (empty($followedUserIds) && empty($followedTagIds) && empty($topTags)) {
-            return $this->getPopularFallback($limit, [], $excludedTagIds);
+            return $this->getPopularFallback($limit, [], $excludedTagIds, $userId);
         }
 
         $readTagIds = array_column($topTags, 'tag_id');
         $allTagIds = array_unique(array_merge($followedTagIds, $readTagIds));
 
         $stories = $this->getRecommendedStories(
+            $userId,
             $followedUserIds,
             $allTagIds,
             $viewedStoryIds,
@@ -58,7 +61,7 @@ class RecommendationService
 
         if (count($stories) < $limit) {
             $excludeIds = array_column($stories, 'id');
-            $popular = $this->getPopularFallback($limit - count($stories), $excludeIds, $excludedTagIds);
+            $popular = $this->getPopularFallback($limit - count($stories), $excludeIds, $excludedTagIds, $userId);
             $stories = array_merge($stories, $popular);
         }
 
@@ -66,6 +69,7 @@ class RecommendationService
     }
 
     private function getRecommendedStories(
+        int $userId,
         array $followedUserIds,
         array $tagIds,
         array $excludeStoryIds,
@@ -75,6 +79,9 @@ class RecommendationService
         $where = ['s.deleted_at IS NULL'];
         $bindings = [];
 
+        $where[] = 's.user_id != ?';
+        $bindings[] = $userId;
+
         if (!empty($excludeStoryIds)) {
             $excludeStoryIds = array_map('intval', $excludeStoryIds);
             $placeholders = implode(',', array_fill(0, count($excludeStoryIds), '?'));
@@ -82,7 +89,6 @@ class RecommendationService
             $bindings = array_merge($bindings, $excludeStoryIds);
         }
 
-        // Не показываем истории, содержащие отфильтрованные (скрытые) теги
         if (!empty($excludedTagIds)) {
             $excludedTagIds = array_map('intval', $excludedTagIds);
             $placeholders = implode(',', array_fill(0, count($excludedTagIds), '?'));
@@ -133,16 +139,25 @@ class RecommendationService
         $stmt = $this->db->query($sql, $bindings);
         $stories = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        return $this->attachTags($stories);
+        return $this->tagAttachment->attach($stories);
     }
 
-    private function getPopularFallback(int $limit, array $excludeIds = [], array $excludedTagIds = []): array
-    {
+    private function getPopularFallback(
+        int $limit,
+        array $excludeIds = [],
+        array $excludedTagIds = [],
+        int $userId = 0
+    ): array {
         $where = [
             's.deleted_at IS NULL',
             's.created_at >= NOW() - INTERVAL 7 DAY'
         ];
         $bindings = [];
+
+        if ($userId > 0) {
+            $where[] = 's.user_id != ?';
+            $bindings[] = $userId;
+        }
 
         if (!empty($excludeIds)) {
             $placeholders = implode(',', array_fill(0, count($excludeIds), '?'));
@@ -150,7 +165,6 @@ class RecommendationService
             $bindings = array_merge($bindings, $excludeIds);
         }
 
-        // Не показываем истории, содержащие отфильтрованные (скрытые) теги
         if (!empty($excludedTagIds)) {
             $excludedTagIds = array_map('intval', $excludedTagIds);
             $placeholders = implode(',', array_fill(0, count($excludedTagIds), '?'));
@@ -180,46 +194,6 @@ class RecommendationService
         $stmt = $this->db->query($sql, $bindings);
         $stories = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-        return $this->attachTags($stories);
-    }
-
-    private function attachTags(array $stories): array
-    {
-        if (empty($stories)) {
-            return [];
-        }
-
-        $storyIds = array_column($stories, 'id');
-        $placeholders = implode(',', array_fill(0, count($storyIds), '?'));
-
-        $sql = "
-            SELECT 
-                tg.story_id,
-                t.slug,
-                t.name
-            FROM `taggings` tg
-            JOIN `tags` t ON tg.tag_id = t.id
-            WHERE tg.story_id IN ($placeholders)
-            ORDER BY t.slug ASC
-        ";
-
-        $stmt = $this->db->query($sql, $storyIds);
-        $tagsData = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
-
-        $tagsByStory = [];
-        foreach ($tagsData as $tag) {
-            $storyId = (int)$tag['story_id'];
-            $tagsByStory[$storyId][] = [
-                'slug' => $tag['slug'],
-                'name' => $tag['name'],
-            ];
-        }
-
-        foreach ($stories as &$story) {
-            $storyId = (int)$story['id'];
-            $story['tags_with_names'] = $tagsByStory[$storyId] ?? [];
-        }
-
-        return $stories;
+        return $this->tagAttachment->attach($stories);
     }
 }
