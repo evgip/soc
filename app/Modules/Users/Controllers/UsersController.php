@@ -22,9 +22,6 @@ use App\Modules\Users\Exceptions\AvatarUploadException;
 use App\Modules\Users\Requests\UpdateSettingsRequest;
 use App\Modules\Users\Requests\ChangePasswordRequest;
 
-/**
- * Контроллер для управления профилями пользователей и настройками аккаунта.
- */
 class UsersController extends BaseController
 {
     private function getUserService(): UserService
@@ -36,10 +33,6 @@ class UsersController extends BaseController
     {
         return $this->service(AvatarService::class);
     }
-
-    // =========================================================================
-    // ОСНОВНЫЕ ДЕЙСТВИЯ
-    // =========================================================================
 
     public function index(): ViewResponse
     {
@@ -83,11 +76,9 @@ class UsersController extends BaseController
 			pageData: ['title' => 'Публикации ' . e($username)]
 		);
 
-		// Загружаем коллекции пользователя
 		$collectionModel = $this->container->get(\App\Modules\Collections\Models\Collection::class);
 		$allCollections = $collectionModel->getByAuthor((int)$user['id']);
 		
-		// Фильтруем приватные коллекции для не-владельцев
 		$isOwner = $userContext['isLoggedIn'] && $userContext['id'] === (int)$user['id'];
 		if (!$isOwner) {
 			$allCollections = array_filter($allCollections, fn($c) => !empty($c['is_public']));
@@ -95,11 +86,8 @@ class UsersController extends BaseController
 		}
 		
 		$collectionsCount = count($allCollections);
-		
-		// Берём только первые 3 коллекции для превью
 		$collections = array_slice($allCollections, 0, 3);
 		
-		// Формируем полные URL обложек
 		$coverService = $this->service(\App\Modules\Collections\Services\CollectionCoverService::class);
 		foreach ($collections as &$collection) {
 			$collection['cover_url'] = !empty($collection['cover_image'])
@@ -124,15 +112,10 @@ class UsersController extends BaseController
 		]);
 	}
 
-    /**
-     * Используем общий Response, так как метод может вернуть 
-     * либо ViewResponse (успех), либо RedirectResponse (если пользователь не найден).
-     */
     public function settings(): Response
     {
         $userContext = $this->getUserContext();
-        
-        // Вспомогательный метод теперь сам вернет RedirectResponse, если пользователя нет
+
         $userOrRedirect = $this->getUserWithProfileOrRedirect($userContext['id']);
 
         if ($userOrRedirect instanceof RedirectResponse) {
@@ -150,13 +133,6 @@ class UsersController extends BaseController
         ]);
     }
 
-    // =========================================================================
-    // ОБРАБОТКА ФОРМ (POST)
-    // =========================================================================
-
-    /**
-     * Обновление настроек профиля пользователя.
-     */
 	public function updateSettings(): RedirectResponse
 	{
 		$userContext = $this->getUserContext();
@@ -197,16 +173,21 @@ class UsersController extends BaseController
 				'avatar' => $newAvatarFilename
 			]);
 
-			$this->getUserService()->updateSettings($userContext['id'], [
-				'notify_on_reply'               => (int)($validated['notify_on_reply'] ?? 0),
-				'notify_on_story_comment'       => (int)($validated['notify_on_story_comment'] ?? 0),
-				'notify_on_mention'             => (int)($validated['notify_on_mention'] ?? 0),
-				'notify_on_message'             => (int)($validated['notify_on_message'] ?? 0),
-				'notify_on_collection_update'   => (int)($validated['notify_on_collection_update'] ?? 0),
-				'email_notifications'           => (int)($validated['email_notifications'] ?? 0),
-			]);
-
 			$this->container->get(Session::class)->set('user_avatar', $newAvatarFilename);
+
+			// Обновляем настройки уведомлений только если в форме ЕСТЬ соответствующие поля.
+			// Если форма отправлена без галочек (например, форма аватара) — пропускаем,
+			// чтобы не сбрасывать все уведомления в ноль.
+			if ($this->hasNotificationFields()) {
+				$this->getUserService()->updateSettings($userContext['id'], [
+					'notify_on_reply'               => (int)($validated['notify_on_reply'] ?? 0),
+					'notify_on_story_comment'       => (int)($validated['notify_on_story_comment'] ?? 0),
+					'notify_on_mention'             => (int)($validated['notify_on_mention'] ?? 0),
+					'notify_on_message'             => (int)($validated['notify_on_message'] ?? 0),
+					'notify_on_collection_update'   => (int)($validated['notify_on_collection_update'] ?? 0),
+					'email_notifications'           => (int)($validated['email_notifications'] ?? 0),
+				]);
+			}
 
 			MessageBag::flashMessage('success', 'Настройки успешно сохранены.');
 			return $this->redirect($targetUrl);
@@ -222,9 +203,30 @@ class UsersController extends BaseController
 		}
 	}
 
-    /**
-     * Изменение пароля пользователя.
-     */
+	/**
+	 * Проверяет, есть ли в текущем POST-запросе поля настроек уведомлений.
+	 * Нужно чтобы отличать сабмит формы профиля (аватар/email/bio) от формы уведомлений.
+	 */
+	private function hasNotificationFields(): bool
+	{
+		$keys = [
+			'notify_on_reply',
+			'notify_on_story_comment',
+			'notify_on_mention',
+			'notify_on_message',
+			'notify_on_collection_update',
+			'email_notifications',
+		];
+
+		foreach ($keys as $key) {
+			if ($this->request->has([$key])) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function updatePassword(): RedirectResponse
 	{
 		$userContext = $this->getUserContext();
@@ -259,10 +261,6 @@ class UsersController extends BaseController
 		}
 	}
 
-    // =========================================================================
-    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
-    // =========================================================================
-
     private function getUserByUsername(string $username): array
     {
         $userModel = $this->container->get(User::class);
@@ -276,9 +274,6 @@ class UsersController extends BaseController
         return $user;
     }
 
-    /**
-     * Возвращает массив данных пользователя ИЛИ объект RedirectResponse для перенаправления.
-     */
     private function getUserWithProfileOrRedirect(int $userId): array|RedirectResponse
     {
         $user = $this->getUserService()->getUserWithProfile($userId);
