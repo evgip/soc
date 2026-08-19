@@ -503,91 +503,6 @@ class Story extends Model
     // ============================================================
 
     /**
-     * Создать черновик
-     */
-    public function createDraft(array $data): int
-    {
-        $sql = "INSERT INTO stories 
-                (user_id, title, description_text, description_json, 
-                 cover_image, word_count, reading_time, 
-                 status, created_at, updated_at)
-                VALUES 
-                (:user_id, :title, :description_text, :description_json,
-                 :cover_image, :word_count, :reading_time,
-                 'draft', NOW(), NOW())";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'user_id' => $data['user_id'],
-            'title' => $data['title'] ?? 'Без названия',
-            'description_text' => $data['description_text'] ?? '',
-            'description_json' => $data['description_json'] ?? '{}',
-            'cover_image' => $data['cover_image'] ?? null,
-            'word_count' => $data['word_count'] ?? 0,
-            'reading_time' => $data['reading_time'] ?? 0,
-        ]);
-
-        return (int)$this->db->lastInsertId();
-    }
-
-    /**
-     * Обновить черновик
-     */
-    public function updateDraft(int $draftId, int $userId, array $data): bool
-    {
-        $fields = [];
-        $params = ['id' => $draftId, 'user_id' => $userId];
-
-        $allowedFields = [
-            'title', 'description_text', 'description_json', 
-            'cover_image', 'word_count', 'reading_time', 'slug'
-        ];
-
-        foreach ($allowedFields as $field) {
-            if (array_key_exists($field, $data)) {
-                $fields[] = "$field = :$field";
-                $params[$field] = $data[$field];
-            }
-        }
-
-        if (empty($fields)) {
-            return true;
-        }
-
-        $fields[] = "updated_at = NOW()";
-        $fields[] = "is_autosaved = " . (!empty($data['is_autosaved']) ? '1' : '0');
-
-        $sql = "UPDATE stories 
-                SET " . implode(', ', $fields) . "
-                WHERE id = :id 
-                AND user_id = :user_id 
-                AND status = 'draft'
-                AND deleted_at IS NULL";
-
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
-    }
-
-    /**
-     * Найти черновик пользователя
-     */
-    public function findDraft(int $id, int $userId): ?array
-    {
-        $sql = "SELECT * FROM stories 
-                WHERE id = :id 
-                AND user_id = :user_id 
-                AND status = 'draft'
-                AND deleted_at IS NULL
-                LIMIT 1";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id, 'user_id' => $userId]);
-
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $result ?: null;
-    }
-
-    /**
      * Получить черновики пользователя
      */
     public function getUserDrafts(int $userId, int $page = 1, int $perPage = 20): array
@@ -613,84 +528,6 @@ class Story extends Model
     }
 
     /**
-     * Опубликовать черновик
-     */
-    public function publishDraft(int $draftId, int $userId): bool
-    {
-        $draft = $this->findDraft($draftId, $userId);
-        if (!$draft) {
-            return false;
-        }
-
-        $slug = $draft['slug'] ?? $this->generateSlug($draft['title'], $draftId);
-
-        $sql = "UPDATE stories 
-                SET status = 'published', 
-                    published_at = NOW(),
-                    slug = :slug,
-                    updated_at = NOW()
-                WHERE id = :id 
-                AND user_id = :user_id 
-                AND status = 'draft'";
-
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            'id' => $draftId, 
-            'user_id' => $userId,
-            'slug' => $slug
-        ]);
-    }
-
-    /**
-     * Удалить черновик (мягкое удаление)
-     */
-    public function deleteDraft(int $draftId, int $userId): bool
-    {
-        $sql = "UPDATE stories 
-                SET deleted_at = NOW()
-                WHERE id = :id 
-                AND user_id = :user_id 
-                AND status = 'draft'";
-
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['id' => $draftId, 'user_id' => $userId]);
-    }
-
-    /**
-     * Автосохранение черновика
-     */
-	public function autosaveDraft(int $draftId, int $userId, array $data): bool
-	{
-		$sql = "UPDATE stories 
-				SET title = :title,
-					description_text = :description_text,
-					description_json = :description_json,
-					cover_image = :cover_image,
-					paywall_type = :paywall_type,
-					word_count = :word_count,
-					reading_time = :reading_time,
-					updated_at = NOW(),
-					is_autosaved = 1
-				WHERE id = :id 
-				AND user_id = :user_id 
-				AND status = 'draft'
-				AND deleted_at IS NULL";
-
-		$stmt = $this->db->prepare($sql);
-		return $stmt->execute([
-			'id' => $draftId,
-			'user_id' => $userId,
-			'title' => $data['title'] ?? '',
-			'description_text' => $data['description_text'] ?? '',
-			'description_json' => $data['description_json'] ?? '{}',
-			'cover_image' => $data['cover_image'] ?? null,
-			'paywall_type' => $data['paywall_type'] ?? 'none',
-			'word_count' => $data['word_count'] ?? 0,
-			'reading_time' => $data['reading_time'] ?? 0,
-		]);
-	}
-
-    /**
      * Подсчитать черновики пользователя
      */
     public function countUserDrafts(int $userId): int
@@ -704,24 +541,6 @@ class Story extends Model
         $stmt->execute(['user_id' => $userId]);
 
         return (int)$stmt->fetchColumn();
-    }
-
-    /**
-     * Получить статью по slug
-     */
-    public function findBySlug(string $slug): ?array
-    {
-        $sql = "SELECT * FROM stories 
-                WHERE slug = :slug 
-                AND deleted_at IS NULL 
-                AND status = 'published'
-                LIMIT 1";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['slug' => $slug]);
-
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $result ?: null;
     }
 
 	/**

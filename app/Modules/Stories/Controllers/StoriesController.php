@@ -463,30 +463,6 @@ class StoriesController extends BaseController
         return $data;
     }
 
-    private function validateAuthor(string $username): string
-    {
-        $username = trim($username);
-
-        if ($username === '') {
-            return '';
-        }
-
-        $validator = $this->container->get(\W3a\Core\Support\Validator::class);
-        $validator->validate(
-            ['username' => $username],
-            ['username' => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/']
-        );
-
-        if (!$validator->isValid()) {
-            return '';
-        }
-
-        $userModel = $this->container->get(User::class);
-        $user = $userModel->findByName($username);
-
-        return $user ? $username : '';
-    }
-
     // =========================================================================
     // ЛЕНТА ПОЛЬЗОВАТЕЛЯ
     // =========================================================================

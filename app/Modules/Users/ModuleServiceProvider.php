@@ -20,7 +20,6 @@ use App\Modules\Users\Events\UserUnbanned;
 
 use App\Modules\Users\Models\User;
 use App\Modules\Users\Models\Notification;
-use App\Modules\Users\Models\RateLimit;
 use App\Modules\Users\Services\UserService;
 use App\Modules\Users\Services\AvatarService;
 
@@ -37,10 +36,6 @@ class ModuleServiceProvider extends BaseModuleServiceProvider
         
         $container->singleton(Notification::class, function (Container $c) {
             return new Notification($c->get(Database::class), $c->get(Logger::class));
-        });
-        
-        $container->singleton(RateLimit::class, function (Container $c) {
-            return new RateLimit($c->get(Database::class), $c->get(Logger::class));
         });
         
         // === СЕРВИСЫ ===

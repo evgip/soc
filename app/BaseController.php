@@ -93,9 +93,6 @@ abstract class BaseController extends CoreController
 
             $data['unreadNotificationsCount'] = $this->getUnreadNotificationsCount((int)$userId);
 			
-			// Пока убрана. Роль не очевидна: показывает количество новых статей (публикаций), опубликованных пользователями (или в тегах), на которых вы подписаны, за последние 24 часа.
-			//$data['newSubscribedCount'] = $this->getNewSubscribedStoriesCount((int)$userId);
-
             if ($data['currentUser']['isModerator']) {
                 $data['pendingFlagsCount'] = $this->getPendingFlagsCount();
                 $data['activeSuggestionsCount'] = $this->getActiveSuggestionsCount();
@@ -143,24 +140,6 @@ abstract class BaseController extends CoreController
             return 0;
         }
     }
-
-	private function getNewSubscribedStoriesCount(int $userId): int
-	{
-		try {
-			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
-			$followedUserIds = $subscriptionService->getFollowedUserIds($userId);
-			$followedTagIds = $subscriptionService->getFollowedTagIds($userId);
-			
-			if (empty($followedUserIds) && empty($followedTagIds)) {
-				return 0;
-			}
-			
-			$storyModel = $this->container->get(\App\Modules\Stories\Models\Story::class);
-			return $storyModel->countNewSubscribed($userId, $followedUserIds, $followedTagIds);
-		} catch (\Throwable $e) {
-			return 0;
-		}
-	}
 
     // =========================================================================
     // СПЕЦИФИЧНАЯ БИЗНЕС-ЛОГИКА И ХЕЛПЕРЫ

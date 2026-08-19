@@ -57,8 +57,6 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
     $router->add('GET', '/stories/create', StoriesController::class . '@showCreateForm', 'story.form');
     $router->add('POST', '/stories/create', StoriesController::class . '@create', 'story.create');
 	
-	$router->add('POST', '/stories/fetch-url-title', StoriesController::class . '@fetchUrlTitle', 'story.fetch_url_title');
-
     // Предпросмотр Markdown
     $router->add('POST', '/stories/preview', StoriesController::class . '@preview', 'story.preview');
 
@@ -73,10 +71,6 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
 	
     // --- Черновики ---
 	$router->add('GET', '/drafts', StoriesController::class . '@drafts', 'drafts.index');
-	//$router->add('GET', '/drafts/new', StoriesController::class . '@newDraft', 'drafts.new');
-	//$router->add('POST', '/stories/{id}/autosave', StoriesController::class . '@autosaveDraft', 'drafts.autosave');
-	//$router->add('POST', '/stories/{id}/publish-draft', StoriesController::class . '@publishDraft', 'drafts.publish');
-    
  
 });
 
