@@ -185,11 +185,11 @@
 
     <div class="form-field-group">
         <label for="confirm_password"><strong>Подтвердите новый пароль</strong></label>
-        <input type="password" id="confirm_password" name="password_confirm" 
-               class="form-input-wide <?= $errors->hasError('password_confirm') ? 'is-danger' : '' ?>" 
+        <input type="password" id="confirm_password" name="new_password_confirmation" 
+               class="form-input-wide <?= $errors->hasError('new_password_confirmation') ? 'is-danger' : '' ?>" 
                required minlength="6" placeholder="Повторите новый пароль">
-        <?php if ($errors->hasError('password_confirm')): ?>
-            <small class="form-error-text"><?= $errors->firstError('password_confirm') ?></small>
+        <?php if ($errors->hasError('new_password_confirmation')): ?>
+            <small class="form-error-text"><?= $errors->firstError('new_password_confirmation') ?></small>
         <?php endif; ?>
     </div>
 
