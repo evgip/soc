@@ -283,11 +283,8 @@ $totalStories = count($stories);
 			const data = await resp.json();
 
 			if (data.success) {
-				// Обновляем только список статей, БЕЗ перезагрузки страницы
-				await loadAvailableStories();
-				
-				// Обновляем счётчик статей в шапке
-				updateStoriesCount(action === 'add' ? 1 : -1);
+				// Перезагружаем страницу, чтобы оглавление и счётчик обновились
+				location.reload();
 			} else {
 				alert(data.error || 'Ошибка');
 			}
@@ -297,37 +294,7 @@ $totalStories = count($stories);
 		}
 	}
 
-	// Обновляем счётчик статей без перезагрузки страницы
-	function updateStoriesCount(delta) {
-		const metaEl = document.querySelector('.collection-show-header__meta');
-		if (!metaEl) return;
-		
-		// Находим span со счётчиком (третий span после divider)
-		const spans = metaEl.querySelectorAll('span');
-		for (const span of spans) {
-			const text = span.textContent.trim();
-			// Ищем span вида "3 статьи" или "5 статей"
-			if (/^\d+\s+(статья|статьи|статей)$/i.test(text)) {
-				const match = text.match(/^(\d+)/);
-				if (match) {
-					const currentCount = parseInt(match[1], 10);
-					const newCount = currentCount + delta;
-					
-					// Правильное склонение
-					const plural = (n) => {
-						if (n % 10 === 1 && n % 100 !== 11) return 'статья';
-						if ([2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100)) return 'статьи';
-						return 'статей';
-					};
-					
-					span.textContent = `${newCount} ${plural(newCount)}`;
-				}
-				break;
-			}
-		}
-	}
-
-    // Удаление статьи из коллекции (на странице оглавления)
+	// Удаление статьи из коллекции (на странице оглавления)
     document.querySelectorAll('.collection-toc__remove').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (!confirm('Удалить статью из коллекции?')) return;

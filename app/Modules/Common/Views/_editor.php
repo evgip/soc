@@ -239,15 +239,12 @@ document.addEventListener('DOMContentLoaded', function() {
             config: {
                 endpoints: { byFile: '/stories/upload-image' },
                 field: 'image',
-                types: 'image/jpeg, image/png, image/gif, image/webp',
-                additionalRequestHeaders: {
-                    'X-XSRF-TOKEN': '<?= csp_nonce() ?>'
-                }
+                types: 'image/jpeg, image/png, image/gif, image/webp'
             }
         };
     }
 
-	const editor = new EditorJS({
+    const editor = new EditorJS({
 		holder: containerId,
 		placeholder: '<?= e($editor['placeholder']) ?>',
 		i18n: editorI18n,
