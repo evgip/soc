@@ -42,15 +42,28 @@ class ImageProcessorService
 		$outputDir = dirname($fullPath);
 		$createdFiles = [];
 
+		// Исходник уже в формате WebP?
+		// В этом случае основная версия совпадает с исходным файлом по пути,
+		// поэтому его нельзя перезаписывать и тем более удалять.
+		$isWebpSource = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION)) === 'webp';
+
 		// 🆕 Если изображение ОЧЕНЬ маленькое (< 100px) — не создаём версии вообще
 		if ($originalWidth < 100 && $originalHeight < 100) {
 			$this->logger->info("Image too small ({$originalWidth}x{$originalHeight}), skipping variants");
 			
 			$webpMain = $outputDir . '/' . $baseName . '.webp';
-			imagewebp($image, $webpMain, 85);
+
+			if (!$isWebpSource) {
+				imagewebp($image, $webpMain, 85);
+			}
+
 			imagedestroy($image);
-			
-			@unlink($fullPath); // Удаляем оригинал
+
+			// Удаляем оригинал только если это НЕ исходный webp-файл
+			if (!$isWebpSource) {
+				@unlink($fullPath);
+			}
+
 			return $webpMain;
 		}
 
@@ -104,13 +117,18 @@ class ImageProcessorService
 
 		// Основная WebP версия
 		$webpMain = $outputDir . '/' . $baseName . '.webp';
-		imagewebp($image, $webpMain, 85);
-		$createdFiles[] = $webpMain;
+
+		// Если исходник уже .webp — основная версия и есть исходный файл,
+		// перекодировать и удалять его не нужно.
+		if (!$isWebpSource) {
+			imagewebp($image, $webpMain, 85);
+			$createdFiles[] = $webpMain;
+		}
 
 		imagedestroy($image);
 
-		// Удаляем оригинал
-		if (count($createdFiles) > 0) {
+		// Удаляем оригинал только если это НЕ исходный webp-файл
+		if (count($createdFiles) > 0 && !$isWebpSource) {
 			@unlink($fullPath);
 		}
 
