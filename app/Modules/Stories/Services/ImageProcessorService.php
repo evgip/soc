@@ -23,7 +23,7 @@ class ImageProcessorService
      */
 	public function process(string $fullPath): string|false
 	{
-		if (!extension_loaded('gd') || !file_exists($fullPath)) {
+		if (!extension_loaded('gd') || !function_exists('imagewebp') || !file_exists($fullPath)) {
 			return false;
 		}
 
