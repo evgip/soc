@@ -33,6 +33,10 @@ class ImageProcessorService
 			return false;
 		}
 
+		if (!imageistruecolor($image)) {
+			imagepalettetotruecolor($image);
+		}
+
 		$image = $this->applyOrientation($image, $orientation);
 
 		$originalWidth = imagesx($image);

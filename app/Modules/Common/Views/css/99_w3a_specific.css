@@ -926,7 +926,7 @@ li.comment {
 }
 
 .editorjs-image--border img {
-  border: 1px solid var(--color-box-border);
+  border: 15px solid var(--color-box-border);
 }
 
 .editorjs-image--background {

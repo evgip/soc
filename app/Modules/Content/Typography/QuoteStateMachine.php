@@ -173,11 +173,17 @@ class QuoteStateMachine
             return ['char' => '»', 'new_state' => self::OUTSIDE];
         }
 
-        // По умолчанию считаем кавычку открывающей
-        if ($state === self::OUTSIDE) {
-            return ['char' => '«', 'new_state' => self::INSIDE_LEVEL_1];
+        // Неоднозначный случай: мы внутри кавычек, а перед символом
+        // стоит знак препинания (?, !, ., ,) — это тоже закрывающая кавычка
+        if ($state !== self::OUTSIDE) {
+            if ($state === self::INSIDE_LEVEL_2) {
+                return ['char' => '"', 'new_state' => self::INSIDE_LEVEL_1];
+            }
+            return ['char' => '»', 'new_state' => self::OUTSIDE];
         }
-        return ['char' => '„', 'new_state' => self::INSIDE_LEVEL_2];
+
+        // По умолчанию (вне кавычек) считаем кавычку открывающей
+        return ['char' => '«', 'new_state' => self::INSIDE_LEVEL_1];
     }
 
     /**
