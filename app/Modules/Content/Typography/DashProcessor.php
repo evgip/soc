@@ -89,8 +89,14 @@ class DashProcessor
             $prev = $this->getPrev($tokens, $i);
             $next = $this->getNext($tokens, $i);
 
+            // Окружён ли дефис пробелами (проверяем непосредственных соседей)?
+            // Если нет — это дефис внутри слова/числительного ("1937-й", "что-то", "10-20"),
+            // а не тире между словами.
+            $spaceBefore = ($i > 0 && $tokens[$i - 1]['type'] === self::TOKEN_SPACE);
+            $spaceAfter = ($i < count($tokens) - 1 && $tokens[$i + 1]['type'] === self::TOKEN_SPACE);
+
             // Принимаем решение о замене
-            $result .= $this->decideDash($prev, $next);
+            $result .= $this->decideDash($prev, $next, $spaceBefore, $spaceAfter);
         }
 
         return $result;
@@ -206,9 +212,11 @@ class DashProcessor
      * 
      * @param array|null $prev Предыдущий непробельный токен
      * @param array|null $next Следующий непробельный токен
+     * @param bool $spaceBefore Есть ли пробел непосредственно перед дефисом
+     * @param bool $spaceAfter Есть ли пробел непосредственно после дефиса
      * @return string Замена для дефиса
      */
-    private function decideDash(?array $prev, ?array $next): string
+    private function decideDash(?array $prev, ?array $next, bool $spaceBefore, bool $spaceAfter): string
     {
         $prevVal = $prev['value'] ?? '';
         $prevType = $prev['type'] ?? null;
@@ -220,12 +228,19 @@ class DashProcessor
             return '— ';
         }
 
-        // Правило 2: диапазон чисел: "10-20" → "10–20" (en-dash)
-        if (
-            $prevType === self::TOKEN_WORD && is_numeric($prevVal) &&
-            $nextType === self::TOKEN_WORD && is_numeric($nextVal)
-        ) {
-            return '–'; // Короткое тире без пробелов
+        // Дефис внутри слова/числительного (без пробелов с обеих сторон).
+        // Оставляем как есть, кроме диапазона чисел "10-20" → en-dash.
+        if (!$spaceBefore && !$spaceAfter) {
+            // Диапазон чисел: "10-20" → "10–20" (en-dash)
+            if (
+                $prevType === self::TOKEN_WORD && is_numeric($prevVal) &&
+                $nextType === self::TOKEN_WORD && is_numeric($nextVal)
+            ) {
+                return '–'; // Короткое тире без пробелов
+            }
+
+            // Внутрисловный дефис: "1937-й", "что-то", "из-за"
+            return '-';
         }
 
         // Правило 3: между словами: "слово - слово" → "слово — слово"
