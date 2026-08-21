@@ -14,7 +14,7 @@ $bodyClass = Layout::getBodyClass();
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="csrf-token" content="<?= e($csrf_token ?? '') ?>">
-	<title><?= e($title ?? 'Лента историй') ?> | <?= e(app_name()); ?> <?= __('forum') ?></title>
+	<title><?= e($title ?? 'Лента историй') ?> | <?= e(app_name()); ?> <?= __('articles') ?></title>
 	<?= \W3a\Core\View\OpenGraph::render() ?>
 
 	<?php if (!empty($rssFeed)): ?>

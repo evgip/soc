@@ -520,7 +520,7 @@ article {
   max-width: 100%;
   height: auto;
   display: block;
-  margin: 2rem auto;
+  margin: 1rem auto;
   border-radius: var(--radius-sm);
 }
 
@@ -941,7 +941,6 @@ li.comment {
 }
 
 .editorjs-image figcaption {
-  margin-top: 8px;
   font-size: 0.85rem;
   color: var(--opacity-fg-54);
   text-align: center;
@@ -2222,11 +2221,6 @@ li.story .staff-pick-badge {
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
-  }
-
-  .editorjs-image figcaption {
-    font-size: 0.9rem;
-    margin-top: 12px;
   }
 }
 

@@ -12,7 +12,7 @@ return [
 	'tags' => 'Tags',
 	'home' => 'Home',
 	'profile' => 'Profile',
-	'forum' => 'forum',
+	'articles' => 'articles',
 	'login' => 'Sign in',
 	'logout' => 'Sign out',
 	'register' => 'Register',

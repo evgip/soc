@@ -680,33 +680,60 @@ if (!function_exists('render_editorjs_content')) {
 						
 						$classString = implode(' ', $classes);
 
-						// Генерируем URL для полной версии (large)
-						$parsedUrl = parse_url($url);
-						$urlPath = $parsedUrl['path'] ?? '';
-						$pathInfo = pathinfo($urlPath);
-						$baseName = $pathInfo['filename'];
-						$extension = $pathInfo['extension'] ?? 'webp';
-						$dir = $pathInfo['dirname'] ?? '';
-						
-						$baseUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') 
-								 . ($parsedUrl['host'] ?? '') 
-								 . $dir . '/' . $baseName;
-						
-						// 🆕 URL полной версии для лайтбокса
-						$fullUrl = $baseUrl . '_large.' . $extension;
+						// 🆕 Реально созданные версии (передаются при загрузке файла).
+						// Используем их для <picture>/srcset — никаких выдуманных суффиксов.
+						$variants = $d['file']['variants'] ?? null;
+						$fullUrl = '';
 
-						// Обёртка с кликом для лайтбокса
-						$html .= "<figure class=\"{$classString}\" data-lightbox=\"true\">\n";
-						$html .= "    <div class=\"lightbox-trigger\" data-full-src=\"{$fullUrl}\" data-caption=\"{$caption}\">\n";
-						
-						// Picture с обычной lazy-загрузкой
-						$html .= "        <picture>\n";
-						if (function_exists('imageavif')) {
-							 $html .= "            <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
+						if (is_array($variants) && !empty($variants)) {
+							$large = $variants['large'] ?? [];
+							$medium = $variants['medium'] ?? [];
+							$small = $variants['small'] ?? [];
+
+							$fullUrl = $large['webp'] ?? $large['avif'] ?? $medium['webp'] ?? $url;
+
+							// Обёртка с кликом для лайтбокса
+							$html .= "<figure class=\"{$classString}\" data-lightbox=\"true\">\n";
+							$html .= "    <div class=\"lightbox-trigger\" data-full-src=\"{$fullUrl}\" data-caption=\"{$caption}\">\n";
+
+							$html .= "        <picture>\n";
+
+							if (function_exists('imageavif') && !empty($small['avif']) && !empty($medium['avif']) && !empty($large['avif'])) {
+								$html .= "            <source srcset=\"{$large['avif']}, {$medium['avif']} 800w, {$small['avif']} 400w\" type=\"image/avif\">\n";
+							}
+							if (!empty($small['webp']) && !empty($medium['webp']) && !empty($large['webp'])) {
+								$html .= "            <source srcset=\"{$large['webp']}, {$medium['webp']} 800w, {$small['webp']} 400w\" type=\"image/webp\">\n";
+							}
+
+							$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
+							$html .= "        </picture>\n";
+						} else {
+							// Fallback для старых постов: генерируем суффиксы из имени файла
+							$parsedUrl = parse_url($url);
+							$urlPath = $parsedUrl['path'] ?? '';
+							$pathInfo = pathinfo($urlPath);
+							$baseName = $pathInfo['filename'];
+							$extension = $pathInfo['extension'] ?? 'webp';
+							$dir = $pathInfo['dirname'] ?? '';
+
+							$baseUrl = (isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '') 
+									 . ($parsedUrl['host'] ?? '') 
+									 . $dir . '/' . $baseName;
+
+							$fullUrl = $baseUrl . '_large.' . $extension;
+
+							// Обёртка с кликом для лайтбокса
+							$html .= "<figure class=\"{$classString}\" data-lightbox=\"true\">\n";
+							$html .= "    <div class=\"lightbox-trigger\" data-full-src=\"{$fullUrl}\" data-caption=\"{$caption}\">\n";
+
+							$html .= "        <picture>\n";
+							if (function_exists('imageavif')) {
+								 $html .= "            <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
+							}
+							$html .= "            <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
+							$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
+							$html .= "        </picture>\n";
 						}
-						$html .= "            <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
-						$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
-						$html .= "        </picture>\n";
 						
 						// 🆕 Иконка лупы (видна при hover)
 						$html .= "        <button type=\"button\" class=\"lightbox-icon\" aria-label=\"Открыть в полном размере\">\n";
@@ -895,7 +922,20 @@ if (!function_exists('get_story_first_image')) {
                     continue;
                 }
 
-                // Возвращаем URL нужного размера
+                // Если у файла есть реально созданные варианты — берём их
+                $variants = $block['data']['file']['variants'] ?? null;
+                if (is_array($variants)) {
+                    $variant = $variants[$size] ?? $variants['small'] ?? null;
+                    if (!empty($variant['webp'])) {
+                        return $variant['webp'];
+                    }
+                    if (!empty($variant['avif'])) {
+                        return $variant['avif'];
+                    }
+                    return $url;
+                }
+
+                // Fallback для старых постов: генерируем суффиксы из имени файла
                 return get_image_variant_url($url, $size);
             }
         }
@@ -941,7 +981,7 @@ if (!function_exists('get_image_variant_url')) {
         $baseName = $pathInfo['filename'] ?? '';
         $extension = $pathInfo['extension'] ?? 'webp';
 
-        // 🆕 Удаляем суффикс размера, если он уже есть (на случай повторного вызова)
+        // Удаляем суффикс размера, если он уже есть (на случай повторного вызова)
         $baseName = preg_replace('/_(small|medium|large)$/', '', $baseName);
 
         // Формируем новое имя файла с суффиксом

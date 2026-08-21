@@ -5,32 +5,48 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Services;
 
 use W3a\Core\Support\Logger;
+use W3a\Core\Storage\StorageManager;
 
 class ImageProcessorService
 {
     private Logger $logger;
+    private StorageManager $storage;
 
-    public function __construct(Logger $logger)
+    public function __construct(Logger $logger, StorageManager $storage)
     {
         $this->logger = $logger;
+        $this->storage = $storage;
     }
 
     /**
      * Конвертирует изображение в WebP/AVIF и УДАЛЯЕТ оригинал.
      * 
+     * Возвращает массив с фактически созданными версиями:
+     * [
+     *   'main'     => '/uploads/stories/2026/08/95568.webp',      // основная версия (webp или оригинал)
+     *   'variants' => [                                            // реально созданные размеры
+     *       'large'  => ['webp' => '/.../95568_large.webp', 'avif' => '/.../95568_large.avif'],
+     *       'medium' => [...],
+     *       'small'  => [...],
+     *   ],
+     * ]
+     * Ключи variants заполняются ТОЛЬКО для реально существующих файлов.
+     * 
      * @param string $fullPath Полный путь к оригиналу на диске
-     * @return string|false Путь к WebP версии или false при ошибке
+     * @return array Массив с 'main' и 'variants'
      */
-	public function process(string $fullPath): string|false
+	public function process(string $fullPath): array
 	{
+		$originalRelative = $this->storiesDisk()->relativePath($fullPath);
+
 		if (!extension_loaded('gd') || !function_exists('imagewebp') || !file_exists($fullPath)) {
-			return false;
+			return ['main' => $originalRelative, 'variants' => []];
 		}
 
 		$orientation = $this->readExifOrientation($fullPath);
 		$image = $this->loadImage($fullPath);
 		if (!$image) {
-			return false;
+			return ['main' => $originalRelative, 'variants' => []];
 		}
 
 		if (!imageistruecolor($image)) {
@@ -44,7 +60,7 @@ class ImageProcessorService
 
 		$baseName = pathinfo($fullPath, PATHINFO_FILENAME);
 		$outputDir = dirname($fullPath);
-		$createdFiles = [];
+		$variants = [];
 
 		// Исходник уже в формате WebP?
 		// В этом случае основная версия совпадает с исходным файлом по пути,
@@ -54,21 +70,18 @@ class ImageProcessorService
 		// 🆕 Если изображение ОЧЕНЬ маленькое (< 100px) — не создаём версии вообще
 		if ($originalWidth < 100 && $originalHeight < 100) {
 			$this->logger->info("Image too small ({$originalWidth}x{$originalHeight}), skipping variants");
-			
-			$webpMain = $outputDir . '/' . $baseName . '.webp';
 
 			if (!$isWebpSource) {
-				imagewebp($image, $webpMain, 85);
+				$webpMain = $outputDir . '/' . $baseName . '.webp';
+				if (imagewebp($image, $webpMain, 85)) {
+					imagedestroy($image);
+					@unlink($fullPath);
+					return ['main' => $this->storiesDisk()->relativePath($webpMain), 'variants' => []];
+				}
 			}
 
 			imagedestroy($image);
-
-			// Удаляем оригинал только если это НЕ исходный webp-файл
-			if (!$isWebpSource) {
-				@unlink($fullPath);
-			}
-
-			return $webpMain;
+			return ['main' => $originalRelative, 'variants' => []];
 		}
 
 		$sizes = [
@@ -82,18 +95,18 @@ class ImageProcessorService
 			if ($originalWidth <= $targetWidth) {
 				// Проверяем, не создали ли мы уже такую версию
 				$webpPath = $outputDir . '/' . $baseName . '_' . $name . '.webp';
-				
-				if (!file_exists($webpPath)) {
-					imagewebp($image, $webpPath, 85);
-					$createdFiles[] = $webpPath;
+
+				if (!file_exists($webpPath) && imagewebp($image, $webpPath, 85)) {
+					$variants[$name]['webp'] = $this->storiesDisk()->relativePath($webpPath);
 
 					if (function_exists('imageavif')) {
 						$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
-						imageavif($image, $avifPath, 80);
-						$createdFiles[] = $avifPath;
+						if (@imageavif($image, $avifPath, 80)) {
+							$variants[$name]['avif'] = $this->storiesDisk()->relativePath($avifPath);
+						}
 					}
 				}
-				
+
 				continue;
 			}
 
@@ -103,17 +116,19 @@ class ImageProcessorService
 
 			$resized = imagecreatetruecolor($targetWidth, $targetHeight);
 			$this->preserveTransparency($resized);
-			
+
 			imagecopyresampled($resized, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $originalWidth, $originalHeight);
 
 			$webpPath = $outputDir . '/' . $baseName . '_' . $name . '.webp';
-			imagewebp($resized, $webpPath, 85);
-			$createdFiles[] = $webpPath;
+			if (imagewebp($resized, $webpPath, 85)) {
+				$variants[$name]['webp'] = $this->storiesDisk()->relativePath($webpPath);
 
-			if (function_exists('imageavif')) {
-				$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
-				imageavif($resized, $avifPath, 80);
-				$createdFiles[] = $avifPath;
+				if (function_exists('imageavif')) {
+					$avifPath = $outputDir . '/' . $baseName . '_' . $name . '.avif';
+					if (@imageavif($resized, $avifPath, 80)) {
+						$variants[$name]['avif'] = $this->storiesDisk()->relativePath($avifPath);
+					}
+				}
 			}
 
 			imagedestroy($resized);
@@ -121,22 +136,28 @@ class ImageProcessorService
 
 		// Основная WebP версия
 		$webpMain = $outputDir . '/' . $baseName . '.webp';
+		$main = $originalRelative;
 
 		// Если исходник уже .webp — основная версия и есть исходный файл,
 		// перекодировать и удалять его не нужно.
 		if (!$isWebpSource) {
-			imagewebp($image, $webpMain, 85);
-			$createdFiles[] = $webpMain;
+			if (imagewebp($image, $webpMain, 85)) {
+				$main = $this->storiesDisk()->relativePath($webpMain);
+				@unlink($fullPath);
+			}
 		}
 
 		imagedestroy($image);
 
-		// Удаляем оригинал только если это НЕ исходный webp-файл
-		if (count($createdFiles) > 0 && !$isWebpSource) {
-			@unlink($fullPath);
-		}
+		return ['main' => $main, 'variants' => $variants];
+	}
 
-		return $webpMain;
+	/**
+	 * Возвращает диск 'stories'.
+	 */
+	private function storiesDisk(): \W3a\Core\Storage\LocalStorage
+	{
+		return $this->storage->disk('stories');
 	}
 
     private function readExifOrientation(string $path): int

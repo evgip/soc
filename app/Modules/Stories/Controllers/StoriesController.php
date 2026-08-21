@@ -611,21 +611,24 @@ class StoriesController extends BaseController
 
 			// 2. Конвертируем в WebP и удаляем оригинал
 			$processor = $this->service(\App\Modules\Stories\Services\ImageProcessorService::class);
-			$webpPath = $processor->process($fullPath);
+			$result = $processor->process($fullPath);
 
-			if (!$webpPath) {
-				// Конвертация не удалась - оставляем оригинал
-				$url = $storage->disk('stories')->url($path);
-			} else {
-				// Возвращаем URL WebP версии
-				$relativePath = $storage->disk('stories')->relativePath($webpPath);
-				$url = $storage->disk('stories')->url($relativePath);
+			// 3. Возвращаем URL основной версии и реально созданные варианты
+			$relativePath = $result['main'];
+			$url = $storage->disk('stories')->url($relativePath);
+
+			$variants = [];
+			foreach ($result['variants'] as $size => $formats) {
+				foreach ($formats as $format => $variantPath) {
+					$variants[$size][$format] = $storage->disk('stories')->url($variantPath);
+				}
 			}
 
 			return $this->json([
 				'success' => 1,
 				'file' => [
 					'url' => $url,
+					'variants' => $variants,
 				]
 			]);
 

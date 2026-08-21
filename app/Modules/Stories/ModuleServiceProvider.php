@@ -185,7 +185,8 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
 
 		$container->singleton(\App\Modules\Stories\Services\ImageProcessorService::class, function(Container $c) {
 			return new \App\Modules\Stories\Services\ImageProcessorService(
-				$c->get(Logger::class)
+				$c->get(Logger::class),
+				$c->get(StorageManager::class)
 			);
 		});
 
