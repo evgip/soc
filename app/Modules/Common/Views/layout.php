@@ -100,15 +100,6 @@ $bodyClass = Layout::getBodyClass();
 						<span id="header-notification-badge" class="header-notification-badge"><?= (int)($unreadNotificationsCount ?? 0) ?></span>
 					</a>
 
-					<?php if (!empty($currentUser['isModerator'])): ?>
-						<a href="/admin/flags" class="nav-flag">
-							🚩
-							<?php if (($pendingFlagsCount ?? 0) > 0): ?>
-								<span class="badge">(<?= (int)$pendingFlagsCount ?>)</span>
-							<?php endif; ?>
-						</a>
-					<?php endif; ?>
-
 					<div class="navbar-user-dropdown-container" id="user-dropdown-wrapper">
 
 						<button class="dropdown-trigger-btn" id="user-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
@@ -119,7 +110,7 @@ $bodyClass = Layout::getBodyClass();
 									<span class="mini-avatar-placeholder"><?= e(mb_substr($currentUser['name'] ?? '?', 0, 1)) ?></span>
 								<?php endif; ?>
 
-								<?php if (($unreadNotificationsCount ?? 0) > 0): ?>
+								<?php if (($unreadNotificationsCount ?? 0) > 0 || ($pendingFlagsCount ?? 0) > 0): ?>
 									<span class="nav-trigger-alert-dot"></span>
 								<?php endif; ?>
 							</div>
@@ -128,23 +119,23 @@ $bodyClass = Layout::getBodyClass();
 						</button>
 
 						<div class="dropdown-menu" id="user-dropdown-menu">
-							<a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item">🙍 <?= __('profile') ?></a>
+							<a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item"><span>🙍 <?= __('profile') ?></span></a>
 							
-							<a href="<?= route('account.settings') ?>" class="dropdown-menu__item">⚙️ <?= __('settings') ?></a>
+							<a href="<?= route('account.settings') ?>" class="dropdown-menu__item"><span>⚙️ <?= __('settings') ?></span></a>
 							
 						    <div class="dropdown-menu__divider"></div>
 							
-							<a href="<?= route('story.create') ?>" class="dropdown-menu__item">➕ <?= __('share') ?></a>
+							<a href="<?= route('story.create') ?>" class="dropdown-menu__item"><span>➕ <?= __('share') ?></span></a>
 
 							<a href="<?= route('messages.index') ?>" class="dropdown-menu__item">
 								<span>✉️ <?= __('messages') ?></span>
 							</a>
 
-							<a href="<?= route('saved.index') ?>" class="dropdown-menu__item">🔖 <?= __('bookmarks') ?></a>
+							<a href="<?= route('saved.index') ?>" class="dropdown-menu__item"><span>🔖 <?= __('bookmarks') ?></span></a>
 
-							<a href="<?= route('drafts.index') ?>" class="dropdown-menu__item">📝 Черновики</a>
+							<a href="<?= route('drafts.index') ?>" class="dropdown-menu__item"><span>📝 Черновики</span></a>
 
-							<a href="<?= route('collections.index', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item">📚 Коллекции</a>
+							<a href="<?= route('collections.index', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item"><span>📚 Коллекции</span></a>
 
 							<a href="/subscribed" class="dropdown-menu__item">
 								<span>📡 Подписки</span>
@@ -153,25 +144,32 @@ $bodyClass = Layout::getBodyClass();
 								<?php endif; ?>
 							</a>
 
-							<a href="/muted" class="dropdown-menu__item">🔇 <?= __('muted') ?></a>
+							<a href="/muted" class="dropdown-menu__item"><span>🔇 <?= __('muted') ?></span></a>
 
 							<?php if (!empty($currentUser['isAdmin'])): ?>
 								<div class="dropdown-menu__divider"></div>
-								<a href="/admin" class="dropdown-menu__item dropdown-menu__item--danger">📊 <?= __('admin_panel') ?></a>
+								<a href="/admin" class="dropdown-menu__item dropdown-menu__item--danger"><span>📊 <?= __('admin_panel') ?></span></a>
 							<?php endif; ?>
 
 							<?php if (!empty($currentUser['isModerator'])): ?>
 								<div class="dropdown-menu__divider"></div>
-								<a href="/mod/log" class="dropdown-menu__item dropdown-item-mod">📋 <?= __('moderation_log') ?></a>
-								<a href="/mod/notes" class="dropdown-menu__item dropdown-item-mod">🔒 <?= __('notes') ?></a>
-								<a href="/mod/stats" class="dropdown-menu__item dropdown-item-mod">📈 <?= __('activity') ?></a>
+								<a href="/mod/log" class="dropdown-menu__item"><span>📋 <?= __('moderation_log') ?></span></a>
+								<a href="/mod/notes" class="dropdown-menu__item"><span>🔒 <?= __('notes') ?></span></a>
+								<a href="/mod/stats" class="dropdown-menu__item"><span>📈 <?= __('activity') ?></span></a>
 				
-								<a href="/mod/suggestions" class="dropdown-menu__item dropdown-item-mod">
-									💡 <?= __('suggestions') ?>
+								<a href="/mod/suggestions" class="dropdown-menu__item">
+									<span>💡 <?= __('suggestions') ?></span>
 									<?php if (($activeSuggestionsCount ?? 0) > 0): ?>
 										<span class="red">
 											<?= (int)$activeSuggestionsCount ?>
 										</span>
+									<?php endif; ?>
+								</a>
+
+								<a href="/admin/flags" class="dropdown-menu__item">
+									<span>🚩 Жалобы</span>
+									<?php if (($pendingFlagsCount ?? 0) > 0): ?>
+										<span class="nav-badge-counter"><?= (int)$pendingFlagsCount ?></span>
 									<?php endif; ?>
 								</a>
 							<?php endif; ?>

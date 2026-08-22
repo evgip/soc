@@ -156,9 +156,6 @@ a.navbar-logo:hover {
   align-items: center;
   margin-left: auto;
   font-size: 0.9rem;
-  padding: 0;
-  margin-block: 0;
-  list-style: none;
 }
 
 .navbar-links > a {
@@ -247,28 +244,6 @@ a.navbar-logo:hover {
   font-size: 0.65rem;
   font-weight: 600;
   margin-left: auto;
-}
-
-.nav-flag {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 6px 8px;
-  border-radius: var(--radius-full);
-  text-decoration: none;
-  font-size: 1rem;
-  transition: background-color var(--transition-fast);
-}
-
-.nav-flag:hover {
-  background-color: var(--color-box-bg-shaded);
-}
-
-.nav-flag .badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--color-fg-negative);
 }
 
 .header-notification-link {
