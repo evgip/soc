@@ -77,6 +77,10 @@
   .staff-pick-card__content {
     padding: 1rem 1.25rem 1.25rem;
   }
+  
+  .section-subtitle {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -126,6 +130,7 @@
   .dropdown-menu,
   .friend-links-modal,
   .lightbox-overlay,
+  .section-subtitle,
   .notification {
     display: none !important;
   }

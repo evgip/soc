@@ -59,15 +59,16 @@ $domainHost = $isExternal ? parse_url($story['url'], PHP_URL_HOST) : null;
                     <em>[Удалена модератором]</em>
                 <?php endif; ?>
 
-                <?php if (!empty($story['is_staff_pick'])): ?>
-                    <span class="staff-pick-badge" title="Выбор редакции">⭐</span>
-                <?php endif; ?>
-
                 <a class="title" href="<?= $targetUrl ?>" <?= $externalAttrs ?>>
-                    <?= e($story['title']) ?>
-                    <?php if (!empty($story['has_paywall'])): ?>
-                        <span class="paywall-badge" title="Часть статьи доступна только участникам">🔒</span>
+                    <?php if (!empty($story['is_staff_pick'])): ?>
+                        <span class="staff-pick-badge" title="Выбор редакции">⭐</span>
                     <?php endif; ?>
+                    <span class="title-text">
+                        <?= e($story['title']) ?>
+                        <?php if (!empty($story['has_paywall'])): ?>
+                            <span class="paywall-badge" title="Часть статьи доступна только участникам">🔒</span>
+                        <?php endif; ?>
+                    </span>
                 </a>
 
                 <?php if ($domainHost): ?>

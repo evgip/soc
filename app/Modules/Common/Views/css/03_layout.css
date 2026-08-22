@@ -412,7 +412,7 @@ a.navbar-logo:hover {
 /* ---------- Footer ---------- */
 footer {
   max-width: var(--content-width-wide);
-  margin: 4rem auto 0;
+  margin: 2rem auto 0;
   padding: 2rem var(--content-padding);
   font-size: 0.875rem;
   color: var(--opacity-fg-54);
@@ -486,7 +486,7 @@ footer .hint.right {
   display: flex;
   gap: 0.5rem;
   justify-content: center;
-  margin: 3rem 0;
+  margin: 3rem 0 0;
   flex-wrap: wrap;
 }
 

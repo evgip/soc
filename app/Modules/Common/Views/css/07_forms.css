@@ -505,16 +505,13 @@ button.is-danger:hover,
 
 @media (max-width: 640px) {
   .dropdown-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     top: auto;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     max-height: 70vh;
     overflow-y: auto;
     animation: none;
   }
+}
 }
 
 /* ---------- Modal / dialog ---------- */

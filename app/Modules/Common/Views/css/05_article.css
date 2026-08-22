@@ -21,6 +21,9 @@
   margin: 0 0 1.5rem;
   font-weight: 700;
   color: var(--color-fg);
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .article-header h1 .staff-pick-badge {
