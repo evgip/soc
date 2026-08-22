@@ -12,7 +12,7 @@
 <?php else: ?>
     <ol class="stories">
         <?php foreach ($deletedPages as $page): ?>
-            <li class="story">
+            <li class="story story--simple">
                 <div class="story_liner">
                     <div class="link">
                         <a href="/t/<?= e($tag['slug']) ?>/wiki/<?= e($page['slug']) ?>"><?= e($page['title']) ?></a>

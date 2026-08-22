@@ -28,8 +28,7 @@
     partial('Common::_editor', [
         'editor' => [
             'name' => 'description',
-            // Берем JSON, если он есть. Иначе fallback на старый текст (на случай, если статья не мигрирована)
-            'value' => $story['description_json'] ?: $story['description'],
+            'value' => $story['description_json'] ?? '',
             'placeholder' => 'Отредактируйте текст публикации...',
             'label' => 'Текст обсуждения',
             'hint' => 'Первая строка, оформленная как заголовок (H1 или H2), станет заголовком статьи. Используйте меню блоков (/).',

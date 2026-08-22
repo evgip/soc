@@ -1,0 +1,777 @@
+/* ============================================
+   W3A CSS Framework - Collections
+   ============================================
+   10 - serii statey (kollekcii), predprosmotr kollekcii v profile.
+   Podklyuchaetsya avtomaticheski v app.min.css posle 09_profile.css.
+   ============================================ */
+
+/* ============================================
+   COLLECTIONS (Серии статей)
+   ============================================ */
+
+/* --------------------------------------------
+   1. СПИСОК КОЛЛЕКЦИЙ (/collections/{username})
+   -------------------------------------------- */
+.collections-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-fg-shape);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.collections-header h1 {
+    margin: 0 0 0.25rem;
+}
+
+.collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Карточка коллекции */
+.collection-card {
+    border: 1px solid var(--color-fg-shape);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background-color: var(--color-box-bg);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.collection-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.collection-card__cover {
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--color-box-bg-shaded);
+}
+
+.collection-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.collection-card:hover .collection-card__cover img {
+    transform: scale(1.03);
+}
+
+.collection-card__cover--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+}
+
+.collection-card__body {
+    padding: 1.25rem;
+    flex: 1;
+}
+
+.collection-card__title {
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    line-height: 1.3;
+}
+
+.collection-card__title a {
+    color: var(--color-fg);
+    text-decoration: none;
+}
+
+.collection-card__title a:hover {
+    text-decoration: underline;
+}
+
+.collection-card__description {
+    font-size: 0.9375rem;
+    color: var(--opacity-fg-67);
+    line-height: 1.5;
+    margin: 0 0 1rem;
+}
+
+.collection-card__meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    color: var(--opacity-fg-54);
+}
+
+.collection-card__private {
+    color: var(--color-fg-accent);
+}
+
+.collection-card__actions {
+    padding: 0 1.25rem 1.25rem;
+}
+
+/* --------------------------------------------
+   2. СТРАНИЦА КОЛЛЕКЦИИ (/collections/{username}/{slug})
+   -------------------------------------------- */
+.collection-show-header {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-fg-shape);
+    flex-wrap: wrap;
+}
+
+.collection-show-header__cover {
+    flex: 0 0 320px;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background-color: var(--color-box-bg-shaded);
+    box-shadow: var(--shadow-md);
+}
+
+.collection-show-header__cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.collection-show-header__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.collection-show-header__label {
+    font-size: 0.875rem;
+    color: var(--opacity-fg-67);
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.collection-show-header__info h1 {
+    font-family: var(--font-serif);
+    font-size: 2.25rem;
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.collection-show-header__description {
+    font-size: 1.0625rem;
+    color: var(--opacity-fg-84);
+    line-height: 1.55;
+    margin: 0 0 1rem;
+}
+
+.collection-show-header__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    color: var(--opacity-fg-67);
+    flex-wrap: wrap;
+}
+
+.collection-show-header__meta a {
+    color: var(--color-fg);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.collection-show-header__meta a:hover {
+    text-decoration: underline;
+}
+
+.collection-show-header__actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+/* Оглавление коллекции */
+.collection-toc {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.collection-toc__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-fg-shape);
+    transition: background-color 0.2s ease;
+}
+
+.collection-toc__item:hover {
+    background-color: var(--color-box-bg-shaded);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: var(--radius-md);
+}
+
+.collection-toc__number {
+    font-family: var(--font-serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--opacity-fg-40);
+    min-width: 2.5rem;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+    padding-top: 0.25rem;
+}
+
+.collection-toc__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.collection-toc__title {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 0.375rem;
+    line-height: 1.4;
+}
+
+.collection-toc__title a {
+    color: var(--color-fg);
+    text-decoration: none;
+}
+
+.collection-toc__title a:hover {
+    text-decoration: underline;
+}
+
+.collection-toc__excerpt {
+    font-family: var(--font-serif);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--opacity-fg-67);
+    margin: 0.375rem 0 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.collection-toc__meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    color: var(--opacity-fg-54);
+    flex-wrap: wrap;
+}
+
+.collection-toc__remove {
+    flex-shrink: 0;
+}
+
+/* --------------------------------------------
+   3. МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ СТАТЬИ
+   -------------------------------------------- */
+.collection-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 1000);
+    align-items: center;
+    justify-content: center;
+}
+
+.collection-modal.is-open {
+    display: flex;
+}
+
+.collection-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.collection-modal__content {
+    position: relative;
+    background-color: var(--color-box-bg);
+    border: 1px solid var(--color-box-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+.collection-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-box-border);
+}
+
+.collection-modal__header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+.collection-modal__body {
+    padding: 1.25rem;
+}
+
+.available-story-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-box-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+    background-color: var(--color-box-bg);
+}
+
+.available-story-item.is-in-collection {
+    background-color: var(--color-box-bg-shaded);
+    border-color: var(--color-fg-accent);
+}
+
+.available-story-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.available-story-item__title {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.available-story-item__badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--color-fg-affirmative);
+    margin-top: 0.25rem;
+}
+
+/* --------------------------------------------
+   4. НАВИГАЦИЯ ПО КОЛЛЕКЦИИ НА СТРАНИЦЕ СТАТЬИ
+   -------------------------------------------- */
+
+/* Верхняя навигация (компактная) */
+.collection-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    background-color: var(--color-box-bg-shaded);
+    border: 1px solid var(--color-fg-shape);
+    border-radius: var(--radius-lg);
+    flex-wrap: wrap;
+}
+
+.collection-nav__label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--opacity-fg-67);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.collection-nav__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-fg);
+    text-decoration: none;
+}
+
+.collection-nav__title:hover {
+    text-decoration: underline;
+}
+
+.collection-nav__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Нижняя навигация (расширенная) */
+.collection-nav--bottom {
+    display: block;
+    margin: 3rem 0;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.collection-nav__bottom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-fg-shape);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.collection-nav__bottom-label {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.collection-nav__bottom-position {
+    font-size: 0.875rem;
+    color: var(--opacity-fg-67);
+}
+
+.collection-nav__bottom-links {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.collection-nav__bottom-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1rem 1.25rem;
+    background-color: var(--color-box-bg-shaded);
+    border: 1px solid var(--color-fg-shape);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.collection-nav__bottom-link:hover {
+    border-color: var(--color-fg);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.collection-nav__bottom-link--prev {
+    text-align: left;
+}
+
+.collection-nav__bottom-link--next {
+    text-align: right;
+}
+
+.collection-nav__bottom-link--toc {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+}
+
+.collection-nav__bottom-link-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--opacity-fg-67);
+}
+
+.collection-nav__bottom-link-title {
+    font-family: var(--font-serif);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-fg);
+    line-height: 1.4;
+}
+
+.collection-nav__bottom-link.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* --------------------------------------------
+   5. ФОРМА СОЗДАНИЯ/РЕДАКТИРОВАНИЯ КОЛЛЕКЦИИ
+   -------------------------------------------- */
+.container-narrow {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.collection-form .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+/* Загрузка обложки */
+.cover-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cover-preview {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-width: 480px;
+    background-color: var(--color-box-bg-shaded);
+    border: 2px dashed var(--color-fg-shape);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cover-preview__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cover-preview__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--opacity-fg-54);
+    font-size: 0.9375rem;
+    text-align: center;
+    padding: 2rem;
+}
+
+.cover-preview__placeholder span {
+    font-size: 3rem;
+}
+
+.cover-preview__placeholder p {
+    margin: 0;
+}
+
+.cover-preview__delete {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    cursor: pointer;
+}
+
+.cover-preview__delete-btn {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
+    backdrop-filter: blur(4px);
+}
+
+.cover-preview__delete-btn:hover {
+    background-color: var(--color-fg-negative);
+}
+
+.cover-upload__controls {
+    max-width: 480px;
+}
+
+.cover-upload__controls .form-input-file {
+    width: 100%;
+}
+
+/* --------------------------------------------
+   6. ТЁМНАЯ ТЕМА
+   -------------------------------------------- */
+[data-theme="dark"] .collection-card {
+    background-color: var(--color-box-bg);
+}
+
+[data-theme="dark"] .collection-modal__backdrop {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .cover-preview__delete-btn {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="dark"] .cover-preview__delete-btn:hover {
+    background-color: var(--color-fg-negative);
+}
+
+/* --------------------------------------------
+   7. МЕДИА-ЗАПРОСЫ
+   -------------------------------------------- */
+@media (max-width: 768px) {
+    .collection-show-header {
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .collection-show-header__cover {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: 2 / 1;
+    }
+
+    .collection-show-header__actions {
+        justify-content: flex-start;
+    }
+
+    .collection-show-header__info h1 {
+        font-size: 1.75rem;
+    }
+}
+
+/* ============================================
+   PROFILE COLLECTIONS PREVIEW
+   ============================================ */
+.user-collections {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-fg-shape);
+}
+
+/* .section-header вынесен в 04_feed.css */
+
+.section-header__link {
+    font-size: 0.9375rem;
+    color: var(--color-fg-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.section-header__link:hover {
+    text-decoration: underline;
+}
+
+.collections-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.collection-preview-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-fg-shape);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background-color: var(--color-box-bg);
+    text-decoration: none;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.collection-preview-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.collection-preview-card__cover {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: var(--color-box-bg-shaded);
+}
+
+.collection-preview-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.collection-preview-card:hover .collection-preview-card__cover img {
+    transform: scale(1.03);
+}
+
+.collection-preview-card__cover--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+.collection-preview-card__body {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.collection-preview-card__title {
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+    color: var(--color-fg);
+}
+
+.collection-preview-card__meta {
+    font-size: 0.8125rem;
+    color: var(--opacity-fg-67);
+}
+
+/* Тёмная тема */
+[data-theme="dark"] .collection-preview-card {
+    background-color: var(--color-box-bg);
+}
+
+@media (max-width: 640px) {
+    .collections-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .collection-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .collection-nav__actions {
+        justify-content: space-between;
+    }
+
+    .collection-nav__bottom-links {
+        grid-template-columns: 1fr;
+    }
+
+    .collection-nav__bottom-link--next {
+        text-align: left;
+    }
+	
+	.collections-preview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

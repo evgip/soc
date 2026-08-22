@@ -1,0 +1,554 @@
+/* ============================================
+   W3A CSS Framework — Feed (лента статей)
+   ============================================
+   04 — карточки постов, секции ленты (For You /
+   Новые публикации), byline, голосование, теги,
+   пустые состояния, фильтр-хедеры, staff picks.
+
+   Подключается автоматически в app.min.css после 03_layout.css.
+   ============================================ */
+
+/* ---------- Лента (список постов) ---------- */
+ol.stories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Карточка Medium-style: текст слева, превью справа.
+   Единый формат всех лент статей (_story_item.php). */
+li.story {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--color-fg-shape);
+  position: relative;
+}
+
+li.story:first-child {
+  padding-top: 0;
+}
+
+li.story:last-child {
+  border-bottom: none;
+}
+
+li.story.deleted {
+  opacity: 0.5;
+}
+
+li.story .story_liner {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  flex: 1;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.story-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.story-card-body .link {
+  margin-bottom: 0;
+}
+
+li .link a.title {
+  font-family: var(--font-sans);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-fg);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+li .link a.title:hover {
+  color: var(--color-fg);
+}
+
+li .link a.title:visited {
+  color: var(--opacity-fg-67);
+}
+
+li .link .tags {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Превью-картинка справа (фиксированный размер, как в Medium) */
+.story-thumbnail {
+  flex: 0 0 200px;
+  margin: 0.25rem 0 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.story-thumbnail img {
+  width: 200px;
+  height: 160px;
+  max-height: none;
+  object-fit: cover;
+  display: block;
+}
+
+.story_content.excerpt {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  color: var(--opacity-fg-84);
+  line-height: 1.58;
+  margin: 0.25rem 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.story_content.excerpt p {
+  margin: 0;
+  display: inline;
+}
+
+/* ---------- Byline (автор, дата, действия) ---------- */
+.byline,
+.story-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--opacity-fg-54);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.byline img.avatar,
+.story-meta img.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.byline a,
+.story-meta a {
+  color: var(--opacity-fg-67);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.byline a:hover,
+.story-meta a:hover {
+  color: var(--color-fg);
+  text-decoration: underline;
+}
+
+.byline .divider,
+.story-meta .divider,
+.story-actions-bar .divider,
+.profile-stats .divider {
+  color: var(--opacity-fg-40);
+}
+
+.byline a.user_is_author {
+  color: var(--color-fg-author);
+}
+
+.score-inline {
+  color: var(--opacity-fg-67);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* ---------- Голосование (voters) ---------- */
+.voters:not(.voters--inline) {
+  display: none;
+}
+
+.voters--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: var(--font-sans);
+}
+
+.voters--inline .inline-form {
+  display: inline;
+  margin: 0;
+}
+
+.voters--inline .upvoter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: var(--opacity-fg-54);
+  font-size: 1rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+.voters--inline .upvoter:hover {
+  background-color: var(--color-box-bg-shaded);
+  color: var(--color-fg);
+}
+
+.voters--inline .upvoter.upvoted {
+  color: var(--color-fg-accent);
+  background-color: var(--color-box-bg-shaded);
+  font-weight: 600;
+}
+
+.voters--inline .upvoter.disabled {
+  color: var(--opacity-fg-40);
+  cursor: default;
+}
+
+.voters--inline .upvoter.disabled:hover {
+  background-color: transparent;
+}
+
+.voters--inline .upvoter-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.voters--inline .score {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-fg);
+  padding: 0 0.25rem;
+}
+
+.comment_votes {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.comment_votes .voters--inline {
+  margin: 0;
+  padding: 0;
+  gap: 0.125rem;
+}
+
+.comment_votes .voters--inline .upvoter {
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.comment_votes .voters--inline .upvoter-icon {
+  font-size: 0.7rem;
+}
+
+.comment_votes .voters--inline .score {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0 2px;
+}
+
+/* ---------- Иконки действий (закладка, меню «три точки») ---------- */
+.icon-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-actions > form + form {
+  position: relative;
+}
+
+.icon-actions > form + form::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 16px;
+  background-color: var(--color-fg-shape);
+}
+
+.story-menu-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.story-menu-form {
+  margin: 0;
+}
+
+.story-menu-item__icon {
+  display: inline-flex;
+  width: 1.25em;
+}
+
+/* ---------- Бейджи поста ---------- */
+.staff-pick-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  margin-right: 0.375rem;
+  vertical-align: middle;
+  line-height: 1;
+  animation: staff-pick-pop 0.4s ease-out;
+}
+
+li.story .staff-pick-badge {
+  font-size: 0.875rem;
+  margin-right: 0.25rem;
+}
+
+@keyframes staff-pick-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.paywall-badge {
+  display: inline-block;
+  margin-right: 0.375rem;
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+/* ---------- Секции ленты (For You / Новые публикации) ---------- */
+.feed-section {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header__link {
+  font-size: 0.9375rem;
+  color: var(--color-fg-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.section-header__link:hover {
+  text-decoration: underline;
+}
+
+.section-subtitle {
+  font-size: 0.9375rem;
+  color: var(--opacity-fg-54);
+  margin: 0;
+}
+
+.section-title {
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+  color: var(--opacity-fg-67);
+}
+
+.story-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.story-list .story {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--color-fg-shape);
+}
+
+.story-list .story:first-child {
+  padding-top: 0;
+}
+
+.story-list .story:last-child {
+  border-bottom: none;
+}
+
+/* ---------- Пустые состояния ---------- */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  margin: 2rem 0;
+  color: var(--opacity-fg-67);
+}
+
+.empty-state h2 {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: var(--color-fg);
+}
+
+.empty-state p {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin: 0 0 1.5rem;
+}
+
+.empty-state__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.empty-state--subscribed {
+  background-color: var(--color-box-bg-shaded);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2rem;
+}
+
+/* ---------- Фильтр-хедеры (теги, авторы) ---------- */
+.filter-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-fg-shape);
+}
+
+.filter-header__hint {
+  color: var(--opacity-fg-67);
+  font-size: 0.9375rem;
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.filter-header__reset {
+  display: inline-block;
+  color: var(--color-fg-link);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border: 1px solid var(--color-box-border);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.filter-header__reset:hover {
+  background-color: var(--color-box-bg-shaded);
+  border-color: var(--color-fg);
+}
+
+@media (max-width: 768px) {
+  .filter-header__title {
+    font-size: 1.5rem;
+  }
+}
+
+/* ============================================
+   Полный контент карточки (категории)
+   ============================================
+   Разворачиваемые details вместо обрезанной выдержки.
+   ============================================ */
+
+.story_content.excerpt.story-content--full {
+  -webkit-line-clamp: unset;
+  display: block;
+  overflow: visible;
+}
+
+.story-content--full details {
+  border: none;
+  background: none;
+  margin: 0;
+}
+
+.story-content--full details summary {
+  cursor: pointer;
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--opacity-fg-67);
+}
+
+.story-content--full details summary:hover {
+  color: var(--color-fg);
+}
+
+.story-content--full .summary-content {
+  margin-top: 0.75rem;
+}
+
+/* На мобильных карточка схлопывается в вертикальную:
+   текст сверху, картинка под ним */
+@media (max-width: 640px) {
+  li.story .story_liner {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .story-thumbnail,
+  .story-thumbnail img {
+    width: 100%;
+    height: auto;
+    max-height: 240px;
+  }
+}
+
+/* ============================================
+   Карточка story--simple (вертикальная)
+   ============================================
+   Для не-статей: wiki-страницы, предложения
+   модерации. Базовая вертикальная раскладка.
+   ============================================ */
+
+li.story.story--simple {
+  display: block;
+}
+
+li.story.story--simple .story_liner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+li.story.story--simple .story-thumbnail {
+  flex: none;
+  width: auto;
+  margin: 0.75rem 0 0.5rem;
+}
+
+li.story.story--simple .story-thumbnail img {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+}

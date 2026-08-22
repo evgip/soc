@@ -35,7 +35,7 @@
 			<?php
 			$proposedData = json_decode($suggestion['proposed_data'], true);
 			?>
-			<li class="story">
+			<li class="story story--simple">
 				<div class="story_liner">
 					
 					<!-- Заголовок с типом и ID -->

@@ -1,0 +1,696 @@
+/* ============================================
+   W3A CSS Framework — Article (страница статьи)
+   ============================================
+   05 — шапка статьи, типографика контента (story_content),
+   код, editor.js блоки, лайтбокс, paywall,
+   прогресс чтения, scroll-to-top.
+
+   Подключается автоматически в app.min.css после 04_feed.css.
+   ============================================ */
+
+/* ---------- Шапка статьи ---------- */
+.article-header {
+  margin: 3rem 0 2.5rem;
+}
+
+.article-header h1 {
+  font-family: var(--font-sans);
+  font-size: 2.5rem;
+  line-height: 1.18;
+  letter-spacing: -0.022em;
+  margin: 0 0 1.5rem;
+  font-weight: 700;
+  color: var(--color-fg);
+}
+
+.article-header h1 .staff-pick-badge {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+.article-header .data {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--opacity-fg-67);
+  font-size: 0.875rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-fg-shape);
+}
+
+.article-header img.avatar {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+}
+
+.article-header .data a {
+  color: var(--color-fg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.article-header .data a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Контент статьи ---------- */
+.story_content {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  line-height: var(--line-height-article);
+  color: var(--color-fg);
+  letter-spacing: -0.003em;
+  word-break: break-word;
+  margin-bottom: 2rem;
+}
+
+.story_content p {
+  font-size: 1.25rem;
+  line-height: 1.72;
+  margin: 1.46rem 0;
+}
+
+.story_content h2 {
+  font-family: var(--font-sans);
+  font-size: 1.625rem;
+  margin: 2.75rem 0 1rem;
+  letter-spacing: -0.015em;
+}
+
+.story_content h3 {
+  font-family: var(--font-sans);
+  font-size: 1.3125rem;
+  margin: 2.25rem 0 0.75rem;
+}
+
+.story_content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border-radius: var(--radius-sm);
+}
+
+.story_content details {
+  border: none;
+  background: none;
+}
+
+.story_content summary {
+  cursor: pointer;
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--opacity-fg-67);
+}
+
+.story_content summary:hover {
+  color: var(--color-fg);
+}
+
+.story_content details[open] summary {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-box-bg-shaded);
+}
+
+.story_btn {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.score {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--opacity-fg-67);
+}
+
+/* ---------- Код в статье и комментариях ---------- */
+.story_content pre,
+.comment_text pre {
+  position: relative;
+  background-color: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-fg);
+  -webkit-overflow-scrolling: touch;
+}
+
+.story_content pre code,
+.comment_text pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+  font-family: inherit;
+  white-space: pre;
+  word-break: normal;
+  word-wrap: normal;
+}
+
+.story_content code,
+.comment_text code {
+  background-color: var(--color-code-bg);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--color-code-inline-fg);
+  border: 1px solid var(--color-code-border);
+}
+
+pre .copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  background: var(--color-box-bg);
+  border: 1px solid var(--color-fg-shape);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+pre:hover .copy-button {
+  opacity: 1;
+}
+
+/* ---------- Editor.js блоки ---------- */
+.editorjs-image {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.editorjs-image img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.editorjs-image--border img {
+  border: 15px solid var(--color-box-border);
+}
+
+.editorjs-image--background {
+  background: var(--color-box-bg-shaded);
+  padding: 16px;
+  width: 100%;
+}
+
+.editorjs-image--background img {
+  max-height: 350px;
+  object-fit: contain;
+}
+
+.editorjs-image figcaption {
+  font-size: 0.85rem;
+  color: var(--opacity-fg-54);
+  text-align: center;
+  padding: 0 10px;
+}
+
+.editorjs-custom-wrapper {
+  border: 1px solid var(--color-box-border);
+  border-radius: var(--radius-md);
+  min-height: 300px;
+  padding: 1rem;
+  background-color: var(--color-box-bg);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.editorjs-custom-wrapper:focus-within {
+  border-color: var(--color-box-border-focus);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+/* Editor.js broken image */
+.ce-block .image-tool__image {
+  position: relative;
+  min-height: 100px;
+}
+
+.ce-block .image-tool__image img[src=""],
+.ce-block .image-tool__image img:not([src]),
+.ce-block .image-tool__image img.broken {
+  display: none !important;
+}
+
+.ce-block .image-tool__image.has-error::after {
+  content: "⚠️ Изображение не найдено. Кликните, чтобы удалить блок.";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-flash-bg-error);
+  border: 2px dashed var(--color-fg-negative);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  color: var(--color-fg-negative);
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  min-height: 100px;
+}
+
+.ce-block .image-tool__image.has-error:hover::after {
+  background: var(--color-flash-bg-error);
+  border-color: var(--color-button-bg-danger-hover);
+  color: var(--color-button-bg-danger-hover);
+}
+
+.ce-block .image-tool__image.has-error ~ .image-tool__caption {
+  display: none;
+}
+
+.ce-block .image-tool__image.has-error::before {
+  content: "❌";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  z-index: 10;
+}
+
+/* ---------- Lightbox ---------- */
+.lightbox-trigger {
+  position: relative;
+  display: block;
+  cursor: zoom-in;
+  line-height: 0;
+}
+
+.lightbox-trigger img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  transition: transform var(--transition-normal);
+}
+
+.lightbox-trigger:hover img {
+  transform: scale(1.02);
+}
+
+.lightbox-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: var(--color-box-bg);
+  border: 1px solid var(--color-box-border);
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg);
+}
+
+.lightbox-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.lightbox-trigger:hover .lightbox-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lightbox-icon:hover {
+  background: var(--color-box-bg-shaded);
+  transform: scale(1.1);
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-bg);
+  z-index: var(--z-lightbox);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--transition-normal),
+    visibility var(--transition-normal);
+}
+
+.lightbox-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lightbox-image {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  box-shadow: var(--shadow-lg);
+  transition: opacity var(--transition-normal);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox-caption {
+  color: var(--color-overlay-fg);
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: var(--color-overlay-control-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-overlay-control-fg);
+  transition: background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.lightbox-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.lightbox-close:hover {
+  background: var(--color-overlay-control-hover-bg);
+}
+
+.lightbox-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .lightbox-icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .lightbox-close {
+    top: 12px;
+    right: 12px;
+  }
+
+  .lightbox-image {
+    max-width: 95vw;
+    max-height: 75vh;
+  }
+}
+
+/* ---------- Paywall ---------- */
+.editorjs-paywall__marker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border: 2px dashed #f59e0b;
+  border-radius: var(--radius-lg);
+  color: #78350f;
+}
+
+.editorjs-paywall__icon {
+  font-size: 2rem;
+}
+
+.editorjs-paywall__text strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+
+.editorjs-paywall__text p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .editorjs-paywall__marker {
+  background: linear-gradient(135deg, #3a2f10, #4a3a15);
+  border-color: #d97706;
+  color: #fbbf24;
+}
+
+.paywall-cta {
+  position: relative;
+  margin: 3rem 0;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  background-color: var(--color-box-bg-shaded);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-fg-shape);
+}
+
+.paywall-cta::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--color-bg));
+  pointer-events: none;
+}
+
+.paywall-cta__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.paywall-cta__lock {
+  font-size: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: var(--color-box-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.paywall-cta__title {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+  color: var(--color-fg);
+}
+
+.paywall-cta__text {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--opacity-fg-67);
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+}
+
+.paywall-cta__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.paywall-cta__actions .btn {
+  padding: 10px 28px;
+  font-weight: 600;
+}
+
+/* ---------- Scroll to top ---------- */
+.scroll-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--color-fg-shape);
+  background-color: var(--color-box-bg);
+  color: var(--color-fg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition:
+    opacity var(--transition-normal),
+    visibility var(--transition-normal),
+    transform var(--transition-normal),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+  z-index: var(--z-floating);
+}
+
+.scroll-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.scroll-to-top:hover {
+  background-color: var(--color-box-bg-shaded);
+  border-color: var(--color-fg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.scroll-to-top:active {
+  transform: translateY(0);
+}
+
+.scroll-to-top svg {
+  display: block;
+}
+
+/* ---------- Reading progress ---------- */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: transparent;
+  z-index: var(--z-progress);
+  pointer-events: none;
+}
+
+.reading-progress__bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    var(--color-fg-accent) 0%,
+    var(--color-fg) 100%
+  );
+  border-radius: 0 2px 2px 0;
+  transition: width 0.1s linear;
+  will-change: width;
+}
+
+@media (max-width: 640px) {
+  .article-header h1 {
+    font-size: 1.875rem;
+  }
+
+  .story_content,
+  .story_content p {
+    font-size: 1.125rem;
+  }
+
+  li .link a.title {
+    font-size: 1.25rem;
+  }
+
+  .scroll-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .scroll-to-top svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .story_content pre,
+  .comment_text pre {
+    padding: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .paywall-cta {
+    padding: 2rem 1.25rem;
+  }
+
+  .paywall-cta__title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Editor.js медиа (широкие картинки) */
+@media (min-width: 768px) {
+  .editorjs-image {
+    margin: 2.5rem 0;
+  }
+
+  .editorjs-image--background {
+    padding: 40px;
+    border-radius: var(--radius-md);
+  }
+
+  .editorjs-image--background img {
+    max-height: 500px;
+  }
+
+  .editorjs-image--stretched {
+    width: 99vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+
+  .editorjs-image--stretched img {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+}

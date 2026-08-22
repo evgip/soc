@@ -22,7 +22,7 @@ class WikiCard
         bool $showDeletedMark = false,
         ?Request $request = null
     ): string {
-        $html = '<li class="story">';
+        $html = '<li class="story story--simple">';
         $html .= '<div class="story_liner">';
 
         // Заголовок

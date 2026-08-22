@@ -25,7 +25,6 @@ use App\Modules\Stories\Models\Story;
 use App\Modules\Tags\Services\TagFilterService;
 use App\Modules\Tags\Models\Tag;
 use App\Modules\Users\Models\User;
-use App\Modules\Content\Core\Markdown;
 use App\Modules\Wiki\Services\WikiService;
 use App\Modules\Stories\Exceptions\StoryValidationException;
 
@@ -399,28 +398,6 @@ class StoriesController extends BaseController
 
         $referer = $_SERVER['HTTP_REFERER'] ?? '/story/' . $storyId;
         return $this->redirectBack($referer);
-    }
-
-    // =========================================================================
-    // AJAX ENDPOINTS
-    // =========================================================================
-
-    public function preview(): JsonResponse
-    {
-        if (!$this->request->isCsrfValid()) {
-            return $this->json(['error' => 'Неверный CSRF токен'], 419);
-        }
-
-        $text = $this->request->post('text', '');
-        $allowImages = (bool)$this->request->post('allow_images', true);
-
-        $markdown = $this->container->get(Markdown::class);
-        $html = $markdown->parse($text, $allowImages);
-
-        return $this->json([
-            'html' => $html,
-            'success' => true
-        ]);
     }
 
     // =========================================================================

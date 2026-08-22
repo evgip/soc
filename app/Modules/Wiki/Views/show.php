@@ -12,7 +12,7 @@ $canDelete = $canDelete ?? false;
 <?= $breadcrumbs ?>
 
 <ol class="stories">
-    <li class="story">
+    <li class="story story--simple">
         <div class="story_liner">
             <div class="link">
                 <h1 style="margin: 0; font-size: 1.4em; display: inline;">

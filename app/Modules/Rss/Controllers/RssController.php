@@ -136,19 +136,19 @@ class RssController extends BaseController
 
         // Короткое описание для <description> (plain text)
         $description = '';
-        if (!empty($story['description'])) {
-            $description = mb_substr(strip_tags($story['description']), 0, 300);
-            if (mb_strlen($story['description']) > 300) {
+        if (!empty($story['description_text'])) {
+            $description = mb_substr(strip_tags($story['description_text']), 0, 300);
+            if (mb_strlen(strip_tags($story['description_text'])) > 300) {
                 $description .= '...';
             }
         } else {
             $description = (int)($story['comments_count'] ?? 0) . ' комментариев';
         }
 
-        // Полный HTML для <content:encoded>
+        // Полный HTML для <content:encoded> (editor-контент статьи)
         $contentEncoded = '';
-        if (!empty($story['description'])) {
-            $contentEncoded = markdown($story['description']);
+        if (!empty($story['description_json'])) {
+            $contentEncoded = render_editorjs_content($story['description_json'], true);
         }
 
         return [

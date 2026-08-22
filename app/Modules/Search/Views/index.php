@@ -43,77 +43,16 @@ $currentVotes = $currentVotes ?? [];
             <!-- Результаты: СТАТЬИ -->
             <ol class="stories">
                 <?php foreach ($results as $story): ?>
-                    <li class="story">
-
-                        <!-- Голосование -->
-                        <?php partial('Votes::_voters', [
-                            'type' => 'story',
-                            'id' => (int)$story['id'],
-                            'score' => (int)$story['score'],
-                            'currentVoteState' => $currentVotes[$story['id']] ?? null,
-                            'canDownvote' => $canUserDownvote,
-                            'isLoggedIn' => $currentUserId > 0,
-                            'contentOwnerId' => (int)$story['user_id'],
-                        ]); ?>
-
-                        <!-- Контент -->
-                        <div class="story_liner">
-                            <div class="link">
-                                <?php
-                                $isExternal = !empty($story['url']);
-                                $targetUrl = $isExternal ? e($story['url']) : route('story.show', ['id' => $story['id']]);
-                                ?>
-                                <a href="<?= $targetUrl ?>" <?= $isExternal ? 'target="_blank" rel="noopener noreferrer"' : '' ?>>
-                                    <?= e($story['title']) ?>
-                                </a>
-                                <?php if ($isExternal): ?>
-                                    <?php 
-                                    $domainHost = !empty($story['url']) ? parse_url($story['url'], PHP_URL_HOST) : null;
-                                    if ($domainHost): 
-                                    ?>
-                                        <a href="<?= route('domain.show', ['domain' => $domainHost]) ?>" class="domain">
-                                            <?= e($domainHost) ?>
-                                        </a>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
-
-                            <?php if (!empty($story['tags'])): ?>  
-                                <span class="tags">
-                                    <?php foreach ($story['tags_with_names'] as $tagData): ?>  
-                                        <a href="<?= route('tags.filter', ['tagslug' => e($tagData['slug'])]) ?>" class="tag"><?= e($tagData['name']) ?></a>
-                                    <?php endforeach; ?>
-                                </span> 
-                            <?php endif; ?>
-
-                            <div class="byline">
-                                <?php if (!empty($story['author_avatar'])): ?>
-                                    <img src="/uploads/avatars/<?= substr($story['author_avatar'], 0, 2) ?>/<?= e($story['author_avatar']) ?>" class="avatar" alt="">
-                                <?php endif; ?>
-
-                                <a href="<?= route('user.profile', ['username' => $story['author_name']]) ?>">
-                                    <?= e($story['author_name']) ?>
-                                </a>
-
-                                <span class="divider">|</span>
-                                <span><?= e(date('d.m.Y H:i', strtotime($story['created_at']))) ?></span>
-
-                                <span class="divider">|</span>
-                                <a href="<?= route('story.show', ['id' => $story['id']]) ?>">
-                                    <?php if ((int)$story['comments_count'] === 0): ?>
-                                        нет комментариев
-                                    <?php else: ?>
-                                        <?= (int)$story['comments_count'] ?> комм.
-                                    <?php endif; ?>
-                                </a>
-
-                                <?php if (isset($story['relevance'])): ?>
-                                    <span class="divider">|</span>
-                                    <span class="hint">релевантность: <?= round($story['relevance'], 2) ?></span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </li>
+                    <?php partial('Stories::_story_item', [
+                        'story'         => $story,
+                        'currentUserId' => $currentUserId,
+                        'isAdmin'       => $isAdmin ?? false,
+                        'canUserDownvote' => $canUserDownvote,
+                        'currentVotes'  => $currentVotes,
+                        'newCommentsMap'=> $newCommentsMap ?? [],
+                        'hideAuthor'    => false,
+                        'relevance'     => $story['relevance'] ?? null,
+                    ]); ?>
                 <?php endforeach; ?>
             </ol>
 
