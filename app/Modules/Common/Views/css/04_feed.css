@@ -519,18 +519,33 @@ li.story .staff-pick-badge {
 }
 
 /* На мобильных карточка схлопывается в вертикальную:
-   текст сверху, картинка под ним */
+   порядок: заголовок → текст → фото → мета (byline-подвал) */
 @media (max-width: 640px) {
   li.story .story_liner {
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .story-thumbnail,
-  .story-thumbnail img {
+  /* Дети story-card-body становятся прямыми flex-детьми story_liner,
+     чтобы можно было расставить порядок через order */
+  li.story .story-card-body {
+    display: contents;
+  }
+
+  /* Фото — перед метой (byline) */
+  li.story .story-thumbnail {
+    order: 3;
+    width: 100%;
+  }
+
+  li.story .story-thumbnail img {
     width: 100%;
     height: auto;
     max-height: 240px;
+  }
+
+  li.story .byline {
+    order: 4;
   }
 }
 

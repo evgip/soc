@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Services;
 
 use W3a\Core\Database\Database;
-use App\Modules\Common\Support\CacheHelper;
+use W3a\Core\Cache\FileCache;
 
 class TrendingService
 {
     private Database $db;
-    private CacheHelper $cache;
+    private FileCache $cache;
     private TagAttachmentService $tagAttachment;
 
     private const CACHE_TTL = 300;
     private const CACHE_KEY = 'trending_stories_v1';
 
-    public function __construct(Database $db, CacheHelper $cache, TagAttachmentService $tagAttachment)
+    public function __construct(Database $db, FileCache $cache, TagAttachmentService $tagAttachment)
     {
         $this->db = $db;
         $this->cache = $cache;

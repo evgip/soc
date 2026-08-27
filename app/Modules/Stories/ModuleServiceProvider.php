@@ -44,7 +44,6 @@ use App\Modules\Muted\Services\MuteService;
 use App\Modules\Subscriptions\Services\SubscriptionService;
 
 use App\Modules\Stories\Services\ImageCleaner;
-use App\Modules\Common\Support\CacheHelper;
 
 use App\Modules\Stories\Models\FriendLink;
 use App\Modules\Stories\Services\FriendLinkService;
@@ -68,12 +67,21 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
         });
 
         // ================================================================
-        // ИНФРАСТРУКТУРА: КЭШ (регистрируем ДО сервисов, которые от него зависят)
+        // СЕРВИСЫ С КЭШИРОВАНИЕМ (FileCache::remember)
         // ================================================================
+        $container->singleton(TrendingService::class, function(Container $c) {
+            return new TrendingService(
+                $c->get(Database::class),
+                $c->get(FileCache::class),
+                $c->get(TagAttachmentService::class)
+            );
+        });
 
-        // 🆕 Тонкая обёртка над FileCache с удобными методами remember() и forgetMany()
-        $container->singleton(CacheHelper::class, function(Container $c) {
-            return new CacheHelper($c->get(FileCache::class));
+        $container->singleton(StaffPicksService::class, function(Container $c) {
+            return new StaffPicksService(
+                $c->get(Database::class),
+                $c->get(FileCache::class)
+            );
         });
 
         // ================================================================
@@ -122,7 +130,7 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
                 $c->get(EventDispatcher::class),
                 $c->get(UserContext::class),
                 $c->get(HtmlSanitizer::class),
-				$c->get(ImageCleaner::class)
+                $c->get(ImageCleaner::class)
             );
         });
 
@@ -137,12 +145,12 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
             return new UrlFetcherService();
         });
 
-		$container->singleton(ImageCleaner::class, function(Container $c) {
-			return new ImageCleaner(
-				$c->get(StorageManager::class),
-				$c->get(Logger::class)
-			);
-		});
+        $container->singleton(ImageCleaner::class, function(Container $c) {
+            return new ImageCleaner(
+                $c->get(StorageManager::class),
+                $c->get(Logger::class)
+            );
+        });
 
         // ================================================================
         // TagAttachmentService (общий для Recommendation и Trending)
@@ -155,7 +163,7 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
         });
 
         // ================================================================
-        // СЕРВИСЫ (с кэшированием через CacheHelper)
+        // RecommendationService (без кэша)
         // ================================================================
 
         $container->singleton(RecommendationService::class, function(Container $c) {
@@ -165,21 +173,6 @@ class ModuleServiceProvider extends \W3a\Core\Foundation\ModuleServiceProvider
                 $c->get(SubscriptionService::class),
                 $c->get(TagFilter::class),
                 $c->get(TagAttachmentService::class)
-            );
-        });
-
-        $container->singleton(TrendingService::class, function(Container $c) {
-            return new TrendingService(
-                $c->get(Database::class),
-                $c->get(CacheHelper::class),
-                $c->get(TagAttachmentService::class)
-            );
-        });
-
-        $container->singleton(StaffPicksService::class, function(Container $c) {
-            return new StaffPicksService(
-                $c->get(Database::class),
-                $c->get(CacheHelper::class)
             );
         });
 

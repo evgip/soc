@@ -5,40 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\Stories\Services;
 
 use W3a\Core\Database\Database;
-use App\Modules\Common\Support\CacheHelper;
+use W3a\Core\Cache\FileCache;
 
-/**
- * Сервис "Выбор редакции" (Staff Picks)
- * 
- * Отвечает за статьи, вручную отобранные администраторами
- * за исключительное качество, глубину и ценность.
- * 
- * Два режима работы:
- * 1. getStaffPicks(limit) — для сайдбара на главной, КЭШИРУЕТСЯ на 15 мин
- * 2. getAllStaffPicks(limit, offset) — для страницы /staff-picks, БЕЗ кэша
- * 
- * Переключение статуса (toggleStaffPick) автоматически инвалидирует кэш,
- * чтобы изменения мгновенно отображались у всех пользователей.
- */
 class StaffPicksService
 {
     private Database $db;
-    private CacheHelper $cache;
+    private FileCache $cache;
 
-    /**
-     * Время жизни кэша для сайдбара — 15 минут.
-     * Staff Picks меняются редко (раз в несколько дней),
-     * поэтому можно кэшировать надолго.
-     */
     private const CACHE_TTL = 900;
 
-    /**
-     * Базовый ключ кэша. Версия (v1) позволяет легко сбросить весь кэш
-     * при изменении структуры данных — просто увеличиваем до v2.
-     */
     private const CACHE_KEY = 'staff_picks_sidebar_v1';
 
-    public function __construct(Database $db, CacheHelper $cache)
+    public function __construct(Database $db, FileCache $cache)
     {
         $this->db = $db;
         $this->cache = $cache;
@@ -57,7 +35,7 @@ class StaffPicksService
     {
         $cacheKey = self::CACHE_KEY . '_' . $limit;
 
-        // Кэшируем через CacheHelper::remember() — при промахе выполнится запрос
+        // Кэшируем через FileCache::remember() — при промахе выполнится запрос
         return $this->cache->remember(
             $cacheKey,
             self::CACHE_TTL,
