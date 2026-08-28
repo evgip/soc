@@ -3,7 +3,6 @@
 
 $currentUserId = $currentUserId ?? 0;
 $isAdmin = $isAdmin ?? false;
-$canUserDownvote = $canUserDownvote ?? false;
 $currentVotes = $currentVotes ?? [];
 $newCommentsMap = $newCommentsMap ?? [];
 $stories = $stories ?? [];
@@ -21,7 +20,6 @@ $stories = $stories ?? [];
                     'story'         => $story,
                     'currentUserId' => $currentUserId,
                     'isAdmin'       => $isAdmin,
-                    'canUserDownvote'=> $canUserDownvote,
                     'currentVotes'  => $currentVotes,
                     'newCommentsMap'=> $newCommentsMap,
                     'hideAuthor'    => false,

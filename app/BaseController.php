@@ -13,7 +13,6 @@ use App\Modules\Notifications\Models\Notification;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Flags\Models\Flag;
 use App\Modules\Suggestions\Models\Suggestion;
-use App\Modules\Votes\Services\VoteService;
 
 /**
  * Базовый контроллер приложения.
@@ -141,19 +140,9 @@ abstract class BaseController extends CoreController
         }
     }
 
-    // =========================================================================
+// =========================================================================
     // СПЕЦИФИЧНАЯ БИЗНЕС-ЛОГИКА И ХЕЛПЕРЫ
     // =========================================================================
-
-    protected function canUserDownvote(int $userId): bool
-    {
-        try {
-            $voteService = $this->container->get(VoteService::class);
-            return $voteService->canUserDownvote($userId);
-        } catch (\Throwable $e) {
-            return false;
-        }
-    }
 
     /**
      * Установить Open Graph мета-теги для страницы.

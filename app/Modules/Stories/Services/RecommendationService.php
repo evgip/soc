@@ -76,7 +76,7 @@ class RecommendationService
         int $limit,
         array $excludedTagIds = []
     ): array {
-        $where = ['s.deleted_at IS NULL'];
+        $where = ['s.deleted_at IS NULL', "s.status = 'published'"];
         $bindings = [];
 
         $where[] = 's.user_id != ?';
@@ -150,6 +150,7 @@ class RecommendationService
     ): array {
         $where = [
             's.deleted_at IS NULL',
+            "s.status = 'published'",
             's.created_at >= NOW() - INTERVAL 7 DAY'
         ];
         $bindings = [];

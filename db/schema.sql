@@ -86,7 +86,7 @@ CREATE TABLE `comments` (
   `flag_count` int UNSIGNED NOT NULL DEFAULT '0',
   `is_hidden_by_flags` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `confidence_score` decimal(10,8) NOT NULL DEFAULT '0.00000000'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -681,7 +681,7 @@ CREATE TABLE `votes` (
   `user_id` int UNSIGNED NOT NULL,
   `votable_type` enum('story','comment') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `votable_id` int UNSIGNED NOT NULL,
-  `vote_type` tinyint NOT NULL DEFAULT '1',
+  `claps` tinyint UNSIGNED NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -689,7 +689,7 @@ CREATE TABLE `votes` (
 -- Дамп данных таблицы `votes`
 --
 
-INSERT INTO `votes` (`id`, `user_id`, `votable_type`, `votable_id`, `vote_type`, `created_at`) VALUES
+INSERT INTO `votes` (`id`, `user_id`, `votable_type`, `votable_id`, `claps`, `created_at`) VALUES
 (5, 1, 'comment', 6, 1, '2026-06-06 23:28:01'),
 (6, 1, 'story', 2, 1, '2026-06-06 23:28:05');
 
@@ -1600,6 +1600,30 @@ CREATE TABLE `followed_collections` (
 ALTER TABLE `user_settings` 
 ADD COLUMN `notify_on_collection_update` TINYINT(1) NOT NULL DEFAULT 1 
 AFTER `notify_on_mention`;
+
+
+-- 1. Инвалидируем старые plaintext-токены
+DELETE FROM `email_activations`;
+DELETE FROM `password_resets`;
+
+-- 2. email_activations: token -> selector + token_hash
+ALTER TABLE `email_activations`
+    ADD COLUMN `selector` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Публичный идентификатор' AFTER `user_id`,
+    ADD COLUMN `token_hash` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'SHA-256 хэш валидатора' AFTER `selector`,
+    DROP KEY `token`,
+    DROP COLUMN `token`,
+    ADD UNIQUE KEY `uk_selector` (`selector`);
+
+-- 3. password_resets: token -> selector + token_hash
+ALTER TABLE `password_resets`
+    ADD COLUMN `selector` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Публичный идентификатор' AFTER `email`,
+    ADD COLUMN `token_hash` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'SHA-256 хэш валидатора' AFTER `selector`,
+    DROP KEY `token`,
+    DROP KEY `idx_reset_email_token`,
+    DROP COLUMN `token`,
+    ADD UNIQUE KEY `uk_selector` (`selector`),
+    ADD KEY `idx_reset_email` (`email`);
+
 
 
 

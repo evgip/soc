@@ -56,13 +56,12 @@ class TagsController extends BaseController
         }
 
         $userContext = $this->getUserContext();
-        $canUserDownvote = $this->canUserDownvote($userContext['id']);
 
         $currentVotes = [];
         if ($userContext['isLoggedIn']) {
 			$storyIds = collect($data['stories'])->pluck('id')->toArray();
 			$voteModel = $this->container->get(Vote::class);
-			$currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+			$userClaps = $voteModel->getUserClapsForStories($userContext['id'], $storyIds);
         }
 
         return $this->render('categories-show', [
@@ -74,7 +73,6 @@ class TagsController extends BaseController
             'newCommentsMap' => $data['newCommentsMap'],
             'currentUserId' => $userContext['id'],
             'isAdmin' => $userContext['isAdmin'],
-            'canUserDownvote' => $canUserDownvote,
             'currentVotes' => $currentVotes,
         ]);
     }

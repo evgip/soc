@@ -22,10 +22,9 @@ readonly class StoryShowViewModel
         public bool $isModerator,
         public bool $isAuthor,
         
-        // Функциональность
-        public bool $canUserDownvote,
-        public ?int $currentStoryVote,
-        public bool $isStorySaved,
+// Функциональность
+		public int $userClaps = 0,
+		public bool $isStorySaved,
         
         // Предложения по изменению (Suggests)
         public int $userSuggestionsCount,

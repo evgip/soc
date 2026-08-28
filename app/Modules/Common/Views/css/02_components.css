@@ -168,3 +168,5 @@ img.avatar {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+
+.reading-time { color: var(--color-text-secondary, #757575); font-size: 14px; white-space: nowrap; }

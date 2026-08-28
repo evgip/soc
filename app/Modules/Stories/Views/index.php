@@ -17,7 +17,6 @@ if ($useViewModel):
     
     $currentUserId = $viewModel->currentUserId;
     $isAdmin = $viewModel->isAdmin;
-    $canUserDownvote = $viewModel->canUserDownvote;
     $currentVotes = $viewModel->currentVotes;
     $newCommentsMap = $viewModel->newCommentsMap;
     $stories = $viewModel->stories;
@@ -48,7 +47,6 @@ if ($useViewModel):
                         'story' => $story,
                         'currentUserId' => $currentUserId,
                         'isAdmin' => $isAdmin,
-                        'canUserDownvote' => $canUserDownvote,
                         'currentVotes' => $currentVotes,
                         'newCommentsMap' => $newCommentsMap,
                         'hideAuthor' => false,
@@ -71,7 +69,6 @@ if ($useViewModel):
                             'story' => $story,
                             'currentUserId' => $currentUserId,
                             'isAdmin' => $isAdmin,
-                            'canUserDownvote' => $canUserDownvote,
                             'currentVotes' => $currentVotes,
                             'newCommentsMap' => $newCommentsMap,
                             'hideAuthor' => false,
@@ -212,7 +209,6 @@ if ($useViewModel):
 <?php
 $currentUserId = $currentUserId ?? 0;
 $isAdmin = $isAdmin ?? false;
-$canUserDownvote = $canUserDownvote ?? false;
 $stories = $stories ?? [];
 $tagInfo = $tagInfo ?? [];
 $author = $author ?? '';
@@ -284,7 +280,6 @@ $isSubscribedEmpty = (($title ?? '') === 'Мои подписки' && !empty($is
                 'story' => $story,
                 'currentUserId' => $currentUserId,
                 'isAdmin' => $isAdmin,
-                'canUserDownvote' => $canUserDownvote,
                 'currentVotes' => $currentVotes,
                 'newCommentsMap' => $newCommentsMap,
                 'hideAuthor' => false,

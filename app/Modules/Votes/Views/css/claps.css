@@ -1,0 +1,10 @@
+/* Claps / голосование */
+.clappers { display: inline-flex; align-items: center; }
+.clap-btn { display: inline-flex; align-items: center; gap: 4px; background: none; border: 1px solid var(--color-border, #e0e0e0); border-radius: 4px; padding: 4px 8px; cursor: pointer; color: var(--color-text-secondary, #757575); font-size: 14px; line-height: 1; transition: all 0.15s ease; }
+.clap-btn:hover { border-color: var(--color-primary, #1a8917); color: var(--color-primary, #1a8917); }
+.clap-btn--disabled { opacity: 0.5; cursor: default; }
+.clap-btn--active { color: var(--color-primary, #1a8917); border-color: var(--color-primary, #1a8917); }
+.clap-btn--maxed { opacity: 0.7; }
+.clap-icon { font-size: 18px; line-height: 1; }
+.clap-score { font-weight: 500; min-width: 16px; text-align: center; }
+.clappers--inline .clap-btn { border: none; padding: 2px 4px; }

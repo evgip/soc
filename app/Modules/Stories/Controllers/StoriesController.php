@@ -77,7 +77,6 @@ class StoriesController extends BaseController
 			tagslug: $tagslug,
 			author: '',
 			userContext: $userContext,
-			canUserDownvote: $this->canUserDownvote($userContext['id']),
 			pageData: $pageData
 		);
 
@@ -90,7 +89,6 @@ class StoriesController extends BaseController
 			sort: $feed->sort,
 			currentUserId: $feed->currentUserId,
 			isAdmin: $feed->isAdmin,
-			canUserDownvote: $feed->canUserDownvote,
 			currentVotes: $feed->currentVotes,
 			forYou: $forYou,
 			trending: $trending,
@@ -122,7 +120,6 @@ class StoriesController extends BaseController
 			tagslug: $tagslug,
 			author: '',
 			userContext: $userContext,
-			canUserDownvote: $this->canUserDownvote($userContext['id']),
 			pageData: $pageData
 		);
 
@@ -134,7 +131,6 @@ class StoriesController extends BaseController
 			'sort' => $feed->sort,
 			'currentUserId' => $feed->currentUserId,
 			'isAdmin' => $feed->isAdmin,
-			'canUserDownvote' => $feed->canUserDownvote,
 			'currentVotes' => $feed->currentVotes,
 			'rssFeed' => $feed->rssFeed,
 			'title' => $feed->pageTitle,
@@ -472,25 +468,23 @@ class StoriesController extends BaseController
             'image' => config('app.url') . '/',
         ]);
 
-        $feed = $this->service(StoryFeedBuilder::class)->build(
-            tagslug: '',
-            author: $username,
-            userContext: $userContext,
-            canUserDownvote: $this->canUserDownvote($userContext['id']),
-            pageData: ['title' => $pageTitle]
-        );
+$feed = $this->service(StoryFeedBuilder::class)->build(
+			tagslug: '',
+			author: $username,
+			userContext: $userContext,
+			pageData: ['title' => $pageTitle]
+		);
 
-        return $this->render('index', [
-            'stories' => $feed->stories,
-            'currentPage' => $feed->currentPage,
-            'totalPages' => $feed->totalPages,
-            'newCommentsMap' => $feed->newCommentsMap,
-            'sort' => $feed->sort,
-            'author' => $feed->author,
-            'currentUserId' => $feed->currentUserId,
-            'isAdmin' => $feed->isAdmin,
-            'canUserDownvote' => $feed->canUserDownvote,
-            'currentVotes' => $feed->currentVotes,
+		return $this->render('index', [
+			'stories' => $feed->stories,
+			'currentPage' => $feed->currentPage,
+			'totalPages' => $feed->totalPages,
+			'newCommentsMap' => $feed->newCommentsMap,
+			'sort' => $feed->sort,
+			'author' => $feed->author,
+			'currentUserId' => $feed->currentUserId,
+			'isAdmin' => $feed->isAdmin,
+			'currentVotes' => $feed->currentVotes,
             'rssFeed' => $feed->rssFeed,
             'title' => $feed->pageTitle,
         ]);
@@ -551,7 +545,6 @@ class StoriesController extends BaseController
             'sort' => $sort ?? 'new',
             'currentUserId' => $userContext['id'],
             'isAdmin' => $userContext['isAdmin'],
-            'canUserDownvote' => $this->canUserDownvote($userContext['id']),
             'currentVotes' => [],
             'rssFeed' => '',
             'title' => 'Мои подписки',
@@ -740,7 +733,7 @@ class StoriesController extends BaseController
 		if ($userContext['isLoggedIn'] && !empty($stories)) {
 			$storyIds = array_column($stories, 'id');
 			$voteModel = $this->container->get(\App\Modules\Votes\Models\Vote::class);
-			$currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+			$userClaps = $voteModel->getUserClapsForStories($userContext['id'], $storyIds);
 		}
 
 		// Новые комментарии для прочитанных статей
@@ -761,7 +754,6 @@ class StoriesController extends BaseController
 			'totalCount' => $totalCount,
 			'currentUserId' => $userContext['id'],
 			'isAdmin' => $userContext['isAdmin'],
-			'canUserDownvote' => $this->canUserDownvote($userContext['id']),
 			'currentVotes' => $currentVotes,
 			'newCommentsMap' => $newCommentsMap,
 		]);

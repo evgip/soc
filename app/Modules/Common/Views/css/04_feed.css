@@ -179,104 +179,11 @@ li .link .tags {
   font-weight: 500;
 }
 
-/* ---------- Голосование (voters) ---------- */
-.voters:not(.voters--inline) {
-  display: none;
-}
-
-.voters--inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0;
-  border: none;
-  font-family: var(--font-sans);
-}
-
-.voters--inline .inline-form {
-  display: inline;
-  margin: 0;
-}
-
-.voters--inline .upvoter {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  color: var(--opacity-fg-54);
-  font-size: 1rem;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-  font-family: var(--font-sans);
-  line-height: 1;
-}
-
-.voters--inline .upvoter:hover {
-  background-color: var(--color-box-bg-shaded);
-  color: var(--color-fg);
-}
-
-.voters--inline .upvoter.upvoted {
-  color: var(--color-fg-accent);
-  background-color: var(--color-box-bg-shaded);
-  font-weight: 600;
-}
-
-.voters--inline .upvoter.disabled {
-  color: var(--opacity-fg-40);
-  cursor: default;
-}
-
-.voters--inline .upvoter.disabled:hover {
-  background-color: transparent;
-}
-
-.voters--inline .upvoter-icon {
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
-.voters--inline .score {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-fg);
-  padding: 0 0.25rem;
-}
-
 .comment_votes {
   display: inline-flex;
   align-items: center;
   margin-right: 0.5rem;
   vertical-align: middle;
-}
-
-.comment_votes .voters--inline {
-  margin: 0;
-  padding: 0;
-  gap: 0.125rem;
-}
-
-.comment_votes .voters--inline .upvoter {
-  font-size: 0.75rem;
-  padding: 2px 4px;
-  border-radius: var(--radius-sm);
-}
-
-.comment_votes .voters--inline .upvoter-icon {
-  font-size: 0.7rem;
-}
-
-.comment_votes .voters--inline .score {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 0 2px;
 }
 
 /* ---------- Иконки действий (закладка, меню «три точки») ---------- */

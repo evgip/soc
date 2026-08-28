@@ -9,14 +9,12 @@
  * @var array $newCommentsMap Карта новых комментариев для каждой истории
  * @var int $currentUserId    ID текущего пользователя (0 = гость)
  * @var bool $isAdmin         Флаг администратора
- * @var bool $canUserDownvote Может ли пользователь голосовать против
- * @var array $currentVotes   Массив голосов: story_id => vote_value
+ * @var array $currentVotes   Массив хлопков пользователя: story_id => claps
  */
 
 // ✅ Все данные приходят из контроллера, не создаём модели здесь
 $currentUserId = $currentUserId ?? 0;
 $isAdmin = $isAdmin ?? false;
-$canUserDownvote = $canUserDownvote ?? false;
 $currentVotes = $currentVotes ?? [];
 
 // Базовый URL для пагинации (сохраняем slug категории)
@@ -40,7 +38,6 @@ $paginationBaseUrl = route('categories.show', ['slug' => $category['slug']]);
                 'story'         => $story,
                 'currentUserId' => $currentUserId,
                 'isAdmin'       => $isAdmin,
-                'canUserDownvote' => $canUserDownvote,
                 'currentVotes'  => $currentVotes,
                 'newCommentsMap'=> $newCommentsMap,
                 'hideAuthor'    => false,

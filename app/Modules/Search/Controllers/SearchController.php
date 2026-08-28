@@ -41,13 +41,12 @@ class SearchController extends BaseController
         }
 
         $userContext = $this->getUserContext();
-        $canUserDownvote = $this->canUserDownvote($userContext['id']);
 
-        $currentVotes = [];
+        $userClaps = [];
         if ($userContext['isLoggedIn'] && $what === 'stories' && !empty($results)) {
             $voteModel = $this->container->get(Vote::class);
             $storyIds = array_column($results, 'id');
-            $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+            $userClaps = $voteModel->getUserClapsForStories($userContext['id'], $storyIds);
         }
 
         return $this->render('index', [
@@ -57,8 +56,7 @@ class SearchController extends BaseController
             'what'    => $what,
             'results' => $results,
             'currentUserId' => $userContext['id'],
-            'canUserDownvote' => $canUserDownvote,
-            'currentVotes' => $currentVotes,
+            'userClaps' => $userClaps,
         ]);
     }
 }

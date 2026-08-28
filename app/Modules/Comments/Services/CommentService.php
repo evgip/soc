@@ -115,7 +115,10 @@ class CommentService
         }
 
         // Обновление
-        $this->commentModel->update($commentId, ['comment' => trim($newText)]);
+        $this->commentModel->update($commentId, [
+            'comment' => trim($newText),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
         $updatedComment = $this->commentModel->find($commentId);
 
         $this->eventDispatcher->dispatch(new CommentUpdated(

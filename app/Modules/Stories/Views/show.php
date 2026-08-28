@@ -62,7 +62,12 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 				<?php endif; ?>
 				
 				
-				 <span title="<?= e(date('d.m.Y H:i:s', strtotime($viewModel->story['created_at']))) ?>">
+				 <?php $rt = (int)($viewModel->story['reading_time'] ?? 0); ?>
+				<?php if ($rt > 0): ?>
+				<span class="reading-time"><?= $rt ?> мин чтения</span>
+				<span class="divider">|</span>
+				<?php endif; ?>
+		<span title="<?= e(date('d.m.Y H:i:s', strtotime($viewModel->story['created_at']))) ?>">
                     <?= adaptive_time($viewModel->story['created_at']) ?>
                 </span>
 				
@@ -171,10 +176,8 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
         'type' => 'story',
         'id' => (int)$viewModel->story['id'],
         'score' => (int)$viewModel->story['score'],
-        'currentVoteState' => $viewModel->currentStoryVote,
-        'canDownvote' => $viewModel->canUserDownvote,
+        'userClaps' => $viewModel->userClaps,
         'isLoggedIn' => $viewModel->currentUserId > 0,
-        'contentOwnerId' => $viewModel->isAuthor,
         'inline' => true 
     ]); ?>
                     
@@ -534,7 +537,6 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
 				currentUserId: $viewModel->currentUserId,
 				isAdmin: $viewModel->isAdmin,
 				isModerator: $viewModel->isModerator,
-				canDownvote: $viewModel->canUserDownvote,
 				lastReadCommentId: $viewModel->lastReadCommentId,
 				commentsTree: $viewModel->commentsTree,
 				renderTree: $renderTree,

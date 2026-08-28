@@ -14,7 +14,6 @@ readonly class CommentRenderContext
         public int $currentUserId,
         public bool $isAdmin,
         public bool $isModerator,
-        public bool $canDownvote,
         
         public ?int $lastReadCommentId = null,
         public ?array $commentsTree = null,

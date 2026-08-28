@@ -67,6 +67,7 @@ class TrendingService
                 AND c.created_at >= NOW() - INTERVAL 24 HOUR
                 AND c.deleted_at IS NULL
             WHERE s.deleted_at IS NULL
+              AND s.status = 'published'
               AND s.created_at >= NOW() - INTERVAL 48 HOUR
             GROUP BY s.id
             HAVING trending_score > 0

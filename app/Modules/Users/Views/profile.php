@@ -35,9 +35,14 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
             $karmaClass = $userKarma > 0 ? 'text-success' : ($userKarma < 0 ? 'text-danger' : 'text-muted');
             ?>
             <span class="<?= $karmaClass ?>"><strong><?= $userKarma > 0 ? '+' : '' ?><?= (int)$userKarma ?></strong> кармы</span>
-        </div>
+</div>
 
-      
+        <?php if ($isOwnProfile): ?>
+            <div class="profile-actions flex gap mt-4">
+                <a href="<?= route('user.stats') ?>" class="btn btn-sm">📊 Статистика</a>
+            </div>
+        <?php endif; ?>
+
         <?php if (!$isOwnProfile && $currentUserId > 0): ?>
             <div class="profile-actions flex gap mt-4">
                 <form action="<?= route('messages.start', ['userId' => $profileUser['id']]) ?>" method="POST">
@@ -94,7 +99,6 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
                     'story' => $story,
                     'currentUserId' => $currentUserId,
                     'isAdmin' => \W3a\Core\Auth\Auth::isModerator(),
-                    'canUserDownvote' => true,
                     'currentVotes' => [],
                     'newCommentsMap' => [],
                     'hideAuthor' => true,

@@ -55,7 +55,7 @@ class CommentsController extends BaseController
 		if ($userContext['isLoggedIn'] && !empty($comments)) {
 			$voteModel = $this->container->get(Vote::class);
 			$commentIds = collect($comments)->pluck('id')->map(fn($id) => (int) $id)->toArray();
-			$currentCommentVotes = $voteModel->getUserVotesForComments($userContext['id'], $commentIds);
+			$currentCommentVotes = $voteModel->getUserClapsForComments($userContext['id'], $commentIds);
 		}
 
 		$highlightMap = [];
@@ -66,15 +66,12 @@ class CommentsController extends BaseController
 			$highlightMap = array_column($highlights, 'quoted_text', 'comment_id');
 		}
 
-		$canDownvote = $this->canUserDownvote($userContext['id']);
-
 		return $this->render('index', [
 			'comments' => $comments,
 			'lastReadAt' => $lastReadAt,
 			'currentUserId' => $userContext['id'],
 			'isAdmin' => $userContext['isAdmin'],
 			'isModerator' => $userContext['isModerator'],
-			'canDownvote' => $canDownvote,
 			'currentCommentVotes' => $currentCommentVotes,
 			'highlightMap' => $highlightMap,  // 🆕 Передаём карту
 			'title' => 'Последние комментарии',

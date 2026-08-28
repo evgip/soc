@@ -10,7 +10,6 @@ use W3a\Core\Support\Logger;
 use W3a\Core\Foundation\ModuleServiceProvider as BaseModuleServiceProvider;
 use App\Modules\Votes\Models\Vote;
 use App\Modules\Votes\Services\VoteService;
-use App\Modules\Users\Models\User;
 use App\Modules\Comments\Models\Comment;
 use App\Modules\Stories\Services\RankingService; 
 
@@ -35,7 +34,6 @@ class ModuleServiceProvider extends BaseModuleServiceProvider
         $container->singleton(VoteService::class, function (Container $c) {
             return new VoteService(
                 $c->get(Vote::class),
-                $c->get(User::class),
                 $c->get(Comment::class),
                 $c->get(Logger::class),
                 $c->get(Database::class),

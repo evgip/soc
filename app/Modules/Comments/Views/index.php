@@ -5,7 +5,6 @@ declare(strict_types=1);
  * @var int $currentUserId
  * @var bool $isAdmin
  * @var bool $isModerator
- * @var bool $canDownvote
  * @var array $currentCommentVotes
  * @var array $highlightMap
  * @var string|null $lastReadAt
@@ -16,7 +15,6 @@ $commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
     currentUserId: $currentUserId,
     isAdmin: $isAdmin,
     isModerator: $isModerator,
-    canDownvote: $canDownvote,
 );
 ?>
 

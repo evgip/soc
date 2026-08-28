@@ -93,12 +93,19 @@ class StoryService
 		// 4. Определяем тип paywall (по умолчанию 'members' для закрытых частей)
 		$paywallType = $data['paywall_type'] ?? 'members';
 
-		// 5. Формируем данные для сохранения
+		// 5. Рассчитываем время чтения
+		preg_match_all('/\p{L}+/u', $processedContent['description_text'] ?? '', $matches);
+		$wordCount = count($matches[0] ?? []);
+		$readingTime = max(1, (int)ceil($wordCount / 200)); // 200 слов/мин
+
+		// 6. Формируем данные для сохранения
 		$storyData = [
 			'user_id'            => $userId,
 			'title'              => mb_substr($title, 0, 150),
 			'description_json'   => $processedContent['description_json'],
 			'description_text'   => $processedContent['description_text'],
+			'word_count'         => $wordCount,
+			'reading_time'       => $readingTime,
 			'score'              => 1,
 			'comments_count'     => 0,
 			'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
@@ -106,7 +113,7 @@ class StoryService
 			'status'             => $status,
 		];
 
-		// 6. Создаём статью через модель
+		// 7. Создаём статью через модель
 		$storyId = $this->storyModel->create($storyData);
 
 		// 7. Обновляем paywall-флаги (модель сама читает JSON из БД)
@@ -182,11 +189,18 @@ class StoryService
 		// 4. Определяем тип paywall
 		$paywallType = $data['paywall_type'] ?? 'members';
 
-		// 5. Формируем данные для обновления
+		// 5. Рассчитываем время чтения
+		preg_match_all('/\p{L}+/u', $processedContent['description_text'] ?? '', $matches);
+		$wordCount = count($matches[0] ?? []);
+		$readingTime = max(1, (int)ceil($wordCount / 200));
+
+		// 6. Формируем данные для обновления
 		$updateData = [
 			'title'              => mb_substr($newTitle, 0, 150),
 			'description_json'   => $processedContent['description_json'],
 			'description_text'   => $processedContent['description_text'],
+			'word_count'         => $wordCount,
+			'reading_time'       => $readingTime,
 			'user_is_following'  => isset($data['user_is_following']) ? 1 : 0,
 			'paywall_type'       => $paywallType,
 			'status'             => $status,

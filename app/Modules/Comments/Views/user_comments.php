@@ -5,7 +5,6 @@ $commentContext = new \App\Modules\Comments\ViewModels\CommentRenderContext(
     currentUserId: $currentUserId,
     isAdmin: $isAdmin,
     isModerator: $isModerator,
-    canDownvote: false, // В профиле обычно не голосуют
 );
 ?>
 

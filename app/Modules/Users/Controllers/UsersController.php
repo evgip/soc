@@ -72,7 +72,6 @@ class UsersController extends BaseController
 			tagslug: '',
 			author: $username,
 			userContext: $userContext,
-			canUserDownvote: $this->canUserDownvote($userContext['id'] ?? 0),
 			pageData: ['title' => 'Публикации ' . e($username)]
 		);
 

@@ -47,6 +47,12 @@ $showMenu = $canManageStory
         <span class="divider">|</span>
     <?php endif; ?>
 
+    <?php $rt = (int)($story['reading_time'] ?? 0); ?>
+    <?php if ($rt > 0): ?>
+        <span class="reading-time"><?= $rt ?> мин</span>
+        <span class="divider">|</span>
+    <?php endif; ?>
+
     <span title="<?= e(date('d.m.Y H:i:s', strtotime($story['created_at']))) ?>">
         <?= adaptive_time($story['created_at']) ?>
     </span>

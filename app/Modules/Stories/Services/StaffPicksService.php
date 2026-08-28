@@ -67,6 +67,7 @@ class StaffPicksService
             LEFT JOIN `user_profiles` up ON u.id = up.user_id
             WHERE s.is_staff_pick = 1 
               AND s.deleted_at IS NULL
+              AND s.status = 'published'
             ORDER BY s.picked_at DESC, s.created_at DESC
             LIMIT ? OFFSET ?
         ";
@@ -89,6 +90,7 @@ class StaffPicksService
             FROM `stories` 
             WHERE is_staff_pick = 1 
               AND deleted_at IS NULL
+              AND status = 'published'
         ");
     }
 
@@ -181,6 +183,7 @@ class StaffPicksService
             LEFT JOIN `user_profiles` up ON u.id = up.user_id
             WHERE s.is_staff_pick = 1 
               AND s.deleted_at IS NULL
+              AND s.status = 'published'
             ORDER BY s.picked_at DESC, s.created_at DESC
             LIMIT ?
         ";

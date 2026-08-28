@@ -188,11 +188,13 @@ class Story extends Model
 		$where = [];
 		$bindings = [];
 
-		// ВАЖНО: Фильтруем только опубликованные статьи + не удаленные
+		// Всегда показываем только опубликованные (черновики не в ленте)
+		$where[] = "s.status = :status";
+		$bindings[':status'] = self::STATUS_PUBLISHED;
+
+		// Удалённые — только админам
 		if (!$showDeleted) {
 			$where[] = "s.deleted_at IS NULL";
-			$where[] = "s.status = :status";
-			$bindings[':status'] = self::STATUS_PUBLISHED;
 		}
 		
 		if ($tagslug !== '') {

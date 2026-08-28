@@ -46,11 +46,17 @@ class User extends Model
      */
     public function getUserKarma(int $userId): int
     {
-        $sql = "SELECT SUM(total_score) as karma FROM (
-                    SELECT SUM(`score`) as total_score FROM `stories` WHERE `user_id` = :uid1 AND `deleted_at` IS NULL
-                    UNION ALL
-                    SELECT SUM(`score`) as total_score FROM `comments` WHERE `user_id` = :uid2 AND `deleted_at` IS NULL
-                ) as combined";
+        $sql = "SELECT (
+                    SELECT COUNT(DISTINCT v.user_id)
+                    FROM `votes` v
+                    JOIN `stories` s ON s.id = v.votable_id AND v.votable_type = 'story'
+                    WHERE s.user_id = :uid1 AND s.deleted_at IS NULL
+                ) + (
+                    SELECT COUNT(DISTINCT v.user_id)
+                    FROM `votes` v
+                    JOIN `comments` c ON c.id = v.votable_id AND v.votable_type = 'comment'
+                    WHERE c.user_id = :uid2 AND c.deleted_at IS NULL
+                ) as karma";
 
         return (int)($this->db->fetchColumn($sql, ['uid1' => $userId, 'uid2' => $userId]) ?? 0);
     }

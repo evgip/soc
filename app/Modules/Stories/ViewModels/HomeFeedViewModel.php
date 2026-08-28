@@ -19,7 +19,6 @@ readonly class HomeFeedViewModel
         public string $sort,
         public int $currentUserId,
         public bool $isAdmin,
-        public bool $canUserDownvote,
         public array $currentVotes,
         
         // Medium-секции

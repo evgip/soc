@@ -48,7 +48,7 @@ class SavedController extends BaseController
         $currentVotes = [];
         if (!empty($storyIds)) {
             $voteModel = $this->container->get(Vote::class);
-            $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+            $userClaps = $voteModel->getUserClapsForStories($userContext['id'], $storyIds);
         }
 
         return $this->render('index', [
@@ -59,7 +59,6 @@ class SavedController extends BaseController
             'sort' => 'saved',
             'currentUserId' => $userContext['id'],
             'isAdmin' => $userContext['isAdmin'],
-            'canUserDownvote' => $this->canUserDownvote($userContext['id']),
             'currentVotes' => $currentVotes,
             'title' => 'Мои закладки',
         ]);

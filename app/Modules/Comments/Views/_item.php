@@ -5,7 +5,7 @@ declare(strict_types=1);
 /** _item.php
  * @var array $comment 
  * @var App\Modules\Comments\ViewModels\CommentRenderContext $context
- * @var ?int $currentVote (Голос за этот конкретный комментарий)
+ * @var ?int $currentVote (Хлопки пользователя за этот конкретный комментарий — 0..50 или null)
  * @var bool $showStoryContext
  * @var bool $showCollapseToggle
  */
@@ -105,10 +105,8 @@ if ($context->lastReadCommentId !== null) {
 							'type' => 'comment',
 							'id' => $commentId,
 							'score' => (int)$comment['score'],
-							'currentVoteState' => $currentVote ?? null,
-							'canDownvote' => $context->canDownvote,
+							'userClaps' => $currentVote ?? 0,
 							'isLoggedIn' => $context->currentUserId > 0,
-							'contentOwnerId' => (int)$comment['user_id'], // Для комментариев владельца определяем внутри _voters или передаем отдельно если нужно
 							'inline' => true
 						]); ?>
 					</div>

@@ -18,7 +18,6 @@ class StoryFeedDTO
         public ?string $author,
         public int $currentUserId,
         public bool $isAdmin,
-        public bool $canUserDownvote,
         public array $currentVotes,
         public array $rssFeed,
         public string $pageTitle,

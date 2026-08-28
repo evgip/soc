@@ -30,7 +30,6 @@ class StoryFeedBuilder
         string $tagslug = '',
         string $author = '',
         array $userContext = [],
-        bool $canUserDownvote = false,
         array $pageData = []
     ): StoryFeedDTO {
         $currentPage = max(1, (int)$this->request->getParams('page', 1));
@@ -67,7 +66,7 @@ class StoryFeedBuilder
         $currentVotes = [];
         if (!empty($userContext['isLoggedIn'])) {
             $voteModel = $this->container->get(Vote::class);
-            $currentVotes = $voteModel->getUserVotesForStories($userContext['id'], $storyIds);
+            $userClaps = $voteModel->getUserClapsForStories($userContext['id'], $storyIds);
         }
 
         $rssFeed = $this->buildRssFeed($tagslug, $author, $pageData);
@@ -82,7 +81,6 @@ class StoryFeedBuilder
             author: $author !== '' ? $author : null,
             currentUserId: $userContext['id'] ?? 0,
             isAdmin: $userContext['isAdmin'] ?? false,
-            canUserDownvote: $canUserDownvote,
             currentVotes: $currentVotes,
             rssFeed: $rssFeed,
             pageTitle: $pageData['title'] ?? 'Лента статей',

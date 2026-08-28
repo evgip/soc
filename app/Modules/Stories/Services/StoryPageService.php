@@ -161,21 +161,20 @@ class StoryPageService
 		$currentTagIds = $storyModel->getStoryTagIds($storyId);
 
 		// 8. Данные, зависящие от авторизации
-		$currentStoryVote = null;
+		$userClaps = 0;
 		$currentCommentVotes = [];
 		$userSuggestionsCount = 0;
 		$isAuthor = false;
 		$isStorySaved = false;
-		$canUserDownvote = false;
 
 		if ($userContext['isLoggedIn']) {
 			$userId = $userContext['id'];
 			$voteModel = $this->container->get(Vote::class);
 
-			// Получаем голос пользователя за историю
-			$currentStoryVote = $voteModel->getUserVote($userId, 'story', $storyId);
+			// Получаем количество хлопков пользователя за историю
+			$userClaps = $voteModel->getUserClaps($userId, 'story', $storyId);
 
-			// Собираем ID всех комментариев для получения голосов (Batch-запрос)
+			// Собираем ID всех комментариев для получения хлопков (Batch-запрос)
 			$allCommentIds = [];
 			foreach ($commentsTree as $comments) {
 				foreach ($comments as $comment) {
@@ -184,7 +183,7 @@ class StoryPageService
 			}
 
 			if (!empty($allCommentIds)) {
-				$currentCommentVotes = $voteModel->getUserVotesForComments($userId, $allCommentIds);
+				$currentCommentVotes = $voteModel->getUserClapsForComments($userId, $allCommentIds);
 			}
 
 			// Проверяем, является ли пользователь автором истории (используем callback из контекста)
@@ -198,9 +197,6 @@ class StoryPageService
 			// Проверяем, сохранена ли история
 			$savedModel = $this->container->get(SavedStory::class);
 			$isStorySaved = $savedModel->isSaved($userId, $storyId);
-			
-			// Проверяем право на голосование вниз (теперь это делает сервис, а не контроллер)
-			$canUserDownvote = $this->voteService->canUserDownvote($userId);
 		}
 
 		// 9. Возвращаем строго типизированный ViewModel вместо массива
@@ -212,8 +208,7 @@ class StoryPageService
 			isAdmin: $userContext['isAdmin'],
 			isModerator: $userContext['isModerator'],
 			isAuthor: $isAuthor,
-			canUserDownvote: $canUserDownvote,
-			currentStoryVote: $currentStoryVote,
+			userClaps: $userClaps,
 			isStorySaved: $isStorySaved,
 			userSuggestionsCount: $userSuggestionsCount,
 			maxSuggestionsAllowed: SuggestionService::MAX_USER_SUGGESTIONS,

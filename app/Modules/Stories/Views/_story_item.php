@@ -7,8 +7,7 @@
  * @var array $story              - данные статьи
  * @var int   $currentUserId      - ID текущего пользователя (0 для гостя)
  * @var bool  $isAdmin            - является ли пользователь админом
- * @var bool  $canUserDownvote    - может ли пользователь голосовать против
- * @var array $currentVotes       - массив голосов пользователя [story_id => vote]
+ * @var array $currentVotes       - массив хлопков пользователя [story_id => claps]
  * @var array $newCommentsMap     - количество новых комментариев [story_id => count]
  * @var bool  $hideAuthor         - скрывать аватар и имя автора (в профиле)
  * @var bool  $isSavedPage        - показывать кнопку "убрать из закладок" (страница /saved)
@@ -19,7 +18,6 @@
 // Защита от undefined переменных
 $currentUserId    = $currentUserId ?? 0;
 $isAdmin          = $isAdmin ?? false;
-$canUserDownvote  = $canUserDownvote ?? false;
 $currentVotes     = $currentVotes ?? [];
 $newCommentsMap   = $newCommentsMap ?? [];
 $hideAuthor       = $hideAuthor ?? false;
@@ -40,17 +38,6 @@ $domainHost = $isExternal ? parse_url($story['url'], PHP_URL_HOST) : null;
 
 <li class="story <?= $isStoryDeleted ? 'deleted' : '' ?>">
     
-    <!-- Голосование -->
-    <?php partial('Votes::_voters', [
-        'type'           => 'story',
-        'id'             => (int)$story['id'],
-        'score'          => (int)($story['score'] ?? 0),
-        'currentVoteState' => $currentVotes[$story['id']] ?? null,
-        'canDownvote'    => $canUserDownvote,
-        'isLoggedIn'     => $currentUserId > 0,
-        'contentOwnerId' => (int)($story['user_id'] ?? 0),
-    ]); ?>
-
     <div class="story_liner">
         <div class="story-card-body">
             <!-- Заголовок и теги -->
