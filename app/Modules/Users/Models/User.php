@@ -347,4 +347,51 @@ class User extends Model
 
 		return (int)$this->db->lastInsertId();
 	}
+
+	/**
+	 * Получить топ авторов по количеству подписчиков.
+	 *
+	 * @param int $limit Количество авторов
+	 * @param int|null $excludeUserId Исключить этого пользователя (например, текущего)
+	 * @return array Массив авторов: [['id', 'username', 'avatar', 'follower_count', 'stories_count']]
+	 */
+	public function getTopAuthors(int $limit = 5, ?int $excludeUserId = null): array
+	{
+		$where = 'WHERE u.deleted_at IS NULL AND u.is_active = 1';
+		$params = ['limit' => $limit];
+
+		if ($excludeUserId !== null) {
+			$where .= ' AND u.id != :exclude_id';
+			$params['exclude_id'] = $excludeUserId;
+		}
+
+		$sql = "
+			SELECT 
+				u.id,
+				u.username,
+				u.username as author_name,
+				up.avatar,
+				COALESCE(fc.follower_count, 0) AS follower_count,
+				COALESCE(sc.stories_count, 0) AS stories_count
+			FROM `{$this->table}` u
+			LEFT JOIN `user_profiles` up ON up.user_id = u.id
+			LEFT JOIN (
+				SELECT followed_user_id, COUNT(*) AS follower_count
+				FROM `followed_users`
+				GROUP BY followed_user_id
+			) fc ON fc.followed_user_id = u.id
+			LEFT JOIN (
+				SELECT user_id, COUNT(*) AS stories_count
+				FROM `stories`
+				WHERE deleted_at IS NULL
+				GROUP BY user_id
+			) sc ON sc.user_id = u.id
+			{$where}
+			HAVING follower_count > 0
+			ORDER BY follower_count DESC, stories_count DESC
+			LIMIT :limit
+		";
+
+		return $this->db->fetchAll($sql, $params);
+	}
 }	

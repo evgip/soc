@@ -1,3 +1,4 @@
+<?php partial('Moderations::_mod_nav') ?>
 <h1>📈 Активность модераторов</h1>
 <p class="text-muted">Статистика за последние 30 дней</p>
 

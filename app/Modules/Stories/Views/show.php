@@ -418,6 +418,42 @@ $isStoryDeleted = !empty($viewModel->story['deleted_at']);
  
 </article>
 
+<!-- Плавающая кнопка хлопка -->
+<div class="floating-clap" id="floatingClap" aria-hidden="true">
+    <?php partial('Votes::_voters', [
+        'type' => 'story',
+        'id' => (int)$viewModel->story['id'],
+        'score' => (int)$viewModel->story['score'],
+        'userClaps' => $viewModel->userClaps,
+        'isLoggedIn' => $viewModel->currentUserId > 0,
+        'inline' => true
+    ]); ?>
+</div>
+
+<script nonce="<?= csp_nonce(); ?>">
+(function() {
+    var article = document.querySelector('article');
+    var floating = document.getElementById('floatingClap');
+    if (!article || !floating) return;
+
+    var storyId = article.dataset.storyId;
+    var ticking = false;
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            requestAnimationFrame(function() {
+                var rect = article.getBoundingClientRect();
+                var pastArticle = rect.bottom < 0;
+                var inArticle = rect.top < 0 && rect.bottom > 0;
+                floating.setAttribute('aria-hidden', pastArticle || !inArticle ? 'true' : 'false');
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+})();
+</script>
+
 <div class="comment_form_container" id="comment-form-container">
     <?php if ($viewModel->currentUserId > 0 && !$isStoryDeleted): ?>
         <h3>Оставить комментарий</h3>

@@ -81,6 +81,24 @@ class StoriesController extends BaseController
 		);
 
 		// 3. Формируем ViewModel
+		$tagModel = $this->container->get(Tag::class);
+		$userModel = $this->container->get(User::class);
+		$topAuthors = $userModel->getTopAuthors(
+			limit: 5,
+			excludeUserId: $userContext['isLoggedIn'] ? $userContext['id'] : null
+		);
+
+		// Добавляем флаг подписки для каждого автора
+		if ($userContext['isLoggedIn'] && !empty($topAuthors)) {
+			$subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
+			foreach ($topAuthors as &$author) {
+				$author['is_following'] = $subscriptionService->isFollowingUser(
+					$userContext['id'], (int)$author['id']
+				);
+			}
+			unset($author);
+		}
+
 		$viewModel = new \App\Modules\Stories\ViewModels\HomeFeedViewModel(
 			stories: $feed->stories,
 			currentPage: $feed->currentPage,
@@ -97,6 +115,8 @@ class StoriesController extends BaseController
 			hasPersonalization: $hasPersonalization,
 			pageTitle: $feed->pageTitle,
 			rssFeed: $feed->rssFeed,
+			allTags: $tagModel->getAllTags(),
+			topAuthors: $topAuthors,
 		);
 
         // 🔑 Устанавливаем широкий макет для главной
@@ -654,6 +674,26 @@ $feed = $this->service(StoryFeedBuilder::class)->build(
 		}
 	}
 	
+	// =========================================================================
+	// ИСТОРИЯ ЧТЕНИЯ
+	// =========================================================================
+
+	public function history(): ViewResponse
+	{
+		$userContext = $this->getUserContext();
+		if ($userContext['id'] <= 0) {
+			return $this->redirect('/login');
+		}
+
+		$storyView = $this->service(\App\Modules\Stories\Models\StoryView::class);
+		$stories = $storyView->getViewedStories($userContext['id'], 50);
+
+		return $this->render('history', [
+			'title' => 'История чтения',
+			'stories' => $stories,
+		]);
+	}
+
 	// =========================================================================
 	// STAFF PICKS (Выбор редакции)
 	// =========================================================================

@@ -42,6 +42,9 @@ $router->add('GET', '/t/{tagslug}', StoriesController::class . '@index', 'tags.f
 // Истории участника
 $router->add('GET', '/user/{username}/stories', StoriesController::class . '@userStories', 'user.stories');
 
+// История чтения
+$router->add('GET', '/user/history', StoriesController::class . '@history', 'user.history');
+
 $router->add('GET', '/staff-picks', StoriesController::class . '@staffPicks', 'stories.staffPicks');
 
 // API для трекинга времени чтения

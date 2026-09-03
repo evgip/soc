@@ -1,3 +1,4 @@
+<?php partial('Moderations::_mod_nav') ?>
 <h1>Предложения на рассмотрении</h1>
 
 <p class="hint">

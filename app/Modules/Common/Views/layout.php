@@ -120,7 +120,11 @@ $bodyClass = Layout::getBodyClass();
 
 						<div class="dropdown-menu" id="user-dropdown-menu">
 							<a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item"><span>🙍 <?= __('profile') ?></span></a>
-							
+
+							<a href="<?= route('user.stats') ?>" class="dropdown-menu__item"><span>📊 Статистика</span></a>
+
+							<a href="<?= route('user.history') ?>" class="dropdown-menu__item"><span>📖 История чтения</span></a>
+
 							<a href="<?= route('account.settings') ?>" class="dropdown-menu__item"><span>⚙️ <?= __('settings') ?></span></a>
 							
 						    <div class="dropdown-menu__divider"></div>
@@ -153,25 +157,7 @@ $bodyClass = Layout::getBodyClass();
 
 							<?php if (!empty($currentUser['isModerator'])): ?>
 								<div class="dropdown-menu__divider"></div>
-								<a href="/mod/log" class="dropdown-menu__item"><span>📋 <?= __('moderation_log') ?></span></a>
-								<a href="/mod/notes" class="dropdown-menu__item"><span>🔒 <?= __('notes') ?></span></a>
-								<a href="/mod/stats" class="dropdown-menu__item"><span>📈 <?= __('activity') ?></span></a>
-				
-								<a href="/mod/suggestions" class="dropdown-menu__item">
-									<span>💡 <?= __('suggestions') ?></span>
-									<?php if (($activeSuggestionsCount ?? 0) > 0): ?>
-										<span class="red">
-											<?= (int)$activeSuggestionsCount ?>
-										</span>
-									<?php endif; ?>
-								</a>
-
-								<a href="/admin/flags" class="dropdown-menu__item">
-									<span>🚩 Жалобы</span>
-									<?php if (($pendingFlagsCount ?? 0) > 0): ?>
-										<span class="nav-badge-counter"><?= (int)$pendingFlagsCount ?></span>
-									<?php endif; ?>
-								</a>
+								<a href="/mod/log" class="dropdown-menu__item"><span>🛡️ Модерация</span></a>
 							<?php endif; ?>
 
 							<div class="dropdown-menu__divider"></div>

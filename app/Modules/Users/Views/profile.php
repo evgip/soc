@@ -40,6 +40,7 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
         <?php if ($isOwnProfile): ?>
             <div class="profile-actions flex gap mt-4">
                 <a href="<?= route('user.stats') ?>" class="btn btn-sm">📊 Статистика</a>
+                <a href="<?= route('user.history') ?>" class="btn btn-sm">📖 История чтения</a>
             </div>
         <?php endif; ?>
 
@@ -95,7 +96,7 @@ $isOwnProfile = ($currentUserId === (int)$profileUser['id']);
     <?php else: ?>
         <div class="stories-list">
             <?php foreach ($stories as $story): ?>
-                <?php partial('Stories::_story_item', [
+                <?php partial('Stories::_story_row', [
                     'story' => $story,
                     'currentUserId' => $currentUserId,
                     'isAdmin' => \W3a\Core\Auth\Auth::isModerator(),

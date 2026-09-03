@@ -31,6 +31,8 @@ readonly class HomeFeedViewModel
         public bool $hasPersonalization, // Есть ли данные для персонализации
         public string $pageTitle,
         public array $rssFeed,
+        public array $allTags = [],      // Популярные теги
+        public array $topAuthors = [],   // Топ авторов по подписчикам
     ) {}
 
     /**

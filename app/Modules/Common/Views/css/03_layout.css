@@ -59,58 +59,9 @@ main .content.content-full {
   }
 }
 
-/* ---------- Сетка главной (Medium-style) ---------- */
-.home-grid {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 60px;
-  align-items: start;
-  max-width: 100%;
-}
-
-.home-grid__main {
-  min-width: 0;
-  max-width: var(--content-width-default);
-}
-
-.home-grid__sidebar {
-  position: sticky;
-  top: calc(var(--header-height) + 20px);
-  max-height: calc(100vh - var(--header-height) - 40px);
-  padding-right: 8px;
-}
-
-.home-grid__sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.home-grid__sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.home-grid__sidebar::-webkit-scrollbar-thumb {
-  background-color: var(--color-fg-shape);
-  border-radius: var(--radius-sm);
-}
-
-@media (max-width: 1024px) {
-  .home-grid {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .home-grid__main {
-    max-width: 100%;
-  }
-
-  .home-grid__sidebar {
-    position: static;
-    max-height: none;
-    border-top: 1px solid var(--color-fg-shape);
-    padding-top: 30px;
-    padding-right: 0;
-  }
-}
+/* ---------- Сетка главной --------------
+   (удалено — заменено на tt-layout в 04_feed.css)
+-------------------------------------------*/
 
 /* ---------- Header ---------- */
 .header {
@@ -479,8 +430,7 @@ footer .hint.right {
   background-color: var(--color-box-bg-shaded);
 }
 
-.pagination .current,
-.pagination .active {
+.pagination .is-current {
   background-color: var(--color-fg);
   color: var(--color-bg);
   font-weight: 600;

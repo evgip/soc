@@ -1,3 +1,4 @@
+<?php partial('Moderations::_mod_nav') ?>
 <h1>📋 Лог модерации</h1>
 
 <p class="text-muted">

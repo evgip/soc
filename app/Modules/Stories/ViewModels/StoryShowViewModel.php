@@ -23,7 +23,6 @@ readonly class StoryShowViewModel
         public bool $isAuthor,
         
 // Функциональность
-		public int $userClaps = 0,
 		public bool $isStorySaved,
         
         // Предложения по изменению (Suggests)
@@ -37,12 +36,12 @@ readonly class StoryShowViewModel
         public array $currentTagIds,
         public int $newCommentsCount,
         public int $lastReadCommentId,
-		
+        
         public readonly bool $canSeeFullContent = true,
         public readonly bool $hasFriendLinkAccess = false,
-		
-		
-		public readonly array $storyCollections = [],
+        
+        public readonly array $storyCollections = [],
+        public int $userClaps = 0,
     ) {}
 
     // =========================================================================

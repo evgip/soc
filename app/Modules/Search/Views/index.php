@@ -42,7 +42,7 @@ $currentVotes = $currentVotes ?? [];
             <!-- Результаты: СТАТЬИ -->
             <ol class="stories">
                 <?php foreach ($results as $story): ?>
-                    <?php partial('Stories::_story_item', [
+                    <?php partial('Stories::_story_row', [
                         'story'         => $story,
                         'currentUserId' => $currentUserId,
                         'isAdmin'       => $isAdmin ?? false,

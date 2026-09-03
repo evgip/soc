@@ -107,4 +107,27 @@ class StoryView extends Model
         $stmt = $this->db->query($sql, ['user_id' => $userId, 'limit' => $limit]);
         return $stmt->fetchAll(\PDO::FETCH_COLUMN) ?: [];
     }
+
+    public function getViewedStories(int $userId, int $limit = 50): array
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+
+        $sql = "
+            SELECT s.id, s.title, s.description_text, s.score, s.reading_time, s.created_at, s.comments_count, s.has_paywall,
+                   u.username as author_name, up.avatar as author_avatar,
+                   sv.read_seconds, sv.updated_at as last_viewed
+            FROM `story_views` sv
+            JOIN `stories` s ON s.id = sv.story_id
+            JOIN `users` u ON s.user_id = u.id
+            LEFT JOIN `user_profiles` up ON u.id = up.user_id
+            WHERE sv.user_id = :user_id AND s.deleted_at IS NULL AND s.status = 'published'
+            ORDER BY sv.updated_at DESC
+            LIMIT :limit
+        ";
+
+        $stmt = $this->db->query($sql, ['user_id' => $userId, 'limit' => $limit]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    }
 }

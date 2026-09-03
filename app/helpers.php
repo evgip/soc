@@ -688,7 +688,6 @@ if (!function_exists('render_editorjs_content')) {
 						if (is_array($variants) && !empty($variants)) {
 							$large = $variants['large'] ?? [];
 							$medium = $variants['medium'] ?? [];
-							$small = $variants['small'] ?? [];
 
 							$fullUrl = $large['webp'] ?? $large['avif'] ?? $medium['webp'] ?? $url;
 
@@ -696,17 +695,7 @@ if (!function_exists('render_editorjs_content')) {
 							$html .= "<figure class=\"{$classString}\" data-lightbox=\"true\">\n";
 							$html .= "    <div class=\"lightbox-trigger\" data-full-src=\"{$fullUrl}\" data-caption=\"{$caption}\">\n";
 
-							$html .= "        <picture>\n";
-
-							if (function_exists('imageavif') && !empty($small['avif']) && !empty($medium['avif']) && !empty($large['avif'])) {
-								$html .= "            <source srcset=\"{$large['avif']}, {$medium['avif']} 800w, {$small['avif']} 400w\" type=\"image/avif\">\n";
-							}
-							if (!empty($small['webp']) && !empty($medium['webp']) && !empty($large['webp'])) {
-								$html .= "            <source srcset=\"{$large['webp']}, {$medium['webp']} 800w, {$small['webp']} 400w\" type=\"image/webp\">\n";
-							}
-
-							$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
-							$html .= "        </picture>\n";
+							$html .= "        <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
 						} else {
 							// Fallback для старых постов: генерируем суффиксы из имени файла
 							$parsedUrl = parse_url($url);
@@ -725,14 +714,8 @@ if (!function_exists('render_editorjs_content')) {
 							// Обёртка с кликом для лайтбокса
 							$html .= "<figure class=\"{$classString}\" data-lightbox=\"true\">\n";
 							$html .= "    <div class=\"lightbox-trigger\" data-full-src=\"{$fullUrl}\" data-caption=\"{$caption}\">\n";
-
-							$html .= "        <picture>\n";
-							if (function_exists('imageavif')) {
-								 $html .= "            <source srcset=\"{$baseUrl}_large.avif, {$baseUrl}_medium.avif 800w, {$baseUrl}_small.avif 400w\" type=\"image/avif\">\n";
-							}
-							$html .= "            <source srcset=\"{$baseUrl}_large.webp, {$baseUrl}_medium.webp 800w, {$baseUrl}_small.webp 400w\" type=\"image/webp\">\n";
-							$html .= "            <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
-							$html .= "        </picture>\n";
+							$html .= "        <img src=\"{$url}\" alt=\"{$caption}\" loading=\"lazy\" decoding=\"async\">\n";
+							$html .= "        </div>\n";
 						}
 						
 						// 🆕 Иконка лупы (видна при hover)

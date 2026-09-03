@@ -81,12 +81,12 @@
     }
 
     function updateClapUI(wrapper, data, btn) {
-        const scoreEl = wrapper.querySelector('.clap-score');
+        var scoreEl = wrapper.querySelector('.clap-score');
         if (scoreEl && typeof data.new_score === 'number') {
             scoreEl.textContent = data.new_score;
             scoreEl.style.transition = 'transform 0.2s';
             scoreEl.style.transform = 'scale(1.4)';
-            setTimeout(() => scoreEl.style.transform = 'scale(1)', 200);
+            setTimeout(function() { scoreEl.style.transform = 'scale(1)'; }, 200);
         }
         if (typeof data.user_claps === 'number') {
             btn.dataset.userClaps = data.user_claps;
@@ -94,8 +94,32 @@
                 btn.classList.add('clap-btn--maxed');
             }
             btn.classList.add('clap-btn--active');
-            btn.style.transform = 'scale(0.95)';
-            setTimeout(() => btn.style.transform = 'scale(1)', 100);
+        }
+        btn.style.transform = 'scale(0.88)';
+        btn.style.transition = 'transform 0.1s';
+        setTimeout(function() { btn.style.transform = 'scale(1)'; }, 100);
+        var ripple = document.createElement('span');
+        ripple.className = 'clap-ripple';
+        btn.appendChild(ripple);
+        setTimeout(function() { ripple.remove(); }, 500);
+        var allClappers = document.querySelectorAll('.clappers');
+        var storyId = wrapper.querySelector('[data-clap-form]') ? wrapper.querySelector('[data-clap-form]').action.match(/\/clap\/(\d+)/) : null;
+        if (storyId) {
+            for (var i = 0; i < allClappers.length; i++) {
+                var otherForm = allClappers[i].querySelector('[data-clap-form]');
+                if (otherForm && otherForm !== wrapper.querySelector('[data-clap-form]') && otherForm.action.indexOf('/clap/' + storyId[1]) !== -1) {
+                    var otherBtn = otherForm.querySelector('.clap-btn');
+                    if (otherBtn) {
+                        otherBtn.dataset.userClaps = data.user_claps;
+                        if (data.user_claps >= 50) otherBtn.classList.add('clap-btn--maxed');
+                        otherBtn.classList.add('clap-btn--active');
+                    }
+                    var otherScore = allClappers[i].querySelector('.clap-score');
+                    if (otherScore && typeof data.new_score === 'number') {
+                        otherScore.textContent = data.new_score;
+                    }
+                }
+            }
         }
     }
 

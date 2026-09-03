@@ -150,6 +150,46 @@ display: block;
     color: var(--color-fg-link);
 }
 
+/* ============================================
+   Moderation Navigation
+   ============================================ */
+.mod-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-fg-shape);
+}
+
+.mod-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--opacity-fg-67);
+  text-decoration: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.mod-nav__link:hover {
+  background-color: var(--color-box-bg-shaded);
+  color: var(--color-fg);
+}
+
+.mod-nav__link--active {
+  background-color: var(--color-fg);
+  color: var(--color-bg);
+}
+
+.mod-nav__link--active:hover {
+  background-color: var(--color-fg);
+  color: var(--color-bg);
+}
+
 /* ------------------ Toast Alerts (Real-Time Security) ------------------ */
 .admin-alert-toast-container {
     position: fixed;

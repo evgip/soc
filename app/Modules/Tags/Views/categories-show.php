@@ -34,7 +34,7 @@ $paginationBaseUrl = route('categories.show', ['slug' => $category['slug']]);
 <?php if (!empty($stories)): ?>
     <ol class="stories">
         <?php foreach ($stories as $story): ?>
-            <?php partial('Stories::_story_item', [
+            <?php partial('Stories::_story_row', [
                 'story'         => $story,
                 'currentUserId' => $currentUserId,
                 'isAdmin'       => $isAdmin,
