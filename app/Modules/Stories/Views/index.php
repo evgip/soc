@@ -95,6 +95,8 @@ if ($useViewModel):
                                 <?= !empty($author['is_following']) ? '✓' : '+' ?>
                             </button>
                         </form>
+                        <?php else: ?>
+                        <span class="tt-author__form"><button type="button" class="tt-author__btn" data-login-modal>+</button></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>
@@ -133,7 +135,7 @@ if ($useViewModel):
                         <?php endif; ?>
                         <div class="tt-pick__text">
                             <span class="tt-pick__title"><?= e($story['title']) ?></span>
-                            <span class="tt-pick__author"><?= e($story['author_name'] ?? '') ?></span>
+                            <span class="tt-pick__author"><?= e($story['author_name'] ?? '') ?><?php $rt = (int)($story['reading_time'] ?? 0); if ($rt > 0): ?> · <?= $rt ?> мин<?php endif; ?></span>
                         </div>
                     </a>
                 <?php endforeach; ?>

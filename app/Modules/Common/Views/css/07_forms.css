@@ -537,6 +537,20 @@ dialog form,
   background-color: var(--color-box-bg);
 }
 
+.modal__body--center {
+  text-align: center;
+  padding: 2rem;
+}
+
+.modal__title {
+  margin: 0 0 1rem;
+}
+
+.modal__text {
+  margin: 0 0 1.5rem;
+  color: var(--opacity-fg-67);
+}
+
 .modal {
   display: none;
   position: fixed;

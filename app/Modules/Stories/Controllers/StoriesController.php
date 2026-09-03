@@ -80,6 +80,12 @@ class StoriesController extends BaseController
 			pageData: $pageData
 		);
 
+		// Исключаем дубли: убираем из основной ленты то, что уже показано в рекомендациях
+		if (!empty($forYou)) {
+			$forYouIds = array_column($forYou, 'id');
+			$feed->stories = array_values(array_filter($feed->stories, fn($s) => !in_array($s['id'], $forYouIds)));
+		}
+
 		// 3. Формируем ViewModel
 		$tagModel = $this->container->get(Tag::class);
 		$userModel = $this->container->get(User::class);
@@ -119,8 +125,15 @@ class StoriesController extends BaseController
 			topAuthors: $topAuthors,
 		);
 
-        // 🔑 Устанавливаем широкий макет для главной
-        Layout::set(Layout::WIDE);
+// 🔑 Устанавливаем широкий макет для главной
+		Layout::set(Layout::WIDE);
+
+		$this->setOpenGraph([
+			'type' => 'website',
+			'title' => $feed->pageTitle,
+			'description' => 'Читайте лучшие публикации, подписывайтесь на авторов и участвуйте в обсуждениях.',
+			'image' => config('app.url') . '/favicon-512.png',
+		]);
 
 		return $this->render('index', [
 			'viewModel' => $viewModel,

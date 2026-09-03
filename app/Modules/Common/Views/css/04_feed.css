@@ -392,6 +392,17 @@ h2.tt-row__title {
   flex-shrink: 0;
 }
 
+.tt-row__claps {
+  display: inline-flex;
+  align-items: center;
+  color: var(--opacity-fg-40);
+}
+
+.tt-row__claps svg {
+  fill: currentColor;
+  vertical-align: middle;
+}
+
 .tt-row__actions .icon-btn {
   background: none;
   border: none;

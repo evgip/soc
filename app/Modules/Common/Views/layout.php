@@ -173,7 +173,7 @@ $bodyClass = Layout::getBodyClass();
 					<?php if (config('invitations.config.invitations_enabled')): ?>
 						<a class="nav-link" href="<?= route('home') ?>invite/request"><?= __('request_invitation') ?></a>
 					<?php else: ?>
-						<a class="mb-none" href="<?= route('auth.register') ?>"><?= __('register') ?></a>
+						<a class="mb-none btn-register" href="<?= route('auth.register') ?>"><?= __('register') ?></a>
 					<?php endif; ?>
 				<?php endif; ?>
 			</nav>
@@ -235,6 +235,30 @@ $bodyClass = Layout::getBodyClass();
 	</footer>
 
 	<script src="<?= \W3a\Core\View\Asset::js() ?>"></script>
+
+	<dialog id="login-modal">
+		<div class="modal__body modal__body--center">
+			<h2 class="modal__title">Войдите в аккаунт</h2>
+			<p class="modal__text">Чтобы подписываться на авторов, нужно авторизоваться.</p>
+			<a href="<?= route('auth.login') ?>" class="btn btn-pill btn-primary">Войти</a>
+			<button type="button" class="btn btn-pill btn-outline" data-close-modal>Отмена</button>
+		</div>
+	</dialog>
+
+	<script nonce="<?= csp_nonce(); ?>">
+		document.addEventListener('click', function(e) {
+			var btn = e.target.closest('[data-login-modal]');
+			if (btn) {
+				e.preventDefault();
+				e.stopPropagation();
+				document.getElementById('login-modal').showModal();
+			}
+			var close = e.target.closest('[data-close-modal]');
+			if (close) {
+				close.closest('dialog').close();
+			}
+		});
+	</script>
 	
 </body>
 

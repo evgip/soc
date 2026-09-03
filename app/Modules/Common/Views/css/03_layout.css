@@ -120,6 +120,20 @@ a.navbar-logo:hover {
   color: var(--color-fg);
 }
 
+.navbar-links > a.btn-register {
+  border: 1px solid #03a87c;
+  color: #03a87c;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.navbar-links > a.btn-register:hover {
+  background: #03a87c;
+  color: #fff;
+}
+
 .navbar-user-dropdown-container {
   position: relative;
 }
