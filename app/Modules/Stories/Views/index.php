@@ -92,11 +92,11 @@ if ($useViewModel):
                         <form action="/subscribe/user/<?= (int)$author['id'] ?>" method="POST" class="tt-author__form">
                             <?= csrf_field() ?>
                             <button type="submit" class="tt-author__btn <?= !empty($author['is_following']) ? 'tt-author__btn--active' : '' ?>">
-                                <?= !empty($author['is_following']) ? '✓' : '+' ?>
+                                <?php if (!empty($author['is_following'])): ?>✓<?php else: ?><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><?php endif; ?>
                             </button>
                         </form>
                         <?php else: ?>
-                        <span class="tt-author__form"><button type="button" class="tt-author__btn" data-login-modal>+</button></span>
+                        <span class="tt-author__form"><button type="button" class="tt-author__btn" data-login-modal><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></span>
                         <?php endif; ?>
                     </a>
                 <?php endforeach; ?>

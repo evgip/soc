@@ -12,6 +12,7 @@ use W3a\Core\Support\MessageBag; // 🔥 Добавили использован
 
 use App\Modules\Messages\Services\ConversationService;
 use App\Modules\Messages\Services\MessageService;
+use App\Modules\Common\Support\Layout;
 
 /**
  * Контроллер личных сообщений.
@@ -31,6 +32,8 @@ class MessagesController extends BaseController
     {
         $userContext = $this->getUserContext();
         $chats = $this->service(ConversationService::class)->getUserConversations($userContext['id']);
+
+        Layout::set(Layout::CABINET);
 
         return $this->render('index', [
             'title' => 'Мои диалоги',
@@ -54,6 +57,8 @@ class MessagesController extends BaseController
         if (!$chatRoom) {
             return $this->redirectBack('/messages');
         }
+
+        Layout::set(Layout::CABINET);
 
         $this->service(MessageService::class)->markAsRead($conversationId, $userContext['id']);
 

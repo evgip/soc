@@ -38,6 +38,30 @@ $router->add(
     'user.profile'
 );
 
+/**
+ * Вкладка «Коллекции» профиля пользователя.
+ * 
+ * @param string $username URL-имя пользователя
+ */
+$router->add(
+    'GET', 
+    '/@{username}/collections', 
+    UsersController::class . '@profileCollections', 
+    'user.profile.collections'
+);
+
+/**
+ * Вкладка «Коллекции» профиля пользователя.
+ * 
+ * @param string $username URL-имя пользователя
+ */
+$router->add(
+    'GET', 
+    '/@{username}/collections', 
+    UsersController::class . '@profileCollections', 
+    'user.profile.collections'
+);
+
 // =========================================================================
 // МАРШРУТЫ ДЛЯ АВТОРИЗОВАННЫХ ПОЛЬЗОВАТЕЛЕЙ
 // =========================================================================

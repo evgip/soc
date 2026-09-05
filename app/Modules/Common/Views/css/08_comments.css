@@ -8,10 +8,10 @@
 .comment-head {
   margin: 3rem 0 1.5rem;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
+}
+
+#comments {
+  scroll-margin-top: calc(var(--header-height) + 20px);
 }
 
 .comment-head h3 {

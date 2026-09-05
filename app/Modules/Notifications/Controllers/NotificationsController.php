@@ -8,6 +8,7 @@ use App\BaseController;
 use W3a\Core\Http\ViewResponse;
 use W3a\Core\Http\JsonResponse;
 use App\Modules\Notifications\Services\NotificationService;
+use App\Modules\Common\Support\Layout;
 
 /**
  * Контроллер уведомлений пользователя.
@@ -33,6 +34,8 @@ class NotificationsController extends BaseController
     public function index(): ViewResponse
     {
         $userContext = $this->getUserContext();
+
+        Layout::set(Layout::CABINET);
 
         $type = (string)$this->request->getParams('type', 'all');
         $page = max(1, (int)$this->request->getParams('page', 1));

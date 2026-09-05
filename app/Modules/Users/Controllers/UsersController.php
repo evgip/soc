@@ -22,6 +22,9 @@ use App\Modules\Users\Exceptions\AvatarUploadException;
 use App\Modules\Users\Requests\UpdateSettingsRequest;
 use App\Modules\Users\Requests\ChangePasswordRequest;
 
+
+use App\Modules\Common\Support\Layout; 
+
 class UsersController extends BaseController
 {
     private function getUserService(): UserService
@@ -43,6 +46,20 @@ class UsersController extends BaseController
 
 	public function profile(string $username): ViewResponse
 	{
+		return $this->profileView($username, 'stories');
+	}
+
+	/**
+	 * Вкладка «Коллекции» профиля пользователя.
+	 * URL: /@{username}/collections
+	 */
+	public function profileCollections(string $username): ViewResponse
+	{
+		return $this->profileView($username, 'collections');
+	}
+
+	private function profileView(string $username, string $activeTab): ViewResponse
+	{
 		$user = $this->getUserByUsername(trim($username));
 
 		$profile = $user['profile'] ?? [];
@@ -55,6 +72,7 @@ class UsersController extends BaseController
 		
 		$stats = $userModel->getProfileStats((int)$user['id']);
 		$userKarma = $userModel->getUserKarma((int)$user['id']);
+		$followersCount = $this->container->get(\App\Modules\Subscriptions\Models\FollowedUser::class)->getFollowersCount((int)$user['id']);
 
 		$userContext = $this->getUserContext();
 
@@ -68,12 +86,15 @@ class UsersController extends BaseController
 			$isFollowing = $subscriptionService->isFollowingUser($userContext['id'], (int)$user['id']);
 		}
 
-		$feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
-			tagslug: '',
-			author: $username,
-			userContext: $userContext,
-			pageData: ['title' => 'Публикации ' . e($username)]
-		);
+		$feed = null;
+		if ($activeTab === 'stories') {
+			$feed = $this->service(\App\Modules\Stories\Services\StoryFeedBuilder::class)->build(
+				tagslug: '',
+				author: $username,
+				userContext: $userContext,
+				pageData: ['title' => 'Публикации ' . e($username)]
+			);
+		}
 
 		$collectionModel = $this->container->get(\App\Modules\Collections\Models\Collection::class);
 		$allCollections = $collectionModel->getByAuthor((int)$user['id']);
@@ -85,15 +106,17 @@ class UsersController extends BaseController
 		}
 		
 		$collectionsCount = count($allCollections);
-		$collections = array_slice($allCollections, 0, 3);
 		
 		$coverService = $this->service(\App\Modules\Collections\Services\CollectionCoverService::class);
-		foreach ($collections as &$collection) {
+		foreach ($allCollections as &$collection) {
 			$collection['cover_url'] = !empty($collection['cover_image'])
 				? $coverService->getCoverUrl($collection['cover_image'])
 				: null;
 		}
 		unset($collection);
+
+// 🔑 Устанавливаем широкий макет для профиля
+		Layout::set(Layout::WIDE);
 
 		return $this->render('profile', [
 			'title' => 'Профиль пользователя ' . e($user['username']),
@@ -101,13 +124,16 @@ class UsersController extends BaseController
 			'userKarma' => $userKarma ?? 0,
 			'isMuted' => $isMuted,
 			'isFollowing' => $isFollowing,
-			'storiesCount' => $stats['stories_count'] ?? count($feed->stories),
+			'activeTab' => $activeTab,
+			'storiesCount' => $stats['stories_count'] ?? ($feed ? count($feed->stories) : 0),
 			'commentsCount' => $stats['comments_count'] ?? 0,
 			'collectionsCount' => $collectionsCount,  
-			'collections' => $collections,            
-			'stories' => $feed->stories,
-			'currentPage' => $feed->currentPage,
-			'totalPages' => $feed->totalPages,
+			'collectionsAll' => $allCollections,
+			'isOwner' => $isOwner,
+			'followersCount' => $followersCount,
+			'stories' => $feed ? $feed->stories : [],
+			'currentPage' => $feed ? $feed->currentPage : 1,
+			'totalPages' => $feed ? $feed->totalPages : 0,
 		]);
 	}
 
@@ -123,6 +149,8 @@ class UsersController extends BaseController
         
         $user = $userOrRedirect;
         $settings = $this->getUserService()->getUserSettings($userContext['id']);
+
+        Layout::set(Layout::CABINET);
 
         return $this->render('settings', [
             'title' => 'Настройки профиля',

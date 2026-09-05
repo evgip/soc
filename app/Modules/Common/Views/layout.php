@@ -118,37 +118,14 @@ $bodyClass = Layout::getBodyClass();
 							<span class="dropdown-arrow-icon">▼</span>
 						</button>
 
-						<div class="dropdown-menu" id="user-dropdown-menu">
+<div class="dropdown-menu" id="user-dropdown-menu">
 							<a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item"><span>🙍 <?= __('profile') ?></span></a>
 
-							<a href="<?= route('user.stats') ?>" class="dropdown-menu__item"><span>📊 Статистика</span></a>
-
-							<a href="<?= route('user.history') ?>" class="dropdown-menu__item"><span>📖 История чтения</span></a>
-
 							<a href="<?= route('account.settings') ?>" class="dropdown-menu__item"><span>⚙️ <?= __('settings') ?></span></a>
-							
+
 						    <div class="dropdown-menu__divider"></div>
 							
 							<a href="<?= route('story.create') ?>" class="dropdown-menu__item"><span>➕ <?= __('share') ?></span></a>
-
-							<a href="<?= route('messages.index') ?>" class="dropdown-menu__item">
-								<span>✉️ <?= __('messages') ?></span>
-							</a>
-
-							<a href="<?= route('saved.index') ?>" class="dropdown-menu__item"><span>🔖 <?= __('bookmarks') ?></span></a>
-
-							<a href="<?= route('drafts.index') ?>" class="dropdown-menu__item"><span>📝 Черновики</span></a>
-
-							<a href="<?= route('collections.index', ['username' => $currentUser['name']]) ?>" class="dropdown-menu__item"><span>📚 Коллекции</span></a>
-
-							<a href="/subscribed" class="dropdown-menu__item">
-								<span>📡 Подписки</span>
-								<?php if (($newSubscribedCount ?? 0) > 0): ?>
-									<span class="nav-badge-counter"><?= (int)$newSubscribedCount ?></span>
-								<?php endif; ?>
-							</a>
-
-							<a href="/muted" class="dropdown-menu__item"><span>🔇 <?= __('muted') ?></span></a>
 
 							<?php if (!empty($currentUser['isAdmin'])): ?>
 								<div class="dropdown-menu__divider"></div>
@@ -181,6 +158,65 @@ $bodyClass = Layout::getBodyClass();
 	</header>
 
 	<main> 
+	    <?php if (\App\Modules\Common\Support\Layout::is('cabinet')): ?>
+	    <div class="cabinet-layout">
+	        <nav class="cabinet-sidebar">
+	            <div class="cabinet-sidebar__user">
+	                <?php if (!empty($currentUser['name'])): ?>
+	                    <a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="cabinet-sidebar__link">
+	                        <?php if (!empty($currentUser['avatar'])): ?>
+	                            <img src="/uploads/avatars/<?= substr($currentUser['avatar'], 0, 2) ?>/<?= e($currentUser['avatar']) ?>" class="mini-avatar-img" alt="">
+	                        <?php else: ?>
+	                            <span class="mini-avatar-placeholder"><?= e(mb_substr($currentUser['name'] ?? '?', 0, 1)) ?></span>
+	                        <?php endif; ?>
+	                        <span><?= e($currentUser['name'] ?? '') ?></span>
+	                    </a>
+	                <?php endif; ?>
+	            </div>
+	            <div class="cabinet-sidebar__nav">
+	                <?php $__uri = $_SERVER['REQUEST_URI'] ?? ''; ?>
+	                <a href="<?= route('stories.subscribed') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/subscribed') ? 'is-active' : '' ?>">📡 Подписки</a>
+	                <a href="<?= route('user.stats') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/user/stats') ? 'is-active' : '' ?>">📊 Статистика</a>
+	                <a href="<?= route('user.history') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/user/history') ? 'is-active' : '' ?>">📖 История чтения</a>
+	                <a href="<?= route('saved.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/saved') ? 'is-active' : '' ?>">🔖 Закладки</a>
+	                <a href="<?= route('drafts.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/drafts') ? 'is-active' : '' ?>">📝 Черновики</a>
+	                <a href="<?= route('messages.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/messages') ? 'is-active' : '' ?>">✉️ Сообщения</a>
+	                <a href="<?= route('notifications.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/notifications') ? 'is-active' : '' ?>">🔔 Уведомления</a>
+	                <a href="/muted" class="cabinet-sidebar__link <?= str_contains($__uri, '/muted') ? 'is-active' : '' ?>">🔇 Игнорируемые</a>
+	                <div class="cabinet-sidebar__divider"></div>
+	                <a href="<?= route('user.profile.collections', ['username' => $currentUser['name']]) ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/collections') ? 'is-active' : '' ?>">📚 Коллекции</a>
+	                <a href="<?= route('account.settings') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/account/settings') ? 'is-active' : '' ?>">⚙️ Настройки</a>
+	            </div>
+	        </nav>
+	        <div class="cabinet-content">
+	            <?php if (!empty($errors->allErrors())): ?>
+					<div class="alert is-danger">
+						<strong>Ошибка валидации!</strong>
+						<ul class="validation-errors-list">
+							<?php foreach ($errors->allErrors() as $fieldErrors): ?>
+								<?php foreach ($fieldErrors as $err): ?>
+									<li><?= htmlspecialchars($err) ?></li>
+								<?php endforeach; ?>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				<?php endif; ?>
+
+				<?php if ($flashError = $errors->getFlash('error')): ?>
+					<div class="alert is-danger"><strong>Ошибка!</strong> <?= htmlspecialchars($flashError) ?></div>
+				<?php endif; ?>
+
+				<?php if ($flashSuccess = $errors->getFlash('success')): ?>
+					<div class="alert is-success"><strong>Успех!</strong> <?= htmlspecialchars($flashSuccess) ?></div>
+				<?php endif; ?>
+
+				<?php if ($flashNotice = $errors->getFlash('notice')): ?>
+					<div class="alert is-notice"><strong>Информация!</strong> <?= htmlspecialchars($flashNotice) ?></div>
+				<?php endif; ?>
+	            <?= $content ?>
+	        </div>
+	    </div>
+	    <?php else: ?>
 	     <div class="content <?= $layoutClass ?>">
 			<?php if (!empty($errors->allErrors())): ?>
 				<div class="alert is-danger">
@@ -210,12 +246,12 @@ $bodyClass = Layout::getBodyClass();
 	    
 		   <?= $content ?>
 		</div>
+		<?php endif; ?>
 	</main>
 
 	<footer>
-		 
-		 
-			<nav>
+		<?php if (!\App\Modules\Common\Support\Layout::is('cabinet')): ?>
+		 <nav>
 				<a href="<?= route('home') ?>"><?= __('home') ?></a>
 				<a href="/t/meta/wiki/about"><?= __('about') ?></a>
 				
@@ -232,6 +268,7 @@ $bodyClass = Layout::getBodyClass();
 				<?= \W3a\Core\Support\Benchmark::renderStats() ?>
 			<?php endif; ?>	
 		 </nav>
+		<?php endif; ?>
 	</footer>
 
 	<script src="<?= \W3a\Core\View\Asset::js() ?>"></script>

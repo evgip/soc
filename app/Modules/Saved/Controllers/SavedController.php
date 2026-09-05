@@ -15,6 +15,7 @@ use App\Modules\Saved\Models\SavedStory;
 use App\Modules\Saved\Services\SavedService;
 use App\Modules\Stories\Services\StoryFilterService;
 use App\Modules\Votes\Models\Vote;
+use App\Modules\Common\Support\Layout;
 
 /**
  * Контроллер сохранённых историй (закладок).
@@ -31,6 +32,8 @@ class SavedController extends BaseController
         if (!$userContext['isLoggedIn']) {
             return $this->redirect('/login');
         }
+
+        Layout::set(Layout::CABINET);
 
         $currentPage = max(1, (int)$this->request->getParams('page', 1));
         $perPage = config('constants.pagination.stories_per_page', 15, 'int');

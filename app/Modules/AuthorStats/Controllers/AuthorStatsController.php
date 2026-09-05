@@ -7,6 +7,7 @@ namespace App\Modules\AuthorStats\Controllers;
 use App\BaseController;
 use W3a\Core\Http\ViewResponse;
 use App\Modules\AuthorStats\Models\AuthorStatsModel;
+use App\Modules\Common\Support\Layout;
 
 class AuthorStatsController extends BaseController
 {
@@ -18,6 +19,8 @@ class AuthorStatsController extends BaseController
         if ($userId <= 0) {
             return $this->redirect('/login');
         }
+
+        Layout::set(Layout::CABINET);
 
         $model = $this->service(AuthorStatsModel::class);
 

@@ -42,51 +42,6 @@ class CollectionsController extends BaseController
     // =========================================================================
 
     /**
-     * Список коллекций пользователя.
-     * URL: /collections/{username}
-     * 
-     * Показывает все коллекции автора. Приватные коллекции видны только владельцу.
-     * Для каждой коллекции формируется cover_url через CollectionCoverService.
-     */
-    public function index(string $username): ViewResponse
-    {
-        $userModel = $this->container->get(User::class);
-        $user = $userModel->findByName($username);
-
-        if (!$user) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-        $collectionModel = $this->container->get(Collection::class);
-        $collections = $collectionModel->getByAuthor((int) $user['id']);
-
-        $userContext = $this->getUserContext();
-        $isOwner = $userContext['isLoggedIn'] && $userContext['id'] === (int) $user['id'];
-
-        // Фильтруем приватные коллекции для не-владельцев
-        if (!$isOwner) {
-            $collections = array_filter($collections, fn($c) => !empty($c['is_public']));
-            $collections = array_values($collections);
-        }
-
-        // Формируем полные URL обложек для шаблона
-        $coverService = $this->service(CollectionCoverService::class);
-        foreach ($collections as &$collection) {
-            $collection['cover_url'] = !empty($collection['cover_image'])
-                ? $coverService->getCoverUrl($collection['cover_image'])
-                : null;
-        }
-        unset($collection);
-
-        return $this->render('index', [
-            'title' => 'Коллекции ' . e($username),
-            'profileUser' => $user,
-            'collections' => $collections,
-            'isOwner' => $isOwner,
-        ]);
-    }
-
-    /**
      * Страница коллекции с оглавлением.
      * URL: /collections/{username}/{slug}
      * 
@@ -208,7 +163,7 @@ class CollectionsController extends BaseController
         $slug = $this->getCollectionSlug($collectionId);
         
         if ($username === '' || $slug === '') {
-            return $this->redirect('/collections');
+            return $this->redirect('/');
         }
         
         return $this->redirect('/collections/' . $username . '/' . $slug);
@@ -290,7 +245,7 @@ class CollectionsController extends BaseController
         $slug = $collection['slug'];
         
         if ($username === '' || $slug === '') {
-            return $this->redirect('/collections');
+            return $this->redirect('/');
         }
         
         return $this->redirect('/collections/' . $username . '/' . $slug);
@@ -316,7 +271,7 @@ class CollectionsController extends BaseController
         }
 
         MessageBag::flashMessage('success', 'Коллекция удалена.');
-        return $this->redirect('/collections/' . $this->getAuthorName((int)$collection['author_id']));
+        return $this->redirect('/@' . $this->getAuthorName((int)$collection['author_id']) . '/collections');
     }
 
     // =========================================================================

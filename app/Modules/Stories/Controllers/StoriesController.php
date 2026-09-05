@@ -534,6 +534,8 @@ $feed = $this->service(StoryFeedBuilder::class)->build(
             return $this->redirect('/');
         }
 
+        Layout::set(Layout::CABINET);
+
         $subscriptionService = $this->service(\App\Modules\Subscriptions\Services\SubscriptionService::class);
         $followedUserIds = $subscriptionService->getFollowedUserIds($userContext['id']);
         $followedTagIds = $subscriptionService->getFollowedTagIds($userContext['id']);
@@ -698,6 +700,8 @@ $feed = $this->service(StoryFeedBuilder::class)->build(
 			return $this->redirect('/login');
 		}
 
+		Layout::set(Layout::CABINET);
+
 		$storyView = $this->service(\App\Modules\Stories\Models\StoryView::class);
 		$stories = $storyView->getViewedStories($userContext['id'], 50);
 
@@ -823,6 +827,8 @@ $feed = $this->service(StoryFeedBuilder::class)->build(
 	public function drafts(): ViewResponse
 	{
 		$userContext = $this->getUserContext();
+
+		Layout::set(Layout::CABINET);
 
 		$page = max(1, (int)$this->request->query('page', 1));
 

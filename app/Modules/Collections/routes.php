@@ -33,8 +33,5 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
 // 2. ПУБЛИЧНЫЕ МАРШРУТЫ С ПАРАМЕТРАМИ (ПОСЛЕ точных)
 // ============================================================
 
-// Список коллекций пользователя
-$router->add('GET', '/collections/{username}', CollectionsController::class . '@index', 'collections.index');
-
 // Страница коллекции (оглавление)
 $router->add('GET', '/collections/{username}/{slug}', CollectionsController::class . '@show', 'collections.show');

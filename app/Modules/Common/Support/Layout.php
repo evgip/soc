@@ -36,6 +36,9 @@ final class Layout
     /** Средний — 900px (профиль с большим контентом, wiki) */
     public const MEDIUM = 'medium';
 
+    /** Личный кабинет — на всю ширину, с левым меню (как Following на Medium) */
+    public const CABINET = 'cabinet';
+
     // =========================================================================
     // ВНУТРЕННЕЕ ХРАНИЛИЩЕ
     // =========================================================================
@@ -49,6 +52,7 @@ final class Layout
         self::NARROW,
         self::FULL,
         self::MEDIUM,
+        self::CABINET,
     ];
 
     // =========================================================================
@@ -89,6 +93,7 @@ final class Layout
             self::NARROW => 'content-narrow',
             self::FULL   => 'content-full',
             self::MEDIUM => 'content-medium',
+            self::CABINET => 'content-cabinet',
             default      => 'content-default',
         };
     }

@@ -47,4 +47,15 @@ class FollowedUser
         );
         return array_column($result, 'followed_user_id');
     }
+
+    /**
+     * Количество подписчиков пользователя.
+     */
+    public function getFollowersCount(int $userId): int
+    {
+        return (int)$this->db->fetchColumn(
+            "SELECT COUNT(*) FROM `followed_users` WHERE `followed_user_id` = :user_id",
+            ['user_id' => $userId]
+        );
+    }
 }

@@ -14,6 +14,7 @@ use W3a\Core\Support\MessageBag;
 use App\Modules\Muted\Services\MuteService;
 use App\Modules\Muted\Exceptions\MuteValidationException;
 use App\Modules\Users\Models\User;
+use App\Modules\Common\Support\Layout;
 
 /**
  * Контроллер управления игнорируемыми пользователями (mute).
@@ -30,6 +31,8 @@ class MuteController extends BaseController
         $userContext = $this->getUserContext();
         $muteService = $this->service(MuteService::class);
         $mutedUsers = $muteService->getMutedList($userContext['id']);
+
+        Layout::set(Layout::CABINET);
 
         return $this->render('list', [
             'title' => 'Игнорируемые пользователи',
