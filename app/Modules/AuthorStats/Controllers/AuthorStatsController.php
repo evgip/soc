@@ -20,7 +20,7 @@ class AuthorStatsController extends BaseController
             return $this->redirect('/login');
         }
 
-        Layout::set(Layout::CABINET);
+
 
         $model = $this->service(AuthorStatsModel::class);
 

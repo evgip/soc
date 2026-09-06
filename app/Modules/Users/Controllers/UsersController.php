@@ -150,7 +150,7 @@ class UsersController extends BaseController
         $user = $userOrRedirect;
         $settings = $this->getUserService()->getUserSettings($userContext['id']);
 
-        Layout::set(Layout::CABINET);
+
 
         return $this->render('settings', [
             'title' => 'Настройки профиля',

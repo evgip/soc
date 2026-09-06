@@ -35,7 +35,7 @@ class NotificationsController extends BaseController
     {
         $userContext = $this->getUserContext();
 
-        Layout::set(Layout::CABINET);
+
 
         $type = (string)$this->request->getParams('type', 'all');
         $page = max(1, (int)$this->request->getParams('page', 1));

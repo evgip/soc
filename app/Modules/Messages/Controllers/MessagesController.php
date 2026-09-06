@@ -33,7 +33,7 @@ class MessagesController extends BaseController
         $userContext = $this->getUserContext();
         $chats = $this->service(ConversationService::class)->getUserConversations($userContext['id']);
 
-        Layout::set(Layout::CABINET);
+
 
         return $this->render('index', [
             'title' => 'Мои диалоги',
@@ -58,7 +58,7 @@ class MessagesController extends BaseController
             return $this->redirectBack('/messages');
         }
 
-        Layout::set(Layout::CABINET);
+
 
         $this->service(MessageService::class)->markAsRead($conversationId, $userContext['id']);
 

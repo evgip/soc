@@ -8,52 +8,63 @@
    ============================================ */
 
 /* ---------- Макеты (content-ширины) ---------- */
-main .content {
+main .content,
+.global-content > .content {
   margin: 0 auto;
   padding: 0 var(--content-padding);
 }
 
-main .content.content-default {
+main .content.content-default,
+.global-content > .content.content-default {
   max-width: var(--content-width-default);
 }
 
-main .content.content-wide {
+main .content.content-wide,
+.global-content > .content.content-wide {
   max-width: var(--content-width-wide);
 }
 
-main .content.content-medium {
+main .content.content-medium,
+.global-content > .content.content-medium {
   max-width: var(--content-width-medium);
 }
 
-main .content.content-narrow {
+main .content.content-narrow,
+.global-content > .content.content-narrow {
   max-width: var(--content-width-narrow);
 }
 
-main .content.content-full {
+main .content.content-full,
+.global-content > .content.content-full {
   max-width: none;
   padding-left: var(--content-padding-full);
   padding-right: var(--content-padding-full);
 }
 
 @media (max-width: 1240px) {
-  main .content.content-wide {
+  main .content.content-wide,
+  .global-content > .content.content-wide {
     max-width: 100%;
   }
 }
 
 @media (max-width: 640px) {
-  main .content {
+  main .content,
+  .global-content > .content {
     padding-left: var(--content-padding-mobile);
     padding-right: var(--content-padding-mobile);
   }
 
-  main .content.content-default {
+  main .content.content-default,
+  .global-content > .content.content-default {
     padding-left: var(--content-padding-mobile-reading);
     padding-right: var(--content-padding-mobile-reading);
   }
 
   main .content.content-wide,
-  main .content.content-full {
+  main .content.content-full,
+  .global-content > .content.content-wide,
+  .global-content > .content.content-full {
     padding-left: var(--content-padding-mobile);
     padding-right: var(--content-padding-mobile);
   }
@@ -320,22 +331,44 @@ a.navbar-logo:hover {
   }
 }
 
-/* ---------- Cabinet layout (личный кабинет) ---------- */
-/* На всю ширину: шапка без max-width, меню слева прижато к краю */
-body.layout-cabinet .navbar-container {
+/* ---------- Global sidebar (Medium-style) ---------- */
+/* Шапка на всю ширину для залогиненных */
+body:has(.global-layout) .navbar-container {
   max-width: none;
 }
 
-body.layout-cabinet main {
-  padding-top: 0;
+.sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  margin-right: 0.5rem;
+  border: none;
+  background: none;
+  color: var(--opacity-fg-67);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.cabinet-layout {
+.sidebar-toggle:hover {
+  background-color: var(--color-box-bg-shaded);
+  color: var(--color-fg);
+}
+
+.sidebar-toggle svg {
+  display: block;
+}
+
+.global-layout {
   display: flex;
   min-height: calc(100vh - var(--header-height));
 }
 
-.cabinet-sidebar {
+.global-sidebar {
   width: 240px;
   flex-shrink: 0;
   padding: 1.5rem 0;
@@ -345,15 +378,25 @@ body.layout-cabinet main {
   align-self: flex-start;
   max-height: calc(100vh - var(--header-height));
   overflow-y: auto;
+  transition: width var(--transition-normal), padding var(--transition-normal), opacity var(--transition-normal);
 }
 
-.cabinet-sidebar__user {
+.global-sidebar.is-collapsed,
+html.sidebar-collapsed .global-sidebar {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+  border-right: none;
+  opacity: 0;
+}
+
+.global-sidebar__user {
   padding: 0 1rem 1rem;
   border-bottom: 1px solid var(--color-fg-shape);
   margin-bottom: 0.5rem;
 }
 
-.cabinet-sidebar__user .cabinet-sidebar__link {
+.global-sidebar__user .global-sidebar__link {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -361,20 +404,20 @@ body.layout-cabinet main {
   color: var(--color-fg);
 }
 
-.cabinet-sidebar__user .mini-avatar-img,
-.cabinet-sidebar__user .mini-avatar-placeholder {
+.global-sidebar__user .mini-avatar-img,
+.global-sidebar__user .mini-avatar-placeholder {
   width: 32px;
   height: 32px;
 }
 
-.cabinet-sidebar__nav {
+.global-sidebar__nav {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
   padding: 0 0.5rem;
 }
 
-.cabinet-sidebar__link {
+.global-sidebar__link {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -387,64 +430,56 @@ body.layout-cabinet main {
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
-.cabinet-sidebar__link:hover {
+.global-sidebar__link:hover {
   background-color: var(--color-box-bg-shaded);
   color: var(--color-fg);
 }
 
-.cabinet-sidebar__link.is-active {
+.global-sidebar__link.is-active {
   background-color: var(--color-box-bg-shaded);
   color: var(--color-fg);
   font-weight: 600;
 }
 
-.cabinet-sidebar__divider {
+.global-sidebar__divider {
   height: 1px;
   background-color: var(--color-fg-shape);
   margin: 0.5rem 0.75rem;
 }
 
-.cabinet-content {
+.global-content {
   flex: 1;
   min-width: 0;
-  padding: 2rem var(--content-padding);
-  max-width: var(--content-width-wide);
-}
-
-body.layout-cabinet header {
-  margin-bottom: 0;
-}
-
-body.layout-cabinet footer {
-  display: none;
+  padding: 0;
 }
 
 @media (max-width: 768px) {
-  .cabinet-layout {
+  .global-layout {
     flex-direction: column;
   }
 
-  .cabinet-sidebar {
+  .global-sidebar {
     width: 100%;
     position: static;
     max-height: none;
     border-right: none;
     border-bottom: 1px solid var(--color-fg-shape);
     padding: 0.75rem 0;
+	margin-bottom: 20px;
   }
 
-  .cabinet-sidebar__nav {
+  .global-sidebar.is-collapsed {
+    display: none;
+  }
+
+  .global-sidebar__nav {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 0.25rem;
   }
 
-  .cabinet-sidebar__user {
+  .global-sidebar__user {
     display: none;
-  }
-
-  .cabinet-content {
-    padding: 1rem var(--content-padding-mobile);
   }
 }
 

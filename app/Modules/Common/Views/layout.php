@@ -36,9 +36,12 @@ $bodyClass = Layout::getBodyClass();
 			if (theme === 'dark') {
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
+			// Сворачиваем боковое меню до отрисовки
+			if (localStorage.getItem('w3a_sidebar_collapsed') === '1') {
+				document.documentElement.classList.add('sidebar-collapsed');
+			}
 		})();
-		// Делегированные confirm-диалоги: заменяют инлайн-обработчики onclick/onsubmit,
-		// которые запрещены строгим CSP. Используйте data-confirm="..." на форме или кнопке.
+
 		document.addEventListener('submit', function (e) {
 			var msg = e.target && e.target.getAttribute ? e.target.getAttribute('data-confirm') : null;
 			if (msg && !window.confirm(msg)) {
@@ -65,6 +68,13 @@ $bodyClass = Layout::getBodyClass();
 
 	<header class="header">
 		<div class="navbar-container">
+			<?php if (!empty($currentUser['isLoggedIn'])): ?>
+				<button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Боковое меню" aria-expanded="true">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M20.6006 17.5098C20.8286 17.5563 21 17.7583 21 18C21 18.2417 20.8286 18.4437 20.6006 18.4902L20.5 18.5H3.5C3.22386 18.5 3 18.2761 3 18C3 17.7239 3.22386 17.5 3.5 17.5H20.5L20.6006 17.5098ZM20.6006 11.5098C20.8286 11.5563 21 11.7583 21 12C21 12.2417 20.8286 12.4437 20.6006 12.4902L20.5 12.5H3.5C3.22386 12.5 3 12.2761 3 12C3 11.7239 3.22386 11.5 3.5 11.5H20.5L20.6006 11.5098ZM20.6006 5.50977C20.8286 5.55629 21 5.75829 21 6C21 6.24171 20.8286 6.44371 20.6006 6.49023L20.5 6.5H3.5C3.22386 6.5 3 6.27614 3 6C3 5.72386 3.22386 5.5 3.5 5.5H20.5L20.6006 5.50977Z" fill="currentColor"></path>
+					</svg>
+				</button>
+			<?php endif; ?>
 			<a href="<?= route('home') ?>" class="navbar-logo"><?= e(app_name()); ?></a>
 
 			<nav class="navbar-links">
@@ -158,12 +168,12 @@ $bodyClass = Layout::getBodyClass();
 	</header>
 
 	<main> 
-	    <?php if (\App\Modules\Common\Support\Layout::is('cabinet')): ?>
-	    <div class="cabinet-layout">
-	        <nav class="cabinet-sidebar">
-	            <div class="cabinet-sidebar__user">
+	    <?php if (!empty($currentUser['isLoggedIn'])): ?>
+	    <div class="global-layout">
+	        <nav class="global-sidebar" id="global-sidebar">
+	            <div class="global-sidebar__user">
 	                <?php if (!empty($currentUser['name'])): ?>
-	                    <a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="cabinet-sidebar__link">
+	                    <a href="<?= route('user.profile', ['username' => $currentUser['name']]) ?>" class="global-sidebar__link">
 	                        <?php if (!empty($currentUser['avatar'])): ?>
 	                            <img src="/uploads/avatars/<?= substr($currentUser['avatar'], 0, 2) ?>/<?= e($currentUser['avatar']) ?>" class="mini-avatar-img" alt="">
 	                        <?php else: ?>
@@ -173,22 +183,23 @@ $bodyClass = Layout::getBodyClass();
 	                    </a>
 	                <?php endif; ?>
 	            </div>
-	            <div class="cabinet-sidebar__nav">
+	            <div class="global-sidebar__nav">
 	                <?php $__uri = $_SERVER['REQUEST_URI'] ?? ''; ?>
-	                <a href="<?= route('stories.subscribed') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/subscribed') ? 'is-active' : '' ?>">📡 Подписки</a>
-	                <a href="<?= route('user.stats') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/user/stats') ? 'is-active' : '' ?>">📊 Статистика</a>
-	                <a href="<?= route('user.history') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/user/history') ? 'is-active' : '' ?>">📖 История чтения</a>
-	                <a href="<?= route('saved.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/saved') ? 'is-active' : '' ?>">🔖 Закладки</a>
-	                <a href="<?= route('drafts.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/drafts') ? 'is-active' : '' ?>">📝 Черновики</a>
-	                <a href="<?= route('messages.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/messages') ? 'is-active' : '' ?>">✉️ Сообщения</a>
-	                <a href="<?= route('notifications.index') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/notifications') ? 'is-active' : '' ?>">🔔 Уведомления</a>
-	                <a href="/muted" class="cabinet-sidebar__link <?= str_contains($__uri, '/muted') ? 'is-active' : '' ?>">🔇 Игнорируемые</a>
-	                <div class="cabinet-sidebar__divider"></div>
-	                <a href="<?= route('user.profile.collections', ['username' => $currentUser['name']]) ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/collections') ? 'is-active' : '' ?>">📚 Коллекции</a>
-	                <a href="<?= route('account.settings') ?>" class="cabinet-sidebar__link <?= str_contains($__uri, '/account/settings') ? 'is-active' : '' ?>">⚙️ Настройки</a>
+	                <a href="/" class="global-sidebar__link <?= $__uri === '/' ? 'is-active' : '' ?>">🏠 Главная</a>
+	                <a href="<?= route('stories.subscribed') ?>" class="global-sidebar__link <?= str_contains($__uri, '/subscribed') ? 'is-active' : '' ?>">📡 Подписки</a>
+	                <a href="<?= route('user.stats') ?>" class="global-sidebar__link <?= str_contains($__uri, '/user/stats') ? 'is-active' : '' ?>">📊 Статистика</a>
+	                <a href="<?= route('user.history') ?>" class="global-sidebar__link <?= str_contains($__uri, '/user/history') ? 'is-active' : '' ?>">📖 История чтения</a>
+	                <a href="<?= route('saved.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/saved') ? 'is-active' : '' ?>">🔖 Закладки</a>
+	                <a href="<?= route('drafts.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/drafts') ? 'is-active' : '' ?>">📝 Черновики</a>
+	                <a href="<?= route('messages.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/messages') ? 'is-active' : '' ?>">✉️ Сообщения</a>
+	                <a href="<?= route('notifications.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/notifications') ? 'is-active' : '' ?>">🔔 Уведомления</a>
+	                <a href="/muted" class="global-sidebar__link <?= str_contains($__uri, '/muted') ? 'is-active' : '' ?>">🔇 Игнорируемые</a>
+	                <div class="global-sidebar__divider"></div>
+	                <a href="<?= route('user.profile.collections', ['username' => $currentUser['name']]) ?>" class="global-sidebar__link <?= str_contains($__uri, '/collections') ? 'is-active' : '' ?>">📚 Коллекции</a>
+	                <a href="<?= route('account.settings') ?>" class="global-sidebar__link <?= str_contains($__uri, '/account/settings') ? 'is-active' : '' ?>">⚙️ Настройки</a>
 	            </div>
 	        </nav>
-	        <div class="cabinet-content">
+	        <div class="global-content">
 	            <?php if (!empty($errors->allErrors())): ?>
 					<div class="alert is-danger">
 						<strong>Ошибка валидации!</strong>
@@ -213,7 +224,9 @@ $bodyClass = Layout::getBodyClass();
 				<?php if ($flashNotice = $errors->getFlash('notice')): ?>
 					<div class="alert is-notice"><strong>Информация!</strong> <?= htmlspecialchars($flashNotice) ?></div>
 				<?php endif; ?>
+				 <div class="content <?= $layoutClass ?>">
 	            <?= $content ?>
+				</div>
 	        </div>
 	    </div>
 	    <?php else: ?>
@@ -250,7 +263,7 @@ $bodyClass = Layout::getBodyClass();
 	</main>
 
 	<footer>
-		<?php if (!\App\Modules\Common\Support\Layout::is('cabinet')): ?>
+		<?php if (empty($currentUser['isLoggedIn'])): ?>
 		 <nav>
 				<a href="<?= route('home') ?>"><?= __('home') ?></a>
 				<a href="/t/meta/wiki/about"><?= __('about') ?></a>
@@ -295,6 +308,30 @@ $bodyClass = Layout::getBodyClass();
 				close.closest('dialog').close();
 			}
 		});
+
+		// Боковое меню (бургер)
+		(function() {
+			var toggle = document.getElementById('sidebar-toggle');
+			var sidebar = document.getElementById('global-sidebar');
+			if (!toggle || !sidebar) return;
+
+			var key = 'w3a_sidebar_collapsed';
+			var collapsed = localStorage.getItem(key) === '1';
+
+			function apply(state) {
+				sidebar.classList.toggle('is-collapsed', state);
+				toggle.setAttribute('aria-expanded', !state);
+				document.documentElement.classList.toggle('sidebar-collapsed', state);
+			}
+
+			apply(collapsed);
+
+			toggle.addEventListener('click', function() {
+				var now = sidebar.classList.contains('is-collapsed');
+				apply(!now);
+				localStorage.setItem(key, now ? '0' : '1');
+			});
+		})();
 	</script>
 	
 </body>
