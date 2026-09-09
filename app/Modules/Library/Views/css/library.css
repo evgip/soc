@@ -1,0 +1,17 @@
+/* Стили страницы Библиотека (/me/library) */
+
+.library-stories,
+ol.comments.library-comments {
+  max-width: var(--content-width);
+}
+
+ol.comments.library-comments {
+  margin-left: 0;
+}
+
+@media (max-width: 640px) {
+  .library-stories,
+  ol.comments.library-comments {
+    max-width: 100%;
+  }
+}

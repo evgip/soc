@@ -451,6 +451,7 @@ html.sidebar-collapsed .global-sidebar {
   flex: 1;
   min-width: 0;
   padding: 0;
+  overflow-x: clip;
 }
 
 @media (max-width: 768px) {

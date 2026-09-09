@@ -546,6 +546,61 @@ class Story extends Model
     }
 
 	/**
+     * Получить статьи пользователя по статусу с пагинацией.
+     * Статус проверяется по белому списку (draft / published / scheduled).
+     */
+    public function getStoriesByStatus(int $userId, string $status, int $page = 1, int $perPage = 20): array
+    {
+        $allowed = [self::STATUS_DRAFT, self::STATUS_PUBLISHED, self::STATUS_SCHEDULED];
+        if (!in_array($status, $allowed, true)) {
+            throw new \InvalidArgumentException("Недопустимый статус статьи: {$status}");
+        }
+
+        $offset = ($page - 1) * $perPage;
+
+        $sql = "SELECT id, title, description_text, cover_image,
+                       word_count, reading_time, created_at, updated_at, draft_version, slug, comments_count
+                FROM stories
+                WHERE user_id = :user_id
+                AND status = :status
+                AND deleted_at IS NULL
+                ORDER BY updated_at DESC
+                LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue('user_id', $userId, \PDO::PARAM_INT);
+        $stmt->bindValue('status', $status, \PDO::PARAM_STR);
+        $stmt->bindValue('limit', $perPage, \PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Подсчитать статьи пользователя по статусу.
+     */
+    public function countStoriesByStatus(int $userId, string $status): int
+    {
+        $allowed = [self::STATUS_DRAFT, self::STATUS_PUBLISHED, self::STATUS_SCHEDULED];
+        if (!in_array($status, $allowed, true)) {
+            throw new \InvalidArgumentException("Недопустимый статус статьи: {$status}");
+        }
+
+        $sql = "SELECT COUNT(*) FROM stories
+                WHERE user_id = :user_id
+                AND status = :status
+                AND deleted_at IS NULL";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue('user_id', $userId, \PDO::PARAM_INT);
+        $stmt->bindValue('status', $status, \PDO::PARAM_STR);
+        $stmt->execute();
+
+        return (int)$stmt->fetchColumn();
+    }
+
+	/**
 	 * Получить все опубликованные статьи автора.
 	 * Используется в модуле Collections для добавления статей в коллекции.
 	 */

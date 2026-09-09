@@ -71,6 +71,9 @@ $router->group(['middleware' => ['web', 'auth']], function ($router) {
 	
     // --- Черновики ---
 	$router->add('GET', '/drafts', StoriesController::class . '@drafts', 'drafts.index');
+
+    // --- Мои истории (Medium-стиль: Черновики / Опубликовано / Запланировано) ---
+    $router->add('GET', '/me/stories', StoriesController::class . '@myStories', 'me.stories');
  
 });
 

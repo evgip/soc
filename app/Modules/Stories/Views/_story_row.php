@@ -6,6 +6,7 @@ $newCommentsMap   = $newCommentsMap ?? [];
 $hideAuthor       = $hideAuthor ?? false;
 $isSavedPage      = $isSavedPage ?? false;
 $relevance        = $relevance ?? null;
+$savedIds         = $savedIds ?? [];
 
 $story         = $story ?? [];
 $newCount      = $newCommentsMap[$story['id']] ?? 0;
@@ -22,6 +23,7 @@ $storyUserId  = (int)($story['user_id'] ?? 0);
 $isAuthor     = $currentUserId > 0 && $storyUserId === $currentUserId;
 $canManage    = $currentUserId > 0 && ($isAuthor || $isAdmin) && !$isDeleted;
 $showMenu     = $canManage || ($currentUserId > 0 && !$isAuthor) || $isAdmin;
+$isSaved      = $currentUserId > 0 && in_array((int)$story['id'], array_map('intval', $savedIds), true);
 ?>
 
 <article class="tt-row <?= $isDeleted ? 'tt-row--deleted' : '' ?>">
@@ -97,8 +99,8 @@ $showMenu     = $canManage || ($currentUserId > 0 && !$isAuthor) || $isAdmin;
                 <?php if ($currentUserId > 0): ?>
                     <form method="POST" action="/saved/toggle/<?= (int)$story['id'] ?>" class="d-inline">
                         <?= csrf_field() ?>
-                        <button type="submit" class="icon-btn" title="Сохранить">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <button type="submit" class="icon-btn <?= $isSaved ? 'is-active' : '' ?>" title="<?= $isSaved ? 'Убрать из закладок' : 'Сохранить' ?>">
+                            <svg viewBox="0 0 24 24" fill="<?= $isSaved ? 'currentColor' : 'none' ?>" stroke="currentColor" stroke-width="2" width="16" height="16">
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                             </svg>
                         </button>

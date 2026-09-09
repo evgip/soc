@@ -188,14 +188,12 @@ $bodyClass = Layout::getBodyClass();
 	                <a href="/" class="global-sidebar__link <?= $__uri === '/' ? 'is-active' : '' ?>">🏠 Главная</a>
 	                <a href="<?= route('stories.subscribed') ?>" class="global-sidebar__link <?= str_contains($__uri, '/subscribed') ? 'is-active' : '' ?>">📡 Подписки</a>
 	                <a href="<?= route('user.stats') ?>" class="global-sidebar__link <?= str_contains($__uri, '/user/stats') ? 'is-active' : '' ?>">📊 Статистика</a>
-	                <a href="<?= route('user.history') ?>" class="global-sidebar__link <?= str_contains($__uri, '/user/history') ? 'is-active' : '' ?>">📖 История чтения</a>
-	                <a href="<?= route('saved.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/saved') ? 'is-active' : '' ?>">🔖 Закладки</a>
-	                <a href="<?= route('drafts.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/drafts') ? 'is-active' : '' ?>">📝 Черновики</a>
+	                <a href="<?= route('library.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/me/library') ? 'is-active' : '' ?>">📚 Библиотека</a>
+	                <a href="<?= route('me.stories') ?>" class="global-sidebar__link <?= str_contains($__uri, '/me/stories') ? 'is-active' : '' ?>">🖋 Мои истории</a>
 	                <a href="<?= route('messages.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/messages') ? 'is-active' : '' ?>">✉️ Сообщения</a>
 	                <a href="<?= route('notifications.index') ?>" class="global-sidebar__link <?= str_contains($__uri, '/notifications') ? 'is-active' : '' ?>">🔔 Уведомления</a>
 	                <a href="/muted" class="global-sidebar__link <?= str_contains($__uri, '/muted') ? 'is-active' : '' ?>">🔇 Игнорируемые</a>
 	                <div class="global-sidebar__divider"></div>
-	                <a href="<?= route('user.profile.collections', ['username' => $currentUser['name']]) ?>" class="global-sidebar__link <?= str_contains($__uri, '/collections') ? 'is-active' : '' ?>">📚 Коллекции</a>
 	                <a href="<?= route('account.settings') ?>" class="global-sidebar__link <?= str_contains($__uri, '/account/settings') ? 'is-active' : '' ?>">⚙️ Настройки</a>
 	            </div>
 	        </nav>

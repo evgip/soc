@@ -293,4 +293,22 @@ class StoryService
 			'perPage' => $perPage,
 		];
 	}
+
+	/**
+	 * Получить статьи пользователя по статусу с пагинацией.
+	 *
+	 * @param string $status draft | published | scheduled
+	 */
+	public function getUserStoriesByStatus(int $userId, string $status, int $page = 1, int $perPage = 20): array
+	{
+		$stories = $this->storyModel->getStoriesByStatus($userId, $status, $page, $perPage);
+		$total = $this->storyModel->countStoriesByStatus($userId, $status);
+
+		return [
+			'stories' => $stories,
+			'total' => $total,
+			'page' => $page,
+			'perPage' => $perPage,
+		];
+	}
 }

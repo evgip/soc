@@ -30,6 +30,9 @@
    - 07_forms.css      — формы, кнопки, иконки, бейджи, дропдауны, модалки
    ============================================ */
 
+.green { color: #03a87c; }
+.gray { color: var(--opacity-fg-54); }
+
 /* RSS and editor wrapper */
 .rss-link {
   color: var(--color-rss);

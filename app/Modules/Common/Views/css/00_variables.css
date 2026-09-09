@@ -34,7 +34,7 @@
   --color-fg-link: rgb(25 25 25);
   --color-fg-link-visited: rgb(90 90 90);
 
-  --color-fg-negative: rgb(198 40 40);
+  --color-fg-negative: rgb(239 34 19);
   --color-fg-affirmative: rgb(46 125 50);
   --color-fg-author: rgb(25 118 210);
 
@@ -112,6 +112,8 @@
 
   --content-padding: 24px;
   --content-padding-full: 40px;
+
+  --sidebar-width: 240px;
   --content-padding-mobile: 16px;
   --content-padding-mobile-reading: 20px;
 

@@ -143,6 +143,7 @@ if ($useViewModel):
         </div>
         <?php endif; ?>
 
+			<center><a class="gray" href="/support/donations"><span class=red>П</span><span class=green>о</span>мощь сайту</a></a>
         </aside>
 
 </div>

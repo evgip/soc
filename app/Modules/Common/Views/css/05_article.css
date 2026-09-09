@@ -734,17 +734,34 @@ pre:hover .copy-button {
   }
 
   .editorjs-image--stretched {
-    width: 99vw;
+    width: 100vw;
     position: relative;
     left: 50%;
-    right: 50%;
     margin-left: -50vw;
-    margin-right: -50vw;
+  }
+
+  /* Когда сайдбар виден — растянутая картинка не вылезает за его край */
+  .global-sidebar ~ .global-content .editorjs-image--stretched {
+    width: calc(100vw - var(--sidebar-width));
+    margin-left: calc(-50vw + var(--sidebar-width) / 2);
+  }
+
+  html.sidebar-collapsed .global-sidebar ~ .global-content .editorjs-image--stretched,
+  .global-sidebar.is-collapsed ~ .global-content .editorjs-image--stretched {
+    width: 100vw;
+    margin-left: -50vw;
   }
 
   .editorjs-image--stretched img {
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .global-sidebar ~ .global-content .editorjs-image--stretched {
+    width: 100vw;
+    margin-left: -50vw;
   }
 }

@@ -845,6 +845,60 @@ $feed = $this->service(StoryFeedBuilder::class)->build(
 			'currentPage' => $page,
 		]);
 	}
+
+	// =========================================================================
+	// МОИ ИСТОРИИ (Medium-стиль: Черновики / Опубликовано / Запланировано)
+	// =========================================================================
+
+	/**
+	 * Страница «Мои истории» пользователя с табами по статусам.
+	 */
+	public function myStories(): ViewResponse
+	{
+		$userContext = $this->getUserContext();
+		$userId = $userContext['id'];
+
+		$tab = (string)($this->request->getParams('tab') ?? 'published');
+		if (!in_array($tab, ['published', 'drafts', 'scheduled'], true)) {
+			$tab = 'published';
+		}
+
+		$page = max(1, (int)$this->request->getParams('page', 1));
+		$perPage = 15;
+
+		$service = $this->service(StoryService::class);
+
+		// Счётчики для вкладок
+		$counts = [
+			'published' => $service->getUserStoriesByStatus($userId, Story::STATUS_PUBLISHED, 1, 1)['total'],
+			'drafts'    => $service->getUserStoriesByStatus($userId, Story::STATUS_DRAFT, 1, 1)['total'],
+			'scheduled' => $service->getUserStoriesByStatus($userId, Story::STATUS_SCHEDULED, 1, 1)['total'],
+		];
+
+		$statusMap = [
+			'published' => Story::STATUS_PUBLISHED,
+			'drafts'    => Story::STATUS_DRAFT,
+			'scheduled' => Story::STATUS_SCHEDULED,
+		];
+
+		$data = $service->getUserStoriesByStatus($userId, $statusMap[$tab], $page, $perPage);
+
+		$totalPages = (int)ceil($counts[$tab] / $perPage);
+
+		Layout::set(Layout::FULL);
+
+		return $this->render('my_stories', [
+			'title' => 'Мои истории',
+			'activeTab' => $tab,
+			'counts' => $counts,
+			'stories' => $data['stories'],
+			'currentPage' => $page,
+			'totalPages' => $totalPages,
+			'currentUserId' => $userId,
+			'isAdmin' => $userContext['isAdmin'],
+			'isModerator' => $userContext['isModerator'],
+		]);
+	}
 	
 	/**
 	 * Создание новой friend link для статьи

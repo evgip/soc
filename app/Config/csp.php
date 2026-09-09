@@ -45,7 +45,8 @@ return [
         'https://recaptcha.google.com',
         'https://oauth.yandex.ru',
         'https://passport.yandex.ru',
-        'https://yandex.ru',                  
+        'https://yandex.ru', 
+		'https://yoomoney.ru',		
     ],
     
     // 🔑 РАСШИРЕННЫЙ connect-src с поддержкой WebSocket
